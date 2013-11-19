@@ -1,0 +1,15 @@
+[storage]
+refs = file
+objects = bdbje
+graph = tinkergraph
+staging = bdbje
+
+[file]
+version = 1.0
+
+[bdbje]
+version = 0.1
+
+[tinkergraph]
+version = 0.1
+
