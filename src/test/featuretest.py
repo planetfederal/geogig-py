@@ -28,7 +28,7 @@ class GeogitFeatureTest(unittest.TestCase):
     def testAttributes(self):    	
     	feature = Feature(self.repo, geogit.HEAD, "parks/1")    	            
         data = feature.attributes()
-        self.assertEquals(7, len(data))
+        self.assertEquals(8, len(data))
         self.assertEquals("Public", data["usage"])
         self.assertTrue("owner" in data)
         self.assertTrue("agency" in data)
@@ -39,12 +39,12 @@ class GeogitFeatureTest(unittest.TestCase):
         
     def testDiff(self):
         feature = Feature(self.repo, geogit.HEAD, "parks/5")
-        featureB = Feature(self.repo, geogit.HEAD + "~2", "parks/5")
+        featureB = Feature(self.repo, geogit.HEAD + "~1", "parks/5")
         diffs = feature.diff(featureB)        
         self.assertTrue(2, len(diffs))
         areas = diffs["area"]
-        self.assertEquals(15297.503295898438, areas[0])
-        self.assertEquals(15246.59765625, areas[1])
+        self.assertEquals("15297.503295898438", areas[1])
+        self.assertEquals("15246.59765625", areas[0])
         self.assertTrue("the_geom" in diffs)
 
     def testBlame(self):

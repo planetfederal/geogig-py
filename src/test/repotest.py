@@ -44,7 +44,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         commit = entries[0].commit
         self.assertEquals("message_4", commit.message)        
         diffset = entries[0].diffset
-        print diffset
+        #TODO: add more 
 
     def testLogInBranch(self):
         entries = self.repo.log("mybranch")
@@ -67,11 +67,11 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(entries[1].commit.commitid, id)   
 
     def testFeaturesAtHead(self):
-        features = self.repo.features("parks")
+        features = self.repo.features(path = "parks")
         self.assertEquals(5, len(features))
         feature = features[0]
-        self.assertEquals("5", feature.path)        
-        self.assertEquals(self.repo.head().ref, feature.ref)        
+        self.assertEquals("parks/5", feature.path)        
+        self.assertEquals("HEAD", feature.ref)        
 
     def testChildren(self):
         children = self.repo.children() 
@@ -130,8 +130,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.repo.createbranch(geogit.HEAD, "anewbranch")
         branches = self.repo.branches()
         self.assertEquals(3, len(branches))
-        names = [c[0] for c in branches]
-        print "NAMES:" + str(names)
+        names = [c[0] for c in branches]        
         self.assertTrue("anewbranch" in names)
         self.repo.deletebranch("anewbranch")
         branches = self.repo.branches()
@@ -161,7 +160,7 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testFeatureDiff(self):
         diff = self.repo.featurediff(geogit.HEAD, geogit.HEAD + "~1", "parks/5")
-        self.assertEquals(2, len(feature))
+        self.assertEquals(2, len(diff))
         self.assertTrue("area" in diff)
 
 

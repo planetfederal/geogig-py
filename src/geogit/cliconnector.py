@@ -117,8 +117,7 @@ class CLIConnector():
             commands.append("-r")
         output = self.run(commands)    
         for line in output:
-            if line != '':
-                print "LINE:" + line
+            if line != '':                
                 tokens = line.split(" ")
                 if tokens[1] == "feature":
                     features.append(Feature(self.repo, ref, tokens[3], tokens[0]))
@@ -236,7 +235,7 @@ class CLIConnector():
         for line in output:            
             tokens = line.strip().split(" ")
             if tokens[1].startswith("refs/heads/"):
-                branches.append((tokens[0], tokens[1].strip("refs/heads/")))
+                branches.append((tokens[1][len("refs/heads/"):], tokens[0]))
         return branches
     
     def tags(self):
@@ -245,7 +244,7 @@ class CLIConnector():
         for line in output:            
             tokens = line.strip().split(" ")
             if tokens[1].startswith("refs/tags/"):
-                tags.append((tokens[0], tokens[1].strip("refs/tags/")))
+                tags.append((tokens[1][len("refs/tags/"):], tokens[0]))
         return tags 
 
     
@@ -263,7 +262,7 @@ class CLIConnector():
     def createtag(self, commitish, name, message):        
         self.run(['tag', name, commitish.ref, '-m', message])
 
-    def deletetag(self, commitish, name, message):        
+    def deletetag(self, name):   
         self.run(['tag', '-d', name])        
 
        
@@ -313,8 +312,9 @@ class CLIConnector():
             commands.extend(["--add"])
         self.run(commands)
         
-    def exportshp(self, ref, shapefile):
-        self.run(["shp", "export", ref, shapefile])
+    def exportshp(self, ref, path shapefile):
+        refandpath = ref + ":" + path
+        self.run(["shp", "export", ref, shapefile, -0])
         
     def exportsl(self, ref, database):
         self.run(["sl", "export", ref, "exported", "--database", database])
@@ -351,7 +351,7 @@ class CLIConnector():
         features = {}
         commands = ["show", "--raw"]
         commands.extend(refs);
-        output = self.run(commands)
+        output = self.run(commands)        
         iterator = iter(output)
         lines = []    
         name = None    
@@ -396,7 +396,7 @@ class CLIConnector():
                     elif changetype == "A":
                         value2 = lines.next()
                     else:
-                        value1 = value2 = lines.next()
+                        continue
                     diffs[field] = (value1, value2);
             except StopIteration:
                 return diffs    

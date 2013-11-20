@@ -39,8 +39,8 @@ def createRepo():
 
 def suite():
     suite = unittest.makeSuite(GeogitTreeTest, 'test')
-    suite = unittest.makeSuite(GeogitRepositoryTest, 'test')
-    suite = unittest.makeSuite(GeogitFeatureTest, 'test')
+    suite.addTests(unittest.makeSuite(GeogitRepositoryTest, 'test'))
+    suite.addTests(unittest.makeSuite(GeogitFeatureTest, 'test'))
     return suite
    
 

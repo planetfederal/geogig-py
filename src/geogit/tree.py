@@ -16,11 +16,8 @@ class Tree(object):
     def children(self):        
         return self.repo.children(self.ref, self.path)
     
-    def exportshp(self, path):
-        self.repo.exportshp(self.ref + ":" + self.path, path)
+    def exportshp(self, shapefile):
+        self.repo.exportshp(self.ref, self.path, shapefile)
     
     def __str__(self):
         return self.ref + ":" + self.path
-    
-
-    

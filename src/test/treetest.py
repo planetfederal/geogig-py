@@ -20,12 +20,12 @@ class GeogitTreeTest(unittest.TestCase):
         return Repository(dst)
 
     def testExportShp(self):
-    	exportPath = os.path.join(self.getTempPath(), "export.shp")
+        exportPath = os.path.join(os.path.dirname(__file__), "temp", str(time.time()) + ".shp").replace('\\', '/')    	
     	tree = Tree(self.repo, geogit.HEAD, "parks")
-    	tree.exportShp(exportPath)
+    	tree.exportshp(exportPath)
     	self.assertTrue(os.path.exists(exportPath))
 
-    def testFeature(self):
+    def testFeatures(self):
         tree = Tree(self.repo, geogit.HEAD, "parks")
         features = tree.features()
-        self.assertEquals(5, features)
+        self.assertEquals(5, len(features))

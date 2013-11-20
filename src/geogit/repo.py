@@ -130,9 +130,9 @@ class Repository:
     
     def versions(self, path):
         '''get all versions os a given feature'''            
-        entries = self.log(geogit.HEAD, path)
+        entries = self.log(geogit.HEAD, path)        
         refs = [entry.commit.ref + ":" + path for entry in entries]
-        features = self.connector.featuresdata(refs)        
+        features = self.connector.featuresdata(refs)                
         versions = []
         for i, ref in enumerate(features):
             feature = features[ref]
@@ -141,16 +141,22 @@ class Repository:
         return versions
     
     def featurediff(self, ref, ref2, path):
+        '''
+        Returns a dict with attributes that have changed in the specified path between the specified refs
+        Keys are attribute names. Values are tuples of "(oldvalue, newvalue)"
+        Both values are always strings
+        '''
+
         return self.connector.featurediff(ref, ref2, path)
     
     def reset(self, ref, mode = geogit.RESET_MODE_HARD):
         return self.connector.reset(ref, mode)
        
-    def exportshp(self, ref, shapefile):
-        self.connector.exportshp(ref, shapefile)
+    def exportshp(self, ref, path, shapefile):
+        self.connector.exportshp(ref, path, shapefile)
         
-    def exportsl(self, ref, database):
-        self.connector.exportsl(ref, database)        
+    def exportsl(self, ref, path, database):
+        self.connector.exportsl(ref, path, database)        
     
     def importosm(self, osmfile, add):
         self.connector.importosm(osmfile, add)

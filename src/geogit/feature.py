@@ -29,9 +29,9 @@ class Feature(object):
     def exists(self):
         try:
             self.attributes()
-            return true
+            return True
         except GeoGitException, e:
-            return false
+            return False
 
     def blame(self):
         return self.repo.blame(self.path)
