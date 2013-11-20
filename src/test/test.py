@@ -8,10 +8,11 @@ import time
 from geogit.repo import Repository
 import unittest
 import geogit
-from geogittest import GeogitRepositoryTest
+from repotest import GeogitRepositoryTest
 from treetest import GeogitTreeTest
+from featuretest import GeogitFeatureTest
 
-def getTempRepoPath(self):
+def getTempRepoPath():
     return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
 
@@ -39,10 +40,10 @@ def createRepo():
 def suite():
     suite = unittest.makeSuite(GeogitTreeTest, 'test')
     suite = unittest.makeSuite(GeogitRepositoryTest, 'test')
-    #suite = unittest.makeSuite(GeogitFeatureTest, 'test')
+    suite = unittest.makeSuite(GeogitFeatureTest, 'test')
     return suite
    
 
-if __name__ == '__main__':    
+if __name__ == '__main__':     
     runner=unittest.TextTestRunner()
     runner.run(suite())

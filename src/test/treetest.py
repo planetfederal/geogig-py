@@ -3,6 +3,8 @@ import os
 from geogit.repo import Repository
 import time
 import shutil
+from geogit.tree import Tree
+import geogit
 
 class GeogitTreeTest(unittest.TestCase):
         
@@ -22,3 +24,8 @@ class GeogitTreeTest(unittest.TestCase):
     	tree = Tree(self.repo, geogit.HEAD, "parks")
     	tree.exportShp(exportPath)
     	self.assertTrue(os.path.exists(exportPath))
+
+    def testFeature(self):
+        tree = Tree(self.repo, geogit.HEAD, "parks")
+        features = tree.features()
+        self.assertEquals(5, features)

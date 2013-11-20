@@ -3,6 +3,9 @@ from cliconnector import CLIConnector
 import geogit
 from geogitexception import GeoGitException
 from feature import Feature
+import os
+import time
+import shutil
 
 class Repository:
     
@@ -28,7 +31,7 @@ class Repository:
         '''Returns a Commitish representing the current HEAD'''
         return self.connector.head()
     
-    def log(self, ref = None):
+    def log(self, ref = None, path = None):
         '''returns a set of logentries starting from the passed ref, or HEAD if there is no passed ref'''        
         return self.connector.log(ref or geogit.HEAD)
     
@@ -63,7 +66,7 @@ class Repository:
         raise GeoGitException("Specified branch does not exist")
     
     def clone(self, path):
-        '''clones this repo in the given path. Returns a reference to the cloned repo'''
+        '''clones this repo in the specified path. Returns a reference to the cloned repo'''
         url = self.url.replace('\\', '/')
         self.connector.clone(url, path)
         return Repository(path, self.connector, False)
@@ -116,18 +119,26 @@ class Repository:
     
     def feature(self, ref, path): 
         '''Returns a Feature object corresponding to the passed ref and path'''
-        return Feature(self, ref, path)
+        return Feature(self, ref, path)    
 
     def featuredata(self, feature):
         '''Returns the attributes of a given feature'''
         data = self.connector.featuredata(feature)
         if len(data) == 0:            
             raise GeoGitException("The specified feature does not exist")
-        return 
+        return data
     
     def versions(self, path):
-        '''get all versions os a given feature'''
-        return self.connector.versions(path)
+        '''get all versions os a given feature'''            
+        entries = self.log(geogit.HEAD, path)
+        refs = [entry.commit.ref + ":" + path for entry in entries]
+        features = self.connector.featuresdata(refs)        
+        versions = []
+        for i, ref in enumerate(features):
+            feature = features[ref]
+            commit = entries[i].commit
+            versions.append((commit, feature))
+        return versions
     
     def featurediff(self, ref, ref2, path):
         return self.connector.featurediff(ref, ref2, path)
@@ -147,9 +158,45 @@ class Repository:
     def importshp(self, shpfile, add = False, dest = None):
         self.connector.importshp(shpfile, add, dest)
 
-    def importfeature(self, path, featuredata):
+    def addfeature(path, attributes):
         pass
-        
+
+    def removefeature(path):
+        pass
+
+    def modifyfeature(self, path, attributes):
+        '''
+        Modifies a feature, inserting a different version in the working tree.
+
+        The attributes are passed in a map with attribute names as keys and attribute values as values.        
+        '''
+        try:
+            patchfile = os.path.join(self.url, str(time.time()) + ".patch")
+            with open(patchfile) as f:
+                ftId = Feature(geogit.WORK_HEAD, path).featuretype()
+                output = self.connector.cat(ftId)
+                f.write("\n".join(output[1:]))            
+                f.write("\n")
+                types = self.attributetypes(output[3:])
+                for attr in sorted(attributes.iterkeys()):
+                    try:
+                        attrtype = types[attr]
+                        attrvalue = attributes[attr]
+                        f.write(attrtype + "\t" + str(attrvalue))
+                    except KeyError, e:
+                        raise GeoGitException("Attribute %s does no exist in feature to modify" % attr)
+
+            self.connector.applypatch(patchfile)
+        finally:
+            shutil.rm(patchfile)
+
+    def attributeTypes(self, lines):
+        types = {}
+        for line in lines:
+            tokens = lines.split(" ").strip()
+            types[tokens[1]] = tokens[0]
+        return types
+   
     def downloadosm(self, osmurl, bbox):
         self.connector.downloadosm(osmurl, bbox)      
         

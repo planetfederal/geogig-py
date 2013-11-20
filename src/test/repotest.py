@@ -88,7 +88,7 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testFeatureData(self):
         feature = self.repo.feature(geogit.HEAD, "parks/1")
         data = self.repo.featuredata(feature)
-        self.assertEquals(7, len(data))
+        self.assertEquals(8, len(data))
         self.assertEquals("Public", data["usage"])
         self.assertTrue("owner" in data)
         self.assertTrue("agency" in data)
@@ -96,6 +96,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue("parktype" in data)
         self.assertTrue("area" in data)
         self.assertTrue("perimeter" in data)
+        self.assertTrue("the_geom" in data)
 
     def testFeatureDataNonExistentFeature(self):
         feature = self.repo.feature(geogit.HEAD, "wrongpath/wrongname")
@@ -130,6 +131,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         branches = self.repo.branches()
         self.assertEquals(3, len(branches))
         names = [c[0] for c in branches]
+        print "NAMES:" + str(names)
         self.assertTrue("anewbranch" in names)
         self.repo.deletebranch("anewbranch")
         branches = self.repo.branches()
@@ -145,17 +147,22 @@ class GeogitRepositoryTest(unittest.TestCase):
             pass
 
     def testBlame(self):
-        blame = self.repo.blame("parks/5")
-        print str(blame)
-        self.assertEquals(7, len(blame))
+        feature = self.repo.feature(geogit.HEAD, "parks/5")
+        blame = self.repo.blame("parks/5")        
+        self.assertEquals(8, len(blame))
+        attrs = feature.attributes()
+        for k,v in blame.iteritems():
+            self.assertTrue(v[0], attrs[k])
+
 
     def testVersions(self):
-        versions = self.repo.versions("parks/1")
-        self.assertEquals(3, len(versions))
+        versions = self.repo.versions("parks/5")
+        self.assertEquals(2, len(versions))
 
     def testFeatureDiff(self):
-        diff = self.repo.featurediff(geogit.HEAD, geogit.HEAD + "~1", "parks/1")
-        #TODO
+        diff = self.repo.featurediff(geogit.HEAD, geogit.HEAD + "~1", "parks/5")
+        self.assertEquals(2, len(feature))
+        self.assertTrue("area" in diff)
 
 
     def testCreateReadAndDeleteTag(self):

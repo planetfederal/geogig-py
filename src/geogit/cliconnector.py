@@ -45,8 +45,7 @@ class CLIConnector():
         output = self.run(commands)
         id = output[0].strip()
         if len(id) != 40:
-            raise GeoGitException("Cannot resolve the provided reference")
-        print "ID:" + id
+            raise GeoGitException("Cannot resolve the provided reference")        
         return id
            
     def head(self):
@@ -101,7 +100,7 @@ class CLIConnector():
             if line != '':                
                 tokens = line.split(" ")
                 if tokens[1] == "feature":
-                    children.append(Feature(self.repo, ref, tokens[3]))
+                    children.append(Feature(self.repo, ref, tokens[3], tokens[0]))
                 elif tokens[1] == "tree":
                     children.append(Tree(self.repo, ref, tokens[3]))
         return children   
@@ -122,7 +121,7 @@ class CLIConnector():
                 print "LINE:" + line
                 tokens = line.split(" ")
                 if tokens[1] == "feature":
-                    features.append(Feature(self.repo, ref, tokens[3]))
+                    features.append(Feature(self.repo, ref, tokens[3], tokens[0]))
         return features 
          
     def logentryFromString(self, lines):
@@ -242,7 +241,7 @@ class CLIConnector():
     
     def tags(self):
         tags = []
-        output = self.run(['tag'])    
+        output = self.run(['show-ref'])    
         for line in output:            
             tokens = line.strip().split(" ")
             if tokens[1].startswith("refs/tags/"):
@@ -323,7 +322,19 @@ class CLIConnector():
     def featuredata(self, feature):  
         refandpath = feature.ref + ":" + feature.path      
         output = self.run(["show", "--raw", refandpath])           
-        return self.parseattribs(output[2:])        
+        return self.parseattribs(output[2:]) 
+
+    def featuretype(self, ref, path):
+        output = self.run(["show", "--raw", ref + ":" + path])
+        ftId = output[0].split(" ")[0]
+        output = self.run(["cat", ftId])
+
+
+    def cat(self, reference):
+        return self.run(["cat", reference])
+
+    def applypatch(self, patchfile):
+        pass
         
     def parseattribs(self, lines):
         attributes = {}
@@ -335,17 +346,6 @@ class CLIConnector():
                 attributes[name] = value
             except StopIteration:
                 return attributes 
-    
-    def versions(self, path):
-        entries = self.log(geogit.HEAD, path)
-        refs = [entry.commit.ref + ":" + path for entry in entries]
-        features = self.featuresdata(refs)        
-        versions = []
-        for i, ref in enumerate(features):
-            feature = features[ref]
-            commit = entries[i].commit
-            versions.append((commit, feature))
-        return versions
         
     def featuresdata(self, refs):
         features = {}

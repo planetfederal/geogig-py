@@ -2,19 +2,24 @@ from geogit.geogitexception import GeoGitException
 
 class Feature(object):
 
-    def __init__(self, repo, ref, path):
+    def __init__(self, repo, ref, path, featuretypeid = None):
         self.repo = repo
         self.ref = ref
         self.path = path
         self._attributes = None
+        self._featuretype = featuretypeid
 
     def attributes(self):
         if self._attributes is None:
-            self.query()
+            self._attributes = self.repo.featuredata(self)
         return self._attributes
 
     def featuretype(self):
-        pass
+        if not self.exists():
+            raise GeoGitException("Cannot get feature type. Feature does not exist")
+        if self._featuretype is None:
+            self._featuretype = self.repo.features(ref, path)[0].featuretype()
+        return self._featuretype        
 
     def diff(self, feature):
         if feature.path != self.path:
@@ -22,16 +27,17 @@ class Feature(object):
         return self.repo.featurediff(self.ref, feature.ref, self.path)
     
     def exists(self):
-        return len(self.attributes()) > 0
-
-    def query(self):
-        self._attributes = self.repo.featuredata(self)
+        try:
+            self.attributes()
+            return true
+        except GeoGitException, e:
+            return false
 
     def blame(self):
         return self.repo.blame(self.path)
 
-    def allversions(self):
-        return self.repo.getversions(self.path)
+    def versions(self):
+        return self.repo.versions(self.path)
 
     def __str__(self):
         return self.path
