@@ -3,12 +3,13 @@ from cliconnector import CLIConnector
 import geogit
 from geogitexception import GeoGitException
 from feature import Feature
-import os
-import time
-import shutil
+from tree import Tree
 
 class Repository:
     
+    usecache = True
+    _logcache = []
+
     def __init__(self, url, connector = None, init = False):
         '''
         url: The url of the repository
@@ -23,8 +24,12 @@ class Repository:
             self.init()        
         #Only local repos suported so far, so we check it                    
         self.connector.checkisrepo()
+
+    def cleancache(self):
+        self._logcache = []
         
     def revparse(self, rev):
+        '''returns the SHA-1 of a given element, represented as a string'''
         return self.connector.revparse(rev)
 
     def head(self):
@@ -32,20 +37,23 @@ class Repository:
         return self.connector.head()
     
     def log(self, ref = None, path = None):
-        '''returns a set of logentries starting from the passed ref, or HEAD if there is no passed ref'''        
+        '''
+        Returns a list of Commitish starting from the passed ref, or HEAD if there is no passed ref.
+        If a path is passed, it only returns commits in which that path was modified
+        '''        
         return self.connector.log(ref or geogit.HEAD)
     
-    def trees(self, ref = geogit.HEAD, path = None): 
+    def trees(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''returns a set of Tree objects with all the trees for the passed ref and path'''       
-        return self.connector.trees(ref, path)   
+        return [e for e in self.children(ref, path, recursive)  if isinstance(e, Tree)]
     
     def features(self, ref = geogit.HEAD, path = None, recursive = False): 
-        '''returns a set of Feature objects with all the features for the passed ref and path'''          
-        return self.connector.features(ref, path, recursive)   
+        '''returns a set of Feature objects with all the features for the passed ref and path'''                  
+        return [e for e in self.children(ref, path, recursive)  if isinstance(e, Feature)]
     
-    def children(self, ref = geogit.HEAD, path = None): 
+    def children(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''Returns a set of Tree and Feature objects with all the trees for the passed ref and path'''          
-        return self.connector.children(ref, path)                   
+        return self.connector.children(ref, path, recursive)                   
             
     def master(self):
         return Commitish(self, geogit.MASTER)
@@ -76,25 +84,31 @@ class Repository:
         return self.connector.createbranch(commitish, name, force, checkout)
 
     def deletebranch(self, name):
+        '''deletes the passed branch'''
         self.connector.deletebranch(name)
 
-    def createtag(self, commitish, name, message):
-        self.connector.createtag(commitish, name, message)
+    def createtag(self, ref, name, message):
+        '''creates a new tag'''
+        self.connector.createtag(ref, name, message)
 
     def deletetag(self, name):
+        '''Deletes the passed tag'''
         self.connector.deletetag(name)
     
     def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
-        '''Returns a list of DiffEntry representing the changes between 2 comits'''
+        '''Returns a list of DiffEntry representing the changes between 2 commits'''
         return self.connector.diff(refa, refb)
     
     def unstaged(self):
+        '''Returns a list of diffEntry with the differences between staging area and working tree'''
         return self.diff(geogit.STAGE_HEAD, geogit.WORK_HEAD);
     
     def staged(self):
+        '''Returns a list of diffEntry with the differences between HEAD and Staging area'''
         return self.diff(geogit.HEAD, geogit.STAGE_HEAD);
     
     def notindatabase(self):
+        '''Returns a list of diffEntry with the differences between HEAD and Working Tree'''
         return self.diff(geogit.HEAD, geogit.WORK_HEAD);
     
     def conflicts(self):
@@ -102,9 +116,15 @@ class Repository:
         return self.connector.conflicts()
     
     def checkout(self, ref, paths = None):
-        return self.connector.checkout(ref, paths)
+        '''Checks out the passed ref'''
+        return self.connector.checkout(ref)
     
+    def updatepathtoref(self, ref, paths):
+        '''Updates the element in the passed paths to the version corresponding to the passed ref'''
+        return self.connector.checkout(ref, paths)    
+
     def add(self, paths = []):
+        '''Adds the passed paths to the staging area. If no paths are passed, it will add all the unstaged ones'''
         return self.connector.add(paths)
 
     def addandcommit(self, message, paths = []):
@@ -115,28 +135,46 @@ class Repository:
         return self.connector.commit(message, paths)
     
     def blame(self, path):
+        '''
+        Returns authorship information for the passed path
+
+        It is returned as a dict, with attribute names as keys.
+        Values are tuples of (value, commitid, authorname)
+        '''
         return self.connector.blame(path)
     
     def feature(self, ref, path): 
         '''Returns a Feature object corresponding to the passed ref and path'''
         return Feature(self, ref, path)    
 
-    def featuredata(self, feature):
-        '''Returns the attributes of a given feature'''
-        data = self.connector.featuredata(feature)
+    def featuredata(self, ref, path):
+        '''
+        Returns the attributes of a given feature, as a dict with attributes 
+        names as keys and tuples of (attribute_value, attribute_type_name) as values.
+        Values are converted to appropiate types when possible, otherwise they are stored 
+        as the string representation of the attribute
+        '''
+        data = self.connector.featuredata(ref, path)
         if len(data) == 0:            
             raise GeoGitException("The specified feature does not exist")
         return data
     
     def versions(self, path):
-        '''get all versions os a given feature'''            
+        '''
+        Returns all versions os a given feature.
+        It returns a dict with Commit objects as keys, and feature data for the corresponding
+        commit as values. Feature data is another dict with attributes 
+        names as keys and tuples of (attribute_value, attribute_type_name) as values.
+        Values are converted to appropiate types when possible, otherwise they are stored 
+        as the string representation of the attribute
+        '''            
         entries = self.log(geogit.HEAD, path)        
-        refs = [entry.commit.ref + ":" + path for entry in entries]
+        refs = [entry.ref + ":" + path for entry in entries]
         features = self.connector.featuresdata(refs)                
         versions = []
         for i, ref in enumerate(features):
             feature = features[ref]
-            commit = entries[i].commit
+            commit = entries[i]
             versions.append((commit, feature))
         return versions
     
@@ -146,7 +184,6 @@ class Repository:
         Keys are attribute names. Values are tuples of "(oldvalue, newvalue)"
         Both values are always strings
         '''
-
         return self.connector.featurediff(ref, ref2, path)
     
     def reset(self, ref, mode = geogit.RESET_MODE_HARD):
@@ -156,6 +193,7 @@ class Repository:
         self.connector.exportshp(ref, path, shapefile)
         
     def exportsl(self, ref, path, database):
+        '''export to a SpatiaLite database'''
         self.connector.exportsl(ref, path, database)        
     
     def importosm(self, osmfile, add):
@@ -174,40 +212,18 @@ class Repository:
         '''
         Modifies a feature, inserting a different version in the working tree.
 
-        The attributes are passed in a map with attribute names as keys and attribute values as values.        
+        The attributes are passed in a map with attribute names as keys and attribute values as values.
+        The attribtues must correspond to the current feature type of that feature in the working tree.
+        That is, this can be used to modify attribute values, not featuretypes.        
         '''
-        try:
-            patchfile = os.path.join(self.url, str(time.time()) + ".patch")
-            with open(patchfile) as f:
-                ftId = Feature(geogit.WORK_HEAD, path).featuretype()
-                output = self.connector.cat(ftId)
-                f.write("\n".join(output[1:]))            
-                f.write("\n")
-                types = self.attributetypes(output[3:])
-                for attr in sorted(attributes.iterkeys()):
-                    try:
-                        attrtype = types[attr]
-                        attrvalue = attributes[attr]
-                        f.write(attrtype + "\t" + str(attrvalue))
-                    except KeyError, e:
-                        raise GeoGitException("Attribute %s does no exist in feature to modify" % attr)
+        self.connector.modifyfeature(path, attributes)
 
-            self.connector.applypatch(patchfile)
-        finally:
-            shutil.rm(patchfile)
-
-    def attributeTypes(self, lines):
-        types = {}
-        for line in lines:
-            tokens = lines.split(" ").strip()
-            types[tokens[1]] = tokens[0]
-        return types
-   
     def downloadosm(self, osmurl, bbox):
         self.connector.downloadosm(osmurl, bbox)      
         
-    def merge(self, commitish, nocommit = False, message = None):
-        self.connector.merge(commitish, nocommit, message)
+    def merge(self, ref, nocommit = False, message = None):
+        '''Merges the passed ref into the current branch'''
+        self.connector.merge(ref, nocommit, message)
         
     def rebase(self, commitish):
         self.connector.rebase(commitish)  
@@ -228,9 +244,11 @@ class Repository:
         self.connector.removeremote(name)    
         
     def ismerging(self):
+        '''Returns true if the repo is in the middle of a merge stopped due to conflicts'''
         return self.connector.ismerging()
     
     def isrebasing(self):
+        '''Returns true if the repo is in the middle of a rebase stopped due to conflicts'''
         return self.connector.isrebasing()            
     
     def init(self):                

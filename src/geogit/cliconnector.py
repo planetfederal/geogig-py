@@ -1,14 +1,15 @@
 import subprocess
 import os
+import tempfile
+import geogit
 from feature import Feature
 from tree import Tree
 from commit import Commit
-from log import Logentry
 import datetime
 from diff import Diffentry
 from commitish import Commitish
 from geogitexception import GeoGitException
-import geogit
+from shapely.wkt import loads
 
 def _run(command):         
                                                                                                             
@@ -26,7 +27,7 @@ def _run(command):
     return output
     
 class CLIConnector():
-    ''' A connector that calls the cli version of geogit and parses cli output'''
+    ''' A connector that calls the CLI version of geogit and parses CLI output'''
     
     def setRepository(self, repo):
         self.repo = repo        
@@ -54,7 +55,9 @@ class CLIConnector():
         f = open(headfile)
         line = f.readline()
         f.close()
-        return Commitish(self.repo, line.strip().split(' ')[-1])
+        ref = line.strip().split(' ')[-1]
+        branchname = ref[len("refs/heads/"):]
+        return Commitish(self.repo, branchname)
     
     def isrebasing(self):
         self.checkisrepo()
@@ -73,46 +76,14 @@ class CLIConnector():
         if not os.path.exists(os.path.join(self.repo.url, '.geogit')):
             raise GeoGitException("Not a valid GeoGit repository: " + self.repo.url)
         
-    def trees(self, ref = 'HEAD', path = None, recursive = False):
-        trees = []    
-        if path is None:
-            fullref = ref
-        else:
-            fullref = ref + ':' + path 
-        commands = ['ls-tree', '-d', fullref]
-        if recursive:
-            commands.append("-r")
-        output = self.run(commands)    
-        for line in output:
-            if line != '':
-                trees.append(Tree(self.repo, ref, line))
-        return trees
     
-    def children(self, ref = 'HEAD', path = None):
+    def children(self, ref = 'HEAD', path = None, recursive = False):
         children = []    
         if path is None:
             fullref = ref
         else:
             fullref = ref + ':' + path 
         commands = ['ls-tree', fullref, "-v"]
-        output = self.run(commands)    
-        for line in output:
-            if line != '':                
-                tokens = line.split(" ")
-                if tokens[1] == "feature":
-                    children.append(Feature(self.repo, ref, tokens[3], tokens[0]))
-                elif tokens[1] == "tree":
-                    children.append(Tree(self.repo, ref, tokens[3]))
-        return children   
-    
-                    
-    def features(self, ref = 'HEAD', path = None, recursive = False):
-        features = []    
-        if path is None:
-            fullref = ref
-        else:
-            fullref = ref + ':' + path 
-        commands = ['ls-tree', fullref, "-v"]
         if recursive:
             commands.append("-r")
         output = self.run(commands)    
@@ -120,9 +91,46 @@ class CLIConnector():
             if line != '':                
                 tokens = line.split(" ")
                 if tokens[1] == "feature":
-                    features.append(Feature(self.repo, ref, tokens[3], tokens[0]))
-        return features 
-         
+                    children.append(Feature(self.repo, ref, tokens[3]))
+                elif tokens[1] == "tree":
+                    children.append(Tree(self.repo, ref, tokens[3]))
+        return children   
+    
+    def commitFromString(self, lines):                
+        message = False
+        messagetext = None
+        parent = None
+        commitid = None
+        for line in lines:
+            tokens = line.split(' ')
+            if message:
+                if line.startswith("\t") or line.startswith(" "):
+                    messagetext = line.strip() if messagetext is None else messagetext + "\n" + line.strip()
+                else:
+                    message = False            
+            else:                
+                if tokens[0] == 'commit':
+                    commitid = tokens[1]
+                if tokens[0] == 'tree':
+                    tree = tokens[1]                    
+                if tokens[0] == 'parent':
+                    if len(tokens) == 2 and tokens[1] != "":
+                        parent = tokens[1]                    
+                elif tokens[0] == 'author':
+                    author = " ".join(tokens[1:-3])
+                    authordate = datetime.datetime.fromtimestamp(int(tokens[-2])//1000)                
+                elif tokens[0] == 'committer':
+                    committer = tokens[1]
+                    committerdate = datetime.datetime.fromtimestamp(int(tokens[-2])//1000)
+                elif tokens[0] == 'message':
+                    message = True                
+            
+        if commitid is not None:
+            c = Commit(self.repo, commitid, tree, parent, messagetext, author, authordate, committer, committerdate)
+            return c
+        else:
+            return None
+
     def logentryFromString(self, lines):
         diffs = []
         changes = False
@@ -137,9 +145,8 @@ class CLIConnector():
                     messagetext = line.strip() if messagetext is None else messagetext + "\n" + line.strip()
                 else:
                     message = False
-            if changes:    
-                changeTokens =  line.strip().split(' ')                         
-                diffs.append(Diffentry(self.repo, changeTokens[1], changeTokens[2], changeTokens[0]))             
+            if changes:                                        
+                diffs.append(self.diffentryFromString(line))             
             else:                
                 if tokens[0] == 'commit':
                     commitid = tokens[1]
@@ -161,7 +168,7 @@ class CLIConnector():
             
         if commitid is not None:
             c = Commit(self.repo, commitid, tree, parent, messagetext, author, authordate, committer, committerdate)
-            return Logentry(c, diffs)
+            return (c, diffs)
         else:
             return None
 
@@ -186,26 +193,26 @@ class CLIConnector():
         return remotes        
         
     def log(self, ref, path = None):
-        logentries = []
+        commits = []
         commands = ['rev-list', ref, '--changed']        
         if path is not None:
             commands.extend(["-p", path])
         output = self.run(commands)
-        entrylines = []
+        commitlines = []
         for line in output:
             if line == '':
-                entry = self.logentryFromString(entrylines)
-                if entry is not None:
-                    logentries.append(entry)
-                    entrylines = []
+                commit = self.commitFromString(commitlines)
+                if commit is not None:
+                    commits.append(commit)
+                    commitlines = []
             else:
-                entrylines.append(line)            
+                commitlines.append(line)            
             
-        if entrylines:
-            entry = self.logentryFromString(entrylines)
-            if entry is not None:
-                logentries.append(entry)
-        return logentries  
+        if commitlines:
+            commit = self.commitFromString(commitlines)
+            if commit is not None:
+                commits.append(commit)
+        return commits 
     
     def conflicts(self):
         commands = ["conflicts", "--refspecs-only"]
@@ -259,8 +266,8 @@ class CLIConnector():
     def deletebranch(self, name):        
         self.run(['branch', '-d', name])     
 
-    def createtag(self, commitish, name, message):        
-        self.run(['tag', name, commitish.ref, '-m', message])
+    def createtag(self, ref, name, message):        
+        self.run(['tag', name, ref, '-m', message])
 
     def deletetag(self, name):   
         self.run(['tag', '-d', name])        
@@ -312,23 +319,17 @@ class CLIConnector():
             commands.extend(["--add"])
         self.run(commands)
         
-    def exportshp(self, ref, path shapefile):
+    def exportshp(self, ref, path, shapefile):
         refandpath = ref + ":" + path
-        self.run(["shp", "export", ref, shapefile, -0])
+        self.run(["shp", "export", refandpath, shapefile, "-o"])
         
     def exportsl(self, ref, database):
         self.run(["sl", "export", ref, "exported", "--database", database])
         
-    def featuredata(self, feature):  
-        refandpath = feature.ref + ":" + feature.path      
+    def featuredata(self, ref, path):  
+        refandpath = ref + ":" + path      
         output = self.run(["show", "--raw", refandpath])           
         return self.parseattribs(output[2:]) 
-
-    def featuretype(self, ref, path):
-        output = self.run(["show", "--raw", ref + ":" + path])
-        ftId = output[0].split(" ")[0]
-        output = self.run(["cat", ftId])
-
 
     def cat(self, reference):
         return self.run(["cat", reference])
@@ -342,11 +343,29 @@ class CLIConnector():
         while True:
             try:
                 name = iterator.next()
+                attribtype = iterator.next()
                 value = iterator.next()
-                attributes[name] = value
+                value = self.valuefromstring(value, attribtype)
+                attributes[name] = (value, attribtype)
             except StopIteration:
                 return attributes 
         
+    def valuefromstring(self, value, valuetype):
+        if valuetype == "BOOLEAN":
+            return str(value).lower() == "true"
+        elif valuetype in ["BYTE","SHORT","INTEGER","LONG"]:
+            return int(value)
+        elif valuetype in ["FLOAT","DOUBLE"]:
+            return float(value)
+        elif valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"]:            
+            try:
+                geom = loads(value)
+                return geom
+            except:
+                return value            
+        else:
+            return value
+
     def featuresdata(self, refs):
         features = {}
         commands = ["show", "--raw"]
@@ -413,8 +432,8 @@ class CLIConnector():
             attributes[name]=(value, commitid, authorname)   
         return attributes 
     
-    def merge (self, commitish, nocommit = False, message = None):
-        commands = ["merge", commitish]
+    def merge (self, ref, nocommit = False, message = None):
+        commands = ["merge", ref]
         if nocommit:
             commands.append("--no-commit")
         elif message is not None:
@@ -449,6 +468,28 @@ class CLIConnector():
     def init(self):
         mkdir(self.repo.url)
         self.run(["init"])
+
+    def modifyfeature(self, path, attributes):
+        patchfile = self.createpatchfile(path, attributes)
+        self.applypatch(patchfile)
+        os.remove(patchfile) 
+
+    def createpatchfile(self, path, attributes):               
+        f = tempfile.NamedTemporaryFile(delete = False)         
+        output = self.run(["show", "--raw", geogit.WORK_HEAD + ":" + path])
+        ftId = output[0].split(" ")[0]                
+        output = self.cat(ftId)
+        f.write("\n".join(output[1:]))            
+        f.write("\n")
+        oldattributes = self.featuredata(geogit.WORK_HEAD, path)
+        for attr in sorted(attributes.iterkeys()):
+            try:
+                f.write(oldattributes[attr][1] + "\t" + str(attributes[attr]))
+            except KeyError, e:
+                raise GeoGitException("Attribute %s does not exist in feature to modify" % attr)
+        f.close()
+        return f.name
+
 
 def mkdir(newdir):
     newdir = newdir.strip('\n\r ')

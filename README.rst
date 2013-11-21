@@ -8,8 +8,9 @@ This library is designed to provide access to all GeoGit functionality, so it ca
 Installation
 -------------
 
-``geogitpy`` assumes that GeoGit is installed in your system and available in your current PATH. Basically, if you open a console, type ``geogit`` and you get the GeoGit help, you are ready to use geogit
+``geogitpy`` assumes that GeoGit is installed in your system and available in your current PATH. Basically, if you open a console, type ``geogit`` and you get the GeoGit help, you are ready to use geogit.
 
+The `Shapely <https://pypi.python.org/pypi/Shapely>`_ library is required for handling geometries and should be present in your PYTHONPATH.
 
 Usage
 -----
@@ -39,17 +40,17 @@ You can create a repository object to use an existing repo and get the log of th
 	>>> repo = Repository('path/to/repository/folder')
 	>>> log = repo.log()
 	
-Log is a list of DiffEntry objects, each of them with a Commit object and a list of differences introduced by that commit
+``log`` is a list of ``Commit`` object, which can be used to get the differences it introduces
 	
 ::
 
-	>>> print log[0].commit
+	>>> print log[0]
 	id 93880f09e919526008ff598ba86ee671b2b9594a
 	parent 92863701fd6e8724331c012617dbea32136dcc4c
 	tree cb6c689b61459e8adcb1a2ecc5d2d870908d83e9
 	author volaya 2013-11-19 00:37:22
 	message modified a feature        
-	>>> print log[0].diffset
+	>>> print log[0].diff()
 	Modified parks/4 (df86510c37ab884d9b80d660be4c235843049d1a --> 3632fc722cfdfae72a6694eced791586d1e6b1ba)
 	Added parks/1 (6e2ded64426d5368fdb9017be867ee574f1c02cd)
 	Added parks/2 (75a0cbf170714fb1b60f0bd80fddeac8fbfb2429)
@@ -61,9 +62,9 @@ That was done on the current branch, but we can use other branches as well. Let'
 
 	>>> branch = repo.branch('my_branch_name')
 	>>> log = branch.log()   
-	>>> print log[0].commmit   	
+	>>> print log[0]   	
 	[...]    
-	>>> print log[0].diffset
+	>>> print log[0].diff()
 	[...]    
 	
 
@@ -71,20 +72,20 @@ Let's explore the tree corresponding to the tip of that branch
 
 ::
 
-	>>> tree = log[0].commit.tree()
+	>>> root = log[0].root()
 
 	
-Tree is a tree object that points to the root tree in that snapshot. We can see the subtrees it contains.
+``root`` is a ``Tree`` object that points to the root tree in that snapshot. We can see the subtrees it contains.
 	
 ::
 
-	>>> trees = tree.trees()
+	>>> trees = root.trees()
 	>>> for subtree in trees:
 	>>>     print subtree
 	parks
 	roads
 	
-Each subtree is a tree object itself, and we can see its trees and its features.
+Each subtree is a ``Tree`` object itself, and we can see its trees and its features.
 
 ::
 	
@@ -101,13 +102,15 @@ And we can see the attributes of a feature.
 	
 	>>> attrs = features[0].attributes()        
 	>>> print attrs
-	{'open': True, 'name': 'Central park', 'area': 23876.5}
+	{'open': True, 'name': 'Central park', 'area': 23876.5, "the_geom": MULTIPOLYGON (((-122.87290 42.335, ...
+
+Geometries are objects, so you can use methods from the Shapely library to operate on them.
 
 You can even add new elements to the repository, or modify existing ones.
 
 ::
 
-	newattributes = {'open': False, 'name': 'New Central park', 'area': 23876.5}
+	newattributes = {'open': False, 'name': 'New Central park', 'area': 23876.5, "the_geom": geom}
 	repo.modifyfeature("parks/parks1", newattributes)
 
 This sets the new feature in the working tree and then you can add and commit as usual.

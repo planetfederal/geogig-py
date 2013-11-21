@@ -1,3 +1,5 @@
+from geogit.tree import Tree
+
 class Commitish(object):
     
     '''A reference that can be resolved to a commit.
@@ -7,23 +9,28 @@ class Commitish(object):
     def __init__(self, repo, ref):
         self.ref = ref
         self.repo = repo
+        self._diff = None
     
     def log(self):
+        '''Return the history up to this Commitish'''
         return self.repo.log(self.ref)
     
-    def trees(self):
-        return self.repo.trees(self.ref)
+    def root(self):
+        '''Returns a Tree that represents the root tree at this snapshot'''
+        return Tree(self.repo, self.ref)
     
     def checkout(self):
+        '''Checks out this commitish, and set it as the current HEAD'''
         self.repo.checkout(self.ref)
-         
-    def features(self, path = None):
-        return self.repo.features(self.commitid, path)    
         
     def diff(self):
-        return self.repo.diff(self.ref, self.ref + '~1')
+        '''Returns a list of DiffEntry with all changes introduced by this commitish'''
+        if self._diff is None:
+            self._diff = self.repo.diff(self.ref, self.ref + '~1')
+        return self._diff
 
     def parent(self):
+        '''Returns a Commitish that represents the parent of this one'''
         return Commitish(self.repo, self.ref + '~1')
     
     def __str__(self):

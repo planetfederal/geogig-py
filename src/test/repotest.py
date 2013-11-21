@@ -5,8 +5,10 @@ from geogit.repo import Repository
 from geogit.geogitexception import GeoGitException
 from geogit.commitish import Commitish
 from geogit.diff import TYPE_MODIFIED
+from geogit.feature import Feature
 import unittest
 import geogit
+from shapely.geometry import MultiPolygon
 
 class GeogitRepositoryTest(unittest.TestCase):
         
@@ -29,7 +31,7 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testRevParse(self):
         headid = self.repo.revparse("HEAD")
         entries = self.repo.log()
-        self.assertEquals(entries[0].commit.commitid, headid)
+        self.assertEquals(entries[0].commitid, headid)
 
     def testRevParseWrongReference(self):
         try:
@@ -39,11 +41,10 @@ class GeogitRepositoryTest(unittest.TestCase):
             pass
 
     def testLog(self):
-        entries = self.repo.log()
-        self.assertEquals(4, len(entries))
-        commit = entries[0].commit
-        self.assertEquals("message_4", commit.message)        
-        diffset = entries[0].diffset
+        commits = self.repo.log()
+        self.assertEquals(4, len(commits))        
+        self.assertEquals("message_4", commits[0].message)        
+        self.assertEquals("volaya", commits[0].authorname)                
         #TODO: add more 
 
     def testLogInBranch(self):
@@ -59,12 +60,12 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testTreesAtCommit(self):
         head = self.repo.head()
         parent = head.parent()
-        trees = parent.trees()
+        trees = parent.root().trees()
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)
         entries = self.repo.log()      
         id = self.repo.revparse(trees[0].ref)  
-        self.assertEquals(entries[1].commit.commitid, id)   
+        self.assertEquals(entries[1].commitid, id)   
 
     def testFeaturesAtHead(self):
         features = self.repo.features(path = "parks")
@@ -85,11 +86,10 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(TYPE_MODIFIED, diffs[0].type())
 
 
-    def testFeatureData(self):
-        feature = self.repo.feature(geogit.HEAD, "parks/1")
-        data = self.repo.featuredata(feature)
+    def testFeatureData(self):        
+        data = self.repo.featuredata(geogit.HEAD, "parks/1")
         self.assertEquals(8, len(data))
-        self.assertEquals("Public", data["usage"])
+        self.assertEquals("Public", data["usage"][0])
         self.assertTrue("owner" in data)
         self.assertTrue("agency" in data)
         self.assertTrue("name" in data)
@@ -97,11 +97,13 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue("area" in data)
         self.assertTrue("perimeter" in data)
         self.assertTrue("the_geom" in data)
+        print "TYPE:" + str(type(data["the_geom"][0]))
+        print "TYPE:" + str(data["the_geom"][0])
+        self.assertTrue(isinstance(data["the_geom"][0], MultiPolygon))
 
-    def testFeatureDataNonExistentFeature(self):
-        feature = self.repo.feature(geogit.HEAD, "wrongpath/wrongname")
+    def testFeatureDataNonExistentFeature(self):        
         try:
-            self.repo.featuredata(feature)
+            self.repo.featuredata(geogit.HEAD, "wrongpath/wrongname")
             self.fail()
         except GeoGitException, e:
             pass
@@ -122,7 +124,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertFalse(staged)
         log = repo.log()
         self.assertEqual(5, len(log))
-        self.assertTrue("message", log[4].commit.message)
+        self.assertTrue("message", log[4].message)
 
     def testCreateReadAndDeleteBranch(self):        
         branches = self.repo.branches()
@@ -167,7 +169,7 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testCreateReadAndDeleteTag(self):
         tags = self.repo.tags()
         self.assertEquals(2, len(tags))
-        self.repo.createtag(self.repo.head(), "anewtag", "message1")
+        self.repo.createtag(self.repo.head().ref, "anewtag", "message1")
         tags = self.repo.tags()
         self.assertEquals(3, len(tags))
         names = [tag[0] for tag in tags]
@@ -177,3 +179,35 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(2, len(tags))
         names = [tag[0] for tag in tags]
         self.assertFalse("anewtag" in names)
+
+    def testPatchCreation(self):
+        repo = self.getClonedRepo()
+        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes()
+        attrs["area"] = 1234.5
+        patchfile = repo.connector.createpatchfile("parks/1", attrs)
+        self.assertTrue(os.path.exists(patchfile))
+        #TODO check file content
+
+    def testModifyFeature(self):
+        repo = self.getClonedRepo()
+        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes()
+        attrs["area"] = 1234.5
+        repo.modifyfeature("parks/1", attrs)
+        attrs = Feature(repo, geogit.WORK_HEAD, "parks/1").attributes()
+        self.assertEquals(1234.5, attrs["area"])
+
+    def testModifyFeatureWithWrongFeatureType(self):
+        try:
+            self.repo.modifyfeature("parks/1", {"field1" : 1, "field2": "a"})
+            self.fail()
+        except GeoGitException, e:
+            pass
+
+    def testConflicts(self):
+        repo = self.getClonedRepo()
+        repo.merge("mybranch")
+        conflicts = repo.conflicts()
+        self.assertEquals(1, len(conflicts))
+        self.assertEquals('257c8cb9a7eb5ad4740b970bf4e4f901b98042ef:parks/5', conflicts["parks/5"][0]) 
+        self.assertEquals('267aafec09e34f289fe9ca9e149ca7f55035bc7a:parks/5', conflicts["parks/5"][1])
+        self.assertEquals('02284b8722378a8850e204ffd396bd2f12e3f91f:parks/5', conflicts["parks/5"][2])            

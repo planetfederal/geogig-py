@@ -4,7 +4,7 @@ from geogit.repo import Repository
 import time
 import shutil
 import geogit
-from geogit.feature import Feature
+from geogit.commitish import Commitish
 
 class GeogitCommitishTest(unittest.TestCase):
         
@@ -20,14 +20,36 @@ class GeogitCommitishTest(unittest.TestCase):
         return Repository(dst)
 
     def testLog(self):
-        pass
+        commitish = Commitish(self.repo, geogit.HEAD)
+        log = commitish.log()
+        self.assertEquals(4, len(log))        
+        self.assertEquals("message_4", log[0].message)                
 
-    def testTree(self):
-        pass
+    def testRootTreeListing(self):
+        commitish = Commitish(self.repo, geogit.HEAD)
+        trees = commitish.root().trees()        
+        self.assertEquals(1, len(trees))
+        self.assertEquals("parks", trees[0].path)
+        entries = self.repo.log()      
+        id = self.repo.revparse(trees[0].ref)  
+        self.assertEquals(entries[0].commitid, id)  
 
     def testCheckout(self):
-        pass
-
+        repo = self.getClonedRepo()
+        branch = Commitish(repo, "mybranch")
+        branch.checkout()
+        self.assertEquals(repo.head().ref, branch.ref)
+        master = Commitish(repo, geogit.MASTER)
+        master.checkout()
+        self.assertEquals(repo.head().ref, master.ref)
 
     def testDiff(self):
-        pass
+        commitish = Commitish(self.repo, geogit.HEAD)
+        diff = commitish.diff()
+        self.assertEquals(1, len(diff))
+        self.assertEquals("parks/5", diff[0].path)
+
+    def testDiffCaching(self):
+        commitish = Commitish(self.repo, geogit.HEAD)
+        diff = commitish.diff()
+        self.assertEquals(diff, commitish._diff)

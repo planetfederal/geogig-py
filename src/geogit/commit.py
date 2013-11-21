@@ -1,4 +1,3 @@
-from geogit.tree import  Tree
 from geogit.commitish import Commitish
 
 class Commit(Commitish):
@@ -16,9 +15,6 @@ class Commit(Commitish):
         self.authordate = authordate
         self.commitername = commitername
         self.commiterdate = commiterdate
-    
-    def tree(self):
-        return Tree(self.repo, self.commitid, None)
 
     
     def __str__(self):
@@ -29,5 +25,3 @@ class Commit(Commitish):
         s += "message " + str(self.message) + "\n" 
         
         return s
-        
-        

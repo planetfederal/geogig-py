@@ -5,6 +5,7 @@ import time
 import shutil
 import geogit
 from geogit.feature import Feature
+from shapely.geometry import Polygon
 
 class GeogitFeatureTest(unittest.TestCase):
         
@@ -35,7 +36,9 @@ class GeogitFeatureTest(unittest.TestCase):
         self.assertTrue("name" in data)
         self.assertTrue("parktype" in data)
         self.assertTrue("area" in data)
-        self.assertTrue("perimeter" in data)   
+        self.assertTrue("perimeter" in data)  
+        self.assertTrue("the_geom" in data)  
+        self.assertTrue(isinstance(data["the_geom"][0], Polygon))        
         
     def testDiff(self):
         feature = Feature(self.repo, geogit.HEAD, "parks/5")
@@ -54,3 +57,8 @@ class GeogitFeatureTest(unittest.TestCase):
         attrs = feature.attributes()
         for k,v in blame.iteritems():
             self.assertTrue(v[0], attrs[k])
+
+    def testFeatureType(self):
+        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        ftype = feature.featuretype()
+
