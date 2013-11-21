@@ -20,7 +20,8 @@ setup(
     license="BSD",
     keywords="geogit",
     url='https://github.com/volaya/geogitpy',
-    packages=['src/geogit/',],
+    package_dir={'': 'src'},
+    packages=['geogit',],
     include_package_data=True,
     zip_safe=False,
 )
