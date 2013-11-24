@@ -1,1 +1,3 @@
 *.pyc
+
+src/test/data/testrepo/.geogit/log/geogit.log

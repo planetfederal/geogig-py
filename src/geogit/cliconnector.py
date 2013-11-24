@@ -1,6 +1,7 @@
 import subprocess
 import os
 import tempfile
+import logging
 import geogit
 from feature import Feature
 from tree import Tree
@@ -12,18 +13,23 @@ from geogitexception import GeoGitException
 from shapely.wkt import loads
 
 def _run(command):         
-                                                                                                            
     command = ['geogit'] + command
-    print " ".join(command)
+    commandstr = " ".join(command)
+    if os.name != 'nt':
+        command = commandstr
     output = []    
-    proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, 
+    proc = subprocess.Popen(commandstr, shell=True, stdout=subprocess.PIPE, 
                             stdin=subprocess.PIPE,stderr=subprocess.STDOUT, universal_newlines=True)
     for line in iter(proc.stdout.readline, ""):        
         line = line.strip("\n")
         output.append(line)        
-    returncode = proc.returncode    
+    returncode = proc.returncode  
+    print commandstr
+    print " ".join(output)  
     if returncode:
-        raise GeoGitException("\n".join(output))       
+        logging.error("Error running " + commandstr + "\n" + " ".join(output))
+        raise GeoGitException(output)
+    logging.info("Executed " + commandstr + "\n" + " ".join(output[:5]))      
     return output
     
 class CLIConnector():
