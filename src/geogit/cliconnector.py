@@ -33,13 +33,6 @@ def _run(command):
         raise GeoGitException(output)
     logging.info("Executed " + commandstr + "\n" + " ".join(output[:5]))      
     return output
-
-    def command(self, command):
-        self.process.stdin.write(command + "\n")
-        return self.waitForPrompt()   
-
-    def close(self):
-        self.command("exit")
     
 class CLIConnector():
     ''' A connector that calls the CLI version of geogit and parses CLI output'''
@@ -293,14 +286,20 @@ class CLIConnector():
         if add:
             commands.extend(["--add"])
         self.run(commands)
-        
+    
+    def importpg(self, database, user, password, table = None, host = None, port = None):
+        pass
+
+    def exportpg(self, ref, path, database, user, password, host = None, port = None):
+        pass
+
     def exportshp(self, ref, path, shapefile):
         refandpath = ref + ":" + path
         self.run(["shp", "export", refandpath, shapefile, "-o"])
         
     def exportsl(self, ref, database):
         self.run(["sl", "export", ref, "exported", "--database", database])
-        
+       
     def featuredata(self, ref, path):  
         refandpath = ref + ":" + path      
         output = self.run(["show", "--raw", refandpath])           
@@ -308,9 +307,6 @@ class CLIConnector():
 
     def cat(self, reference):
         return self.run(["cat", reference])
-
-    def applypatch(self, patchfile):
-        pass
         
     def parseattribs(self, lines):
         attributes = {}
@@ -443,27 +439,19 @@ class CLIConnector():
     def cherrypick(self, commitish):
         commands = ["cherry-pick", commitish]
         self.run(commands)
-        
-    def show(self, ref):
-        commands = ["show", ref]
-        return "\n".join(self.run(commands))
     
     def init(self):
         mkdir(self.repo.url)
         self.run(["init"])
 
-    def modifyfeature(self, path, attributes):
-        patchfile = self.createpatchfile(path, attributes)
-        self.applypatch(patchfile)
-        os.remove(patchfile) 
-
-    def createpatchfile(self, path, attributes):               
+    def addfeature(self, path, attributes):
         f = tempfile.NamedTemporaryFile(delete = False)         
         output = self.run(["show", "--raw", geogit.WORK_HEAD + ":" + path])
         ftId = output[0].split(" ")[0]                
         output = self.cat(ftId)
         f.write("\n".join(output[1:]))            
         f.write("\n")
+        f.write("A\t" + path + "\t" + ftId + "\n")
         oldattributes = self.featuredata(geogit.WORK_HEAD, path)
         for attr in sorted(attributes.iterkeys()):
             try:
@@ -471,7 +459,29 @@ class CLIConnector():
             except KeyError, e:
                 raise GeoGitException("Attribute %s does not exist in feature to modify" % attr)
         f.close()
-        return f.name
+        self.applypatch(f.name)
+        os.remove(f.name) 
+
+    def removefeature(self, path):
+        f = tempfile.NamedTemporaryFile(delete = False)         
+        output = self.run(["show", "--raw", geogit.WORK_HEAD + ":" + path])
+        ftId = output[0].split(" ")[0]                
+        output = self.cat(ftId)
+        f.write("\n".join(output[1:]))            
+        f.write("\n")
+        f.write("R\t" + path + "\t" + ftId + "\n")
+        output = self.cat("WORK_HEAD:" + path)
+        f.write("\n".join(output[1:]))            
+        f.close()
+        self.applypatch(f.name)
+        os.remove(f.name)         
+
+    def modifyfeature(self, path, attributes):
+        self.removefeature(path)
+        self.addfeature(path, attributes)
+
+    def applypatch(self, patchfile):
+        self.run(["apply", patchfile])        
 
 
 def mkdir(newdir):

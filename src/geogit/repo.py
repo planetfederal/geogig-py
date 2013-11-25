@@ -209,18 +209,26 @@ class Repository:
     def importshp(self, shpfile, add = False, dest = None):
         self.connector.importshp(shpfile, add, dest)
 
-    def addfeature(path, attributes):
-        pass
+    def addfeature(self, path, attributes):
+        '''
+        Adds a feature to the working tree.
 
-    def removefeature(path):
-        pass
+        The attributes are passed in a map with attribute names as keys and attribute values as values.
+        The attributes must correspond to the current default feature type of the corresponding tree in the working tree.  
+        Otherwise, and exception will be raised
+        '''
+        self.connector.addfeature(path, attributes)
+
+    def removefeature(self, path):
+        '''removes the passed feature'''
+        self.connector.removefeature(path)
 
     def modifyfeature(self, path, attributes):
         '''
         Modifies a feature, inserting a different version in the working tree.
 
         The attributes are passed in a map with attribute names as keys and attribute values as values.
-        The attribtues must correspond to the current feature type of that feature in the working tree.
+        The attributes must correspond to the current feature type of that feature in the working tree.
         That is, this can be used to modify attribute values, not featuretypes.        
         '''
         self.connector.modifyfeature(path, attributes)
@@ -249,11 +257,9 @@ class Repository:
         '''
         self.connector.continue_()
         
-    def cherrypick(self, commitish):
-        self.connector.cherrypick(commitish)
-        
-    def show(self, ref):
-        return self.connector.show(ref)
+    def cherrypick(self, ref):
+        '''Cherrypicks a commit into the current branch'''
+        self.connector.cherrypick(ref)
         
     def remotes(self):
         '''Returns a list with tuples (remote_name, remote_url)'''

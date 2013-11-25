@@ -28,14 +28,19 @@ def createRepo():
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "3", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_3")
-    repo.createbranch(geogit.HEAD, "mybranch")
+    repo.createbranch(geogit.HEAD, "conflicted")
+    repo.createbranch(geogit.HEAD, "unconflicted")
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "4", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_4")
-    repo.checkout("mybranch")
+    repo.checkout("conflicted")
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "5", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_5")
+    repo.checkout("unconflicted")
+    path = os.path.join(os.path.dirname(__file__), "data", "shp", "6", "parks.shp")
+    repo.importshp(path)
+    repo.addandcommit("message_6")
         
 
 def suite():

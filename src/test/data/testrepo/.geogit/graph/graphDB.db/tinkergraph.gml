@@ -26,8 +26,28 @@ graph [
 	]
 	node [
 		id 6
+		blueprintsId "17"
+		identifier "e373a3e632ac2d146b161cf0b3da8d3708e66594"
+	]
+	node [
+		id 7
 		blueprintsId "9"
 		identifier "02284b8722378a8850e204ffd396bd2f12e3f91f"
+	]
+	node [
+		id 8
+		blueprintsId "15"
+		identifier "a06cd8a1758a5083bb81804e17b19b9e7649bfda"
+	]
+	node [
+		id 9
+		blueprintsId "13"
+		identifier "8f4296e4f4f3ade6edae73a8662a68a78772270e"
+	]
+	node [
+		id 10
+		blueprintsId "11"
+		identifier "c20a845c04ce85e0435ff2cf6c7cc1bd5f4cac92"
 	]
 	edge [
 		source 2
@@ -36,7 +56,7 @@ graph [
 		blueprintsId "2"
 	]
 	edge [
-		source 6
+		source 7
 		target 5
 		label "PARENT"
 		blueprintsId "10"
@@ -54,9 +74,33 @@ graph [
 		blueprintsId "4"
 	]
 	edge [
+		source 6
+		target 5
+		label "PARENT"
+		blueprintsId "18"
+	]
+	edge [
 		source 4
 		target 5
 		label "PARENT"
 		blueprintsId "8"
+	]
+	edge [
+		source 8
+		target 5
+		label "PARENT"
+		blueprintsId "16"
+	]
+	edge [
+		source 9
+		target 5
+		label "PARENT"
+		blueprintsId "14"
+	]
+	edge [
+		source 10
+		target 5
+		label "PARENT"
+		blueprintsId "12"
 	]
 ]

@@ -36,7 +36,7 @@ class GeogitCommitishTest(unittest.TestCase):
 
     def testCheckout(self):
         repo = self.getClonedRepo()
-        branch = Commitish(repo, "mybranch")
+        branch = Commitish(repo, "conflicted")
         branch.checkout()
         self.assertEquals(repo.head().ref, branch.ref)
         master = Commitish(repo, geogit.MASTER)
