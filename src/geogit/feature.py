@@ -63,6 +63,11 @@ class Feature(object):
         '''        
         return self.repo.versions(self.path)
 
+    def setascurrent(self):
+        '''Sets this version of the feature as the current one in the working tree and index'''
+        self.repo.updatepathtoref(self.ref, [self.path])
+
+
     def __str__(self):
         return self.path
         

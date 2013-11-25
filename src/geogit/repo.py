@@ -112,8 +112,15 @@ class Repository:
         return self.diff(geogit.HEAD, geogit.WORK_HEAD);
     
     def conflicts(self):
-        '''Returns a list of tuples, each of them with the 3 versions defining a conflict'''
-        return self.connector.conflicts()
+        '''Returns a list of tuples, each of them with the 3 versions defining a conflict, as Feature objects'''
+        conflicts = {}
+        _conflicts = self.connector.conflicts()
+        for path, c in _conflicts.iteritems():
+            c = tuple(Feature(self, ref, path) for ref in c)
+            conflicts[path] = c
+
+        return conflicts
+
     
     def checkout(self, ref, paths = None):
         '''Checks out the passed ref'''
@@ -226,7 +233,21 @@ class Repository:
         self.connector.merge(ref, nocommit, message)
         
     def rebase(self, commitish):
-        self.connector.rebase(commitish)  
+        self.connector.rebase(commitish)          
+
+    def abort(self):
+        '''
+        Abort a merge or rebase operation, if it was stopped due to conflicts
+        Does nothing if the repo is not in a conflicted state
+        '''
+        self.connector.abort()
+
+    def continue_(self):
+        '''
+        Abort a merge or rebase operation, if it was stopped due to conflicts
+        Throws a GeoGitException if the repo is not clean and cannot continue the operation
+        '''
+        self.connector.continue_()
         
     def cherrypick(self, commitish):
         self.connector.cherrypick(commitish)
@@ -235,12 +256,15 @@ class Repository:
         return self.connector.show(ref)
         
     def remotes(self):
+        '''Returns a list with tuples (remote_name, remote_url)'''
         return self.connector.remotes()
         
     def addremote(self, name, url):
+        '''Adds a new remote'''
         self.connector.addremote(name, url)        
         
-    def removeremote(self, name):
+    def deleteremote(self, name):
+        '''Removes a remote'''
         self.connector.removeremote(name)    
         
     def ismerging(self):

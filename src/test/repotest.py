@@ -17,7 +17,6 @@ class GeogitRepositoryTest(unittest.TestCase):
     def getTempRepoPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
-
     def getClonedRepo(self):
         src = self.repo.url
         dst = self.getTempRepoPath()
@@ -208,6 +207,92 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo.merge("mybranch")
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
-        self.assertEquals('257c8cb9a7eb5ad4740b970bf4e4f901b98042ef:parks/5', conflicts["parks/5"][0]) 
-        self.assertEquals('267aafec09e34f289fe9ca9e149ca7f55035bc7a:parks/5', conflicts["parks/5"][1])
-        self.assertEquals('02284b8722378a8850e204ffd396bd2f12e3f91f:parks/5', conflicts["parks/5"][2])            
+        self.assertEquals('257c8cb9a7eb5ad4740b970bf4e4f901b98042ef', conflicts["parks/5"][0].ref) 
+        self.assertEquals('267aafec09e34f289fe9ca9e149ca7f55035bc7a', conflicts["parks/5"][1].ref)
+        self.assertEquals('02284b8722378a8850e204ffd396bd2f12e3f91f', conflicts["parks/5"][2].ref)      
+
+    def testIsMerging(self):
+        repo = self.getClonedRepo()
+        repo.merge("mybranch")
+        self.assertTrue(repo.ismerging())
+        repo.abort()        
+        self.assertFalse(repo.ismerging())
+
+
+    def testIsRebasing(self):
+        repo = self.getClonedRepo()
+        repo.rebase("mybranch")
+        self.assertTrue(repo.isrebasing())
+        repo.abort()
+        self.assertFalse(repo.isrebasing())    
+
+    def testContinueMerging(self):
+        repo = self.getClonedRepo()
+        try:
+            repo.merge("mybranch")
+            self.fail()
+        except GeoGitException, e:
+            self.assertTrue("conflict" in str(e))
+        conflicts = repo.conflicts()
+        self.assertEquals(1, len(conflicts))
+        conflicts.itervalues().next()[0].setascurrent()        
+        repo.continue_()     
+
+    def testCantContinueMerging(self):
+        repo = self.getClonedRepo()
+        try:
+            repo.merge("mybranch")
+            fail()
+        except GeoGitException, e:
+            self.assertTrue("conflict" in str(e))
+        conflicts = repo.conflicts()
+        self.assertEquals(1, len(conflicts))
+        try:
+            repo.continue_()
+            self.fail()
+        except GeoGitException, e:
+            pass
+
+    def testContinueRebasing(self):
+        repo = self.getClonedRepo()
+        try:
+            repo.rebase("mybranch")
+            self.fail()
+        except GeoGitException, e:
+            self.assertTrue("conflict" in str(e))
+        conflicts = repo.conflicts()
+        self.assertEquals(1, len(conflicts))
+        conflicts.itervalues().next()[0].setascurrent()        
+        repo.continue_()     
+
+    def testCantContinueRebasing(self):
+        repo = self.getClonedRepo()
+        try:
+            repo.merge("mybranch")
+            self.fail()
+        except GeoGitException, e:
+            self.assertTrue("conflict" in str(e))
+        conflicts = repo.conflicts()
+        self.assertEquals(1, len(conflicts))
+        try:
+            repo.continue_()
+            self.fail()
+        except GeoGitException, e:
+            pass            
+
+    def testCliConnectorLogging(self):
+        repo = self.getClonedRepo()
+        repo.log()
+        self.assertEquals(["rev-list HEAD --changed"], repo.connector.commandslog)        
+
+    def testRemotes(self):
+        repo = self.getClonedRepo()
+        remotes = repo.remotes()
+        self.assertFalse(remotes)
+        repo.addremote("myremote", "http://myremoteurl.com")
+        remotes = repo.remotes()
+        self.assertEquals([("myremote", "http://myremoteurl.com")], remotes)
+        repo.deleteremote("myremote")
+        remotes = repo.remotes()
+        self.assertFalse(remotes)
+

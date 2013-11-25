@@ -22,21 +22,34 @@ def _run(command):
                             stdin=subprocess.PIPE,stderr=subprocess.STDOUT, universal_newlines=True)
     for line in iter(proc.stdout.readline, ""):        
         line = line.strip("\n")
-        output.append(line)        
+        output.append(line)            
+    proc.wait()
     returncode = proc.returncode  
     print commandstr
     print " ".join(output)  
-    if returncode:
+    print returncode
+    if returncode:                        
         logging.error("Error running " + commandstr + "\n" + " ".join(output))
         raise GeoGitException(output)
     logging.info("Executed " + commandstr + "\n" + " ".join(output[:5]))      
     return output
+
+    def command(self, command):
+        self.process.stdin.write(command + "\n")
+        return self.waitForPrompt()   
+
+    def close(self):
+        self.command("exit")
     
 class CLIConnector():
     ''' A connector that calls the CLI version of geogit and parses CLI output'''
     
+    def __init__(self):
+        self.commandslog = []        
+
     def setRepository(self, repo):
-        self.repo = repo        
+        self.repo = repo   
+                  
 
     @staticmethod
     def clone(url, dest):        
@@ -44,8 +57,9 @@ class CLIConnector():
         _run(commands)        
                 
     def run(self, command):   
-        os.chdir(self.repo.url)
-        return _run(command)  
+        os.chdir(self.repo.url)   
+        self.commandslog.append(" ".join(command))
+        return _run(command)        
 
     def revparse(self, rev):
         commands = ['rev-parse', rev]
@@ -137,53 +151,12 @@ class CLIConnector():
         else:
             return None
 
-    def logentryFromString(self, lines):
-        diffs = []
-        changes = False
-        message = False
-        messagetext = None
-        parent = None
-        commitid = None
-        for line in lines:
-            tokens = line.split(' ')
-            if message:
-                if line.startswith("\t") or line.startswith(" "):
-                    messagetext = line.strip() if messagetext is None else messagetext + "\n" + line.strip()
-                else:
-                    message = False
-            if changes:                                        
-                diffs.append(self.diffentryFromString(line))             
-            else:                
-                if tokens[0] == 'commit':
-                    commitid = tokens[1]
-                if tokens[0] == 'tree':
-                    tree = tokens[1]                    
-                if tokens[0] == 'parent':
-                    if len(tokens) == 2 and tokens[1] != "":
-                        parent = tokens[1]                    
-                elif tokens[0] == 'author':
-                    author = " ".join(tokens[1:-3])
-                    authordate = datetime.datetime.fromtimestamp(int(tokens[-2])//1000)                
-                elif tokens[0] == 'committer':
-                    committer = tokens[1]
-                    committerdate = datetime.datetime.fromtimestamp(int(tokens[-2])//1000)
-                elif tokens[0] == 'message':
-                    message = True
-                elif tokens[0] == 'changes':
-                    changes = True                
-            
-        if commitid is not None:
-            c = Commit(self.repo, commitid, tree, parent, messagetext, author, authordate, committer, committerdate)
-            return (c, diffs)
-        else:
-            return None
-
     def addremote(self, name, url):
         commands = ["remote", "add", name, url]
         self.run(commands)
         
     def removeremote(self, name):
-        commands = ["remote", "remove", name]
+        commands = ["remote", "rm", name]
         self.run(commands)     
         
     def remotes(self):
@@ -228,7 +201,7 @@ class CLIConnector():
             if line.startswith("No elements need merging"):
                 return {}
             tokens = line.split(" ")
-            _conflicts[tokens[0]] = (tokens[1], tokens[2], tokens [3])
+            _conflicts[tokens[0]] = (tokens[1][:40], tokens[2][:40], tokens [3][:40])
         return _conflicts
             
     
@@ -242,24 +215,20 @@ class CLIConnector():
     def reset(self, ref, mode = 'hard'):
         self.run(['reset', ref, "--" + mode])                    
         
-    def branches(self):    
-        branches = []        
+    def _refs(self, prefix):
+        refs = []        
         output = self.run(['show-ref'])    
         for line in output:            
             tokens = line.strip().split(" ")
-            if tokens[1].startswith("refs/heads/"):
-                branches.append((tokens[1][len("refs/heads/"):], tokens[0]))
-        return branches
-    
-    def tags(self):
-        tags = []
-        output = self.run(['show-ref'])    
-        for line in output:            
-            tokens = line.strip().split(" ")
-            if tokens[1].startswith("refs/tags/"):
-                tags.append((tokens[1][len("refs/tags/"):], tokens[0]))
-        return tags 
+            if tokens[1].startswith(prefix):
+                refs.append((tokens[1][len(prefix):], tokens[0]))
+        return refs
 
+    def branches(self):    
+        return self._refs("refs/heads/")
+        
+    def tags(self):
+        return self._refs("refs/tags/")        
     
     def createbranch(self, ref, name, force = False, checkout = False):
         commands = ['branch', name, ref]
@@ -451,18 +420,26 @@ class CLIConnector():
         commands = ["rebase", commitish]
         self.run(commands) 
         
-    def continuemerge(self):
-        pass
     
-    def continuerebase(self):
-        pass
-    
-    def abortrebase(self):
-        pass
-    
-    def abortmerge(self):
-        pass
+    def continue_(self):
+        if self.isrebasing():
+            commands = ["rebase", "--continue"]
+            self.run(commands)
+            if self.isrebasing():
+                raise GeoGitException("Could not continue rebasing")
+        elif self.ismerging():
+            commands = ["merge", "--continue"]
+            self.run(commands)
+            if self.ismerging():
+                raise GeoGitException("Could not continue merging")
         
+    def abort(self):
+        if self.isrebasing():
+            commands=["rebase", "--abort"]            
+        elif self.ismerging():
+            commands = ["merge", "--abort"]
+        self.run(commands)
+            
     def cherrypick(self, commitish):
         commands = ["cherry-pick", commitish]
         self.run(commands)
