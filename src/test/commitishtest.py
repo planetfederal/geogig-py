@@ -14,10 +14,8 @@ class GeogitCommitishTest(unittest.TestCase):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
     def getClonedRepo(self):
-        src = self.repo.url
         dst = self.getTempPath()
-        shutil.copytree(src, dst)
-        return Repository(dst)
+        return self.repo.clone(dst)  
 
     def testLog(self):
         commitish = Commitish(self.repo, geogit.HEAD)

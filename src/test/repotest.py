@@ -17,11 +17,9 @@ class GeogitRepositoryTest(unittest.TestCase):
     def getTempRepoPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
-    def getClonedRepo(self):
-        src = self.repo.url
+    def getClonedRepo(self):        
         dst = self.getTempRepoPath()
-        shutil.copytree(src, dst)
-        return Repository(dst)
+        return self.repo.clone(dst)        
 
     def testCreateEmptyRepo(self):    
         repoPath =  self.getTempRepoPath()         
@@ -78,8 +76,9 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(1, len(children))   
         #TODO improve this test
 
-    def testDiff(self):
-        diffs = self.repo.diff(geogit.HEAD, Commitish(self.repo, geogit.HEAD).parent().ref)
+    def testDiff(self):        
+        repo = self.getClonedRepo()
+        diffs = repo.diff("master", Commitish(self.repo, "master").parent().ref)
         self.assertEquals(1, len(diffs))
         self.assertEquals("parks/5", diffs[0].path)
         self.assertEquals(TYPE_MODIFIED, diffs[0].type())
@@ -123,16 +122,17 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEqual(5, len(log))
         self.assertTrue("message", log[4].message)
 
-    def testCreateReadAndDeleteBranch(self):        
-        branches = self.repo.branches()
+    def testCreateReadAndDeleteBranch(self): 
+        repo = self.getClonedRepo()       
+        branches = repo.branches()
         self.assertEquals(3, len(branches))
-        self.repo.createbranch(geogit.HEAD, "anewbranch")
-        branches = self.repo.branches()
+        repo.createbranch(geogit.HEAD, "anewbranch")
+        branches = repo.branches()
         self.assertEquals(4, len(branches))
         names = [c[0] for c in branches]        
         self.assertTrue("anewbranch" in names)
-        self.repo.deletebranch("anewbranch")
-        branches = self.repo.branches()
+        repo.deletebranch("anewbranch")
+        branches = repo.branches()
         self.assertEquals(3, len(branches))
         names = [c[0] for c in branches]
         self.assertFalse("anewbranch" in names)
@@ -164,18 +164,16 @@ class GeogitRepositoryTest(unittest.TestCase):
 
 
     def testCreateReadAndDeleteTag(self):
-        tags = self.repo.tags()
-        self.assertEquals(2, len(tags))
+        repo = self.getClonedRepo()
+        tags = repo.tags()
+        self.assertEquals(0, len(tags))
         self.repo.createtag(self.repo.head().ref, "anewtag", "message1")
         tags = self.repo.tags()
-        self.assertEquals(3, len(tags))
-        names = [tag[0] for tag in tags]
-        self.assertTrue("anewtag" in names)
+        self.assertEquals(1, len(tags))        
+        self.assertEquals("anewtag", tags[0][0])
         self.repo.deletetag("anewtag")
         tags = self.repo.tags()
-        self.assertEquals(2, len(tags))
-        names = [tag[0] for tag in tags]
-        self.assertFalse("anewtag" in names)
+        self.assertEquals(0, len(tags))        
 
     def testModifyFeature(self):
         repo = self.getClonedRepo()
@@ -190,7 +188,13 @@ class GeogitRepositoryTest(unittest.TestCase):
         attrs = Feature(repo, geogit.HEAD, "parks/1").attributes()        
         repo.addfeature("parks/newfeature", attrs)
         newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes()
-        self.assertEquals(attrs, newattrs)        
+        self.assertEquals(attrs, newattrs)       
+
+    def testRemoveFeature(self):
+        repo = self.getClonedRepo()        
+        repo.removefeature("parks/1")
+        f = Feature(repo, geogit.WORK_HEAD, "parks/1")
+        self.assertFalse(f.exists())
 
     def testAddFeatureWithWrongFeatureType(self):
         try:
@@ -199,21 +203,28 @@ class GeogitRepositoryTest(unittest.TestCase):
         except GeoGitException, e:
             pass
 
-    def testAddFeature(self):
-        pass
-
     def testConflicts(self):
         repo = self.getClonedRepo()
-        repo.merge("conflicted")
+        try:
+            repo.merge("conflicted")
+            self.fail()
+        except GeoGitException, e:
+            pass
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
-        self.assertEquals('257c8cb9a7eb5ad4740b970bf4e4f901b98042ef', conflicts["parks/5"][0].ref) 
-        self.assertEquals('267aafec09e34f289fe9ca9e149ca7f55035bc7a', conflicts["parks/5"][1].ref)
-        self.assertEquals('02284b8722378a8850e204ffd396bd2f12e3f91f', conflicts["parks/5"][2].ref)      
+        log = repo.log()
+        conflicted = repo.revparse("conflicted")                
+        self.assertEquals(log[1].ref, conflicts["parks/5"][0].ref) 
+        self.assertEquals(log[0].ref, conflicts["parks/5"][1].ref)
+        self.assertEquals(conflicted, conflicts["parks/5"][2].ref)      
 
     def testIsMerging(self):
         repo = self.getClonedRepo()
-        repo.merge("conflicted")
+        try:
+            repo.merge("conflicted")
+            self.fail()
+        except GeoGitException, e:
+            pass
         self.assertTrue(repo.ismerging())
         repo.abort()        
         self.assertFalse(repo.ismerging())
@@ -221,12 +232,16 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testIsRebasing(self):
         repo = self.getClonedRepo()
-        repo.rebase("conflicted")
+        try:
+            repo.rebase("conflicted")
+            self.fail()
+        except GeoGitException, e:
+            pass
         self.assertTrue(repo.isrebasing())
         repo.abort()
         self.assertFalse(repo.isrebasing())    
 
-    def testContinueMerging(self):
+    def testMergeAndResolveConflict(self):
         repo = self.getClonedRepo()
         try:
             repo.merge("conflicted")
@@ -236,7 +251,8 @@ class GeogitRepositoryTest(unittest.TestCase):
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
         conflicts.itervalues().next()[0].setascurrent()        
-        repo.continue_()     
+        conflicts = repo.conflicts()
+        self.assertEquals(0, len(conflicts))  
 
     def testCantContinueMerging(self):
         repo = self.getClonedRepo()
@@ -282,10 +298,11 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testRebase(self):
         repo = self.getClonedRepo()
-        commitid = repo.revparse("unconflicted")
+        log = repo.log()        
         repo.rebase("unconflicted")
-        log = repo.log()
-        self.assertEquals(commitid, log[0].ref)
+        newlog = repo.log()
+        self.assertEquals(log[0].ref, newlog[0].ref)
+        self.assertEquals(len(log) + 1, len(newlog))
 
     def testMerge(self):
         repo = self.getClonedRepo()
@@ -303,21 +320,17 @@ class GeogitRepositoryTest(unittest.TestCase):
         log = repo.log()
         self.assertEquals(ref, log[0].ref)
 
-    def testCliConnectorLogging(self):
-        repo = self.getClonedRepo()
-        repo.log()
-        self.assertEquals(["rev-list HEAD --changed"], repo.connector.commandslog)        
-
     def testRemotes(self):
         repo = self.getClonedRepo()
         remotes = repo.remotes()
-        self.assertFalse(remotes)
+        self.assertEquals(1, len(remotes))
         repo.addremote("myremote", "http://myremoteurl.com")
         remotes = repo.remotes()
-        self.assertEquals([("myremote", "http://myremoteurl.com")], remotes)
+        self.assertTrue(("myremote", "http://myremoteurl.com") in remotes)
         repo.deleteremote("myremote")
         remotes = repo.remotes()
-        self.assertFalse(remotes)
+        self.assertEquals(1, len(remotes))
+        self.assertFalse(("myremote", "http://myremoteurl.com") in remotes)
 
     def testCherryPick(self):
         repo = self.getClonedRepo()
@@ -330,7 +343,10 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo = self.getClonedRepo()
         log = repo.log()
         ref = log[0].ref        
-        repo.cherrypick("unconflicted")
+        try:
+            repo.cherrypick("unconflicted")
+        except GeoGitException, e:
+            self.assertTrue("conflict" in str(e))
         log = repo.log()
         self.assertTrue(ref, log[0].ref)
 

@@ -1,9 +1,10 @@
 from commitish import Commitish
-from cliconnector import CLIConnector
+from cliconnector import CLIConnector, Py4JCLIConnector
 import geogit
 from geogitexception import GeoGitException
 from feature import Feature
 from tree import Tree
+from utils import mkdir
 
 class Repository:
     
@@ -18,7 +19,9 @@ class Repository:
 
         '''
         self.url = url        
-        self.connector = CLIConnector() if connector is None else connector
+        self.connector = Py4JCLIConnector() if connector is None else connector
+        if init:
+            mkdir(url)
         self.connector.setRepository(self) 
         if init:
             self.init()        
@@ -41,7 +44,7 @@ class Repository:
         Returns a list of Commitish starting from the passed ref, or HEAD if there is no passed ref.
         If a path is passed, it only returns commits in which that path was modified
         '''        
-        return self.connector.log(ref or geogit.HEAD)
+        return self.connector.log(ref or geogit.HEAD, path)
     
     def trees(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''returns a set of Tree objects with all the trees for the passed ref and path'''       
@@ -128,6 +131,8 @@ class Repository:
     
     def updatepathtoref(self, ref, paths):
         '''Updates the element in the passed paths to the version corresponding to the passed ref'''
+        for path in paths:
+            self.connector.reset(ref, path = path)            
         return self.connector.checkout(ref, paths)    
 
     def add(self, paths = []):
@@ -193,8 +198,8 @@ class Repository:
         '''
         return self.connector.featurediff(ref, ref2, path)
     
-    def reset(self, ref, mode = geogit.RESET_MODE_HARD):
-        return self.connector.reset(ref, mode)
+    def reset(self, ref, mode = geogit.RESET_MODE_HARD, path = None):
+        return self.connector.reset(ref, mode, path)
        
     def exportshp(self, ref, path, shapefile):
         self.connector.exportshp(ref, path, shapefile)

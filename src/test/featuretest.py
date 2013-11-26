@@ -27,8 +27,8 @@ class GeogitFeatureTest(unittest.TestCase):
         self.assertFalse(feature.exists())
 
     def testAttributes(self):    	
-    	feature = Feature(self.repo, geogit.HEAD, "parks/1")    	            
-        data = feature.attributes()
+        feature = Feature(self.repo, geogit.HEAD, "parks/1")    	            
+        data = feature.attributes()        
         self.assertEquals(8, len(data))
         self.assertEquals("Public", data["usage"])
         self.assertTrue("owner" in data)

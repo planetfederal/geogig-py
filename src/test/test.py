@@ -1,5 +1,6 @@
 import os
 import sys
+from geogit.cliconnector import CLIConnector
 
 libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(libpath)        
@@ -12,13 +13,14 @@ from repotest import GeogitRepositoryTest
 from treetest import GeogitTreeTest
 from featuretest import GeogitFeatureTest
 from commitishtest import GeogitCommitishTest
+from temptest import GeogitTempTest
 
 def getTempRepoPath():
     return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
 
 def createRepo():
-    repo = Repository(getTempRepoPath(), init = True)
+    repo = Repository(getTempRepoPath(), connector = CLIConnector(), init = True)
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
     repo.importshp(path)   
     repo.addandcommit("message")
@@ -44,13 +46,15 @@ def createRepo():
         
 
 def suite():
-    suite = unittest.makeSuite(GeogitTreeTest, 'test')
+    suite = unittest.makeSuite(GeogitTreeTest, 'test')    
     suite.addTests(unittest.makeSuite(GeogitRepositoryTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogitFeatureTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogitCommitishTest, 'test'))
+    #suite = unittest.makeSuite(GeogitTempTest, 'test')
     return suite
    
 
-if __name__ == '__main__':     
+if __name__ == '__main__': 
+    #createRepo()    
     runner=unittest.TextTestRunner()
     runner.run(suite())

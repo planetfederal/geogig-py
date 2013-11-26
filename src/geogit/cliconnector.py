@@ -25,9 +25,6 @@ def _run(command):
         output.append(line)            
     proc.wait()
     returncode = proc.returncode  
-    print commandstr
-    print " ".join(output)  
-    print returncode
     if returncode:                        
         logging.error("Error running " + commandstr + "\n" + " ".join(output))
         raise GeoGitException(output)
@@ -41,8 +38,7 @@ class CLIConnector():
         self.commandslog = []        
 
     def setRepository(self, repo):
-        self.repo = repo   
-                  
+        self.repo = repo                     
 
     @staticmethod
     def clone(url, dest):        
@@ -50,7 +46,7 @@ class CLIConnector():
         _run(commands)        
                 
     def run(self, command):   
-        os.chdir(self.repo.url)   
+        os.chdir(self.repo.url)         
         self.commandslog.append(" ".join(command))
         return _run(command)        
 
@@ -81,8 +77,8 @@ class CLIConnector():
     def ismerging(self):
         self.checkisrepo()
         headfile = os.path.join(self.repo.url, '.geogit', 'ORIG_HEAD')
-        branchfile =  os.path.join(self.repo.url, '.geogit', 'rebase-apply', 'branch')
-        return os.path.exists(headfile) and not os.path.exists(branchfile)    
+        mergeheadfile = os.path.join(self.repo.url, '.geogit', 'MERGE_HEAD')        
+        return os.path.exists(headfile) and os.path.exists(mergeheadfile)    
         
     
     def checkisrepo(self):
@@ -205,8 +201,13 @@ class CLIConnector():
             commands.extend(paths)
         self.run(commands)
         
-    def reset(self, ref, mode = 'hard'):
-        self.run(['reset', ref, "--" + mode])                    
+    def reset(self, ref, mode = 'hard', path = None):
+        if path is None:
+            self.run(['reset', ref, "--" + mode])
+        else:
+            command =['reset', ref, '-p']
+            command.append(path) 
+            self.run(command)                    
         
     def _refs(self, prefix):
         refs = []        
@@ -440,14 +441,13 @@ class CLIConnector():
         commands = ["cherry-pick", commitish]
         self.run(commands)
     
-    def init(self):
-        mkdir(self.repo.url)
+    def init(self):        
         self.run(["init"])
 
     def addfeature(self, path, attributes):
-        f = tempfile.NamedTemporaryFile(delete = False)         
-        output = self.run(["show", "--raw", geogit.WORK_HEAD + ":" + path])
-        ftId = output[0].split(" ")[0]                
+        f = tempfile.NamedTemporaryFile(delete = False)    
+        parent = path[:path.rfind("/")]     
+        ftId = self.revparse(geogit.WORK_HEAD + ":" + parent)        
         output = self.cat(ftId)
         f.write("\n".join(output[1:]))            
         f.write("\n")
@@ -457,7 +457,7 @@ class CLIConnector():
             try:
                 f.write(oldattributes[attr][1] + "\t" + str(attributes[attr]))
             except KeyError, e:
-                raise GeoGitException("Attribute %s does not exist in feature to modify" % attr)
+                raise GeoGitException("Attribute %s does not exist in feature to add" % attr)
         f.close()
         self.applypatch(f.name)
         os.remove(f.name) 
@@ -483,15 +483,47 @@ class CLIConnector():
     def applypatch(self, patchfile):
         self.run(["apply", patchfile])        
 
+'''==========================================================='''
 
-def mkdir(newdir):
-    newdir = newdir.strip('\n\r ')
-    if os.path.isdir(newdir):
-        pass
-    else:
-        (head, tail) = os.path.split(newdir)
-        if head and not os.path.isdir(head):
-            mkdir(head)
-        if tail:
-            os.mkdir(newdir)
 
+from py4j.java_gateway import JavaGateway
+
+_getway = None
+def javaGetway():
+    global _getway
+    if _getway is None:
+        _gateway = JavaGateway()
+    return _gateway
+    
+def _runGateway(command, url):     
+    command = " ".join(command)
+    command = command.replace("\r", "")
+    javaGetway().entry_point.setRepository(url)    
+    returncode = javaGetway().entry_point.runCommand(command)
+    output = javaGetway().entry_point.lastOutput()    
+    output = output.strip("\r\n").split("\n")
+    output = [s.strip("\r\n") for s in output]        
+    if returncode:                        
+        logging.error("Error running " + command + "\n" + " ".join(output))
+        raise GeoGitException(output)
+    logging.info("Executed " + command + "\n" + " ".join(output[:5]))      
+    return output    
+
+    
+class Py4JCLIConnector(CLIConnector):
+
+    def __init__(self):
+        self.commandslog = []
+        
+    @staticmethod
+    def clone(url, dest):            
+        commands = ['clone', url, dest]
+        _runGateway(commands, url) 
+        
+    def run(self, commands):
+        self.commandslog.append(" ".join(commands))                
+        return _runGateway(commands, self.repo.url)
+
+    def setRepository(self, repo):
+        self.repo = repo          
+        
