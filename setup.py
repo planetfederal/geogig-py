@@ -19,7 +19,7 @@ setup(
     ],
     license="BSD",
     keywords="geogit",
-    url='https://github.com/volaya/geogitpy',
+    url='https://github.com/boundlessgeo/geogitpy',
     package_dir={'': 'src'},
     packages=['geogit',],
     include_package_data=True,
