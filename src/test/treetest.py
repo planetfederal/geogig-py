@@ -14,16 +14,15 @@ class GeogitTreeTest(unittest.TestCase):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
     def getClonedRepo(self):
-        src = self.repo.url
         dst = self.getTempPath()
-        shutil.copytree(src, dst)
-        return Repository(dst)
+        return self.repo.clone(dst)  
 
     def testExportShp(self):
+        repo = self.getClonedRepo()
         exportPath = os.path.join(os.path.dirname(__file__), "temp", str(time.time()) + ".shp").replace('\\', '/')    	
-    	tree = Tree(self.repo, geogit.HEAD, "parks")
-    	tree.exportshp(exportPath)
-    	self.assertTrue(os.path.exists(exportPath))
+        tree = Tree(repo, geogit.HEAD, "parks")
+        tree.exportshp(exportPath)
+        self.assertTrue(os.path.exists(exportPath))
 
     def testFeatures(self):
         tree = Tree(self.repo, geogit.HEAD, "parks")
