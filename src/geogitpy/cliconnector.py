@@ -240,7 +240,6 @@ class CLIConnector():
 
     def deletetag(self, name):   
         self.run(['tag', '-d', name])        
-
        
     def add(self, paths = []):
         commands = ['add']  
@@ -280,16 +279,33 @@ class CLIConnector():
         commands.extend([str(c) for c in bbox])                
         self.run(commands)        
         
-    def importshp(self, shapefile, add, dest):
+    def importshp(self, shapefile, add = False, dest = None):
         commands = ["shp", "import", shapefile]
         if dest is not None:
             commands.extend(["--dest", dest])
         if add:
-            commands.extend(["--add"])
+            commands.append("--add")
         self.run(commands)
     
-    def importpg(self, database, user, password, table = None, host = None, port = None):
-        pass
+    def importpg(self, database, user = None, password = None, table = None, host = None, port = None, add = False, dest = None):
+        commands = ["pg", "import", "--database",database]
+        if user is not None:
+            commands.extend(["--user", user])
+        if password is not None:
+            commands.extend(["--password", password])
+        if port is not None:
+            commands.extend(["--port", str(port)])            
+        if dest is not None:
+            commands.extend(["--dest", dest])
+        if table is not None:
+            commands.extend(["--table", table])
+        else:
+            commands.append("--all")
+        if host is not None:
+            commands.extend(["--host", host])
+        if add:
+            commands.append("--add")
+        self.run(commands)
 
     def exportpg(self, ref, path, database, user, password, host = None, port = None):
         pass
@@ -445,36 +461,50 @@ class CLIConnector():
         self.run(["init"])
 
     def addfeature(self, path, attributes):
-        f = tempfile.NamedTemporaryFile(delete = False)    
-        parent = path[:path.rfind("/")]     
-        ftId = self.revparse(geogit.WORK_HEAD + ":" + parent)        
-        output = self.cat(ftId)
-        f.write("\n".join(output[1:]))            
-        f.write("\n")
-        f.write("A\t" + path + "\t" + ftId + "\n")
-        oldattributes = self.featuredata(geogit.WORK_HEAD, path)
-        for attr in sorted(attributes.iterkeys()):
-            try:
-                f.write(oldattributes[attr][1] + "\t" + str(attributes[attr]))
-            except KeyError, e:
-                raise GeoGitException("Attribute %s does not exist in feature to add" % attr)
-        f.close()
-        self.applypatch(f.name)
-        os.remove(f.name) 
+        try:
+            f = tempfile.NamedTemporaryFile(delete = False)   
+            parent = path[:path.rfind("/")]                             
+            output = self.run(['show', parent])
+            types = {}
+            for line in output[6:]:
+                tokens = line.split(": ")
+                types[tokens[0]] = tokens[1][1:-1]
+            ftId = output[3][-40:]          
+            output = self.cat(ftId)
+            output = ["\t".join(s.split()) for s in output]
+            f.write("\n".join(output[1:]))            
+            f.write("\n\n")
+            f.write("A\t" + path + "\t" + ftId + "\n")
+            f.write("FEATURE" + "\n")                       
+            for attr in sorted(attributes.iterkeys()):
+                try:
+                    f.write(types[attr] + "\t" + str(attributes[attr]))
+                except KeyError, e:
+                    raise GeoGitException("Attribute %s does not exist in default feature type" % attr)
+            f.close()
+            self.applypatch(f.name)
+        finally:
+            f.close()        
+            #os.remove(f.name) 
 
     def removefeature(self, path):
-        f = tempfile.NamedTemporaryFile(delete = False)         
-        output = self.run(["show", "--raw", geogit.WORK_HEAD + ":" + path])
-        ftId = output[0].split(" ")[0]                
-        output = self.cat(ftId)
-        f.write("\n".join(output[1:]))            
-        f.write("\n")
-        f.write("R\t" + path + "\t" + ftId + "\n")
-        output = self.cat("WORK_HEAD:" + path)
-        f.write("\n".join(output[1:]))            
-        f.close()
-        self.applypatch(f.name)
-        os.remove(f.name)         
+        try:
+            f = tempfile.NamedTemporaryFile(delete = False)         
+            parent = path[:path.rfind("/")]                             
+            output = self.run(['show', parent])            
+            ftId = output[3][-40:]          
+            output = self.cat(ftId)
+            output = ["\t".join(s.split()) for s in output]
+            f.write("\n".join(output[1:]))            
+            f.write("\n\n")
+            f.write("R\t" + path + "\t" + ftId + "\n")
+            output = self.cat("WORK_HEAD:" + path)
+            f.write("\n".join(output[1:]))            
+            f.close()            
+            self.applypatch(f.name)
+        finally:
+            f.close()
+            #os.remove(f.name)     
 
     def modifyfeature(self, path, attributes):
         self.removefeature(path)

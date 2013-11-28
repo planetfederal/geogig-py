@@ -1,7 +1,7 @@
 from py4j.java_gateway import JavaGateway
 import logging
-from geogit.geogitexception import GeoGitException
-from geogit.cliconnector import CLIConnector
+from geogitexception import GeoGitException
+from cliconnector import CLIConnector
 import subprocess
 import os
 import time
@@ -58,7 +58,8 @@ def _runGateway(command, url):
     return output    
 
     
-class Py4JCLIConnector(CLIConnector):
+class Py4JCLIConnector(CLIConnector):    
+    ''' A connector that uses a Py4J gateway server to conenct to geogit'''
 
     def __init__(self):
         self.commandslog = []

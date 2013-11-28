@@ -1,4 +1,4 @@
-from geogit.tree import Tree
+from tree import Tree
 
 class Commitish(object):
     

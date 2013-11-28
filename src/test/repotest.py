@@ -1,12 +1,12 @@
 import os
 import time
-from geogit.repo import Repository
-from geogit.geogitexception import GeoGitException
-from geogit.commitish import Commitish
-from geogit.diff import TYPE_MODIFIED
-from geogit.feature import Feature
+from geogitpy.repo import Repository
+from geogitpy.geogitexception import GeoGitException
+from geogitpy.commitish import Commitish
+from geogitpy.diff import TYPE_MODIFIED
+from geogitpy.feature import Feature
 import unittest
-import geogit
+from geogitpy import geogit
 from shapely.geometry import MultiPolygon
 
 class GeogitRepositoryTest(unittest.TestCase):

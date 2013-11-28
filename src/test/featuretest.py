@@ -1,10 +1,10 @@
 import unittest
 import os
-from geogit.repo import Repository
+from geogitpy.repo import Repository
 import time
 import shutil
-import geogit
-from geogit.feature import Feature
+from geogitpy import geogit
+from geogitpy.feature import Feature
 from shapely.geometry import Polygon
 
 class GeogitFeatureTest(unittest.TestCase):

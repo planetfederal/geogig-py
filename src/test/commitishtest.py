@@ -1,10 +1,10 @@
 import unittest
 import os
-from geogit.repo import Repository
+from geogitpy.repo import Repository
 import time
 import shutil
-import geogit
-from geogit.commitish import Commitish
+from geogitpy import geogit
+from geogitpy.commitish import Commitish
 
 class GeogitCommitishTest(unittest.TestCase):
         

@@ -1,14 +1,15 @@
 import os
 import sys
-from geogit.cliconnector import CLIConnector
+from geogitpy.cliconnector import CLIConnector
+from geogitpy.py4jconnector import shutdownServer
 
 libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(libpath)        
 
 import time
-from geogit.repo import Repository
+from geogitpy.repo import Repository
 import unittest
-import geogit
+from geogitpy import geogit
 from repotest import GeogitRepositoryTest
 from treetest import GeogitTreeTest
 from featuretest import GeogitFeatureTest
@@ -54,7 +55,7 @@ def suite():
     return suite
    
 
-if __name__ == '__main__': 
-    #createRepo()    
+if __name__ == '__main__':      
     runner=unittest.TextTestRunner()
     runner.run(suite())
+    shutdownServer()

@@ -1,4 +1,4 @@
-from geogit.commitish import Commitish
+from commitish import Commitish
 
 class Commit(Commitish):
     

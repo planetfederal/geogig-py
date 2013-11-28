@@ -1,4 +1,4 @@
-from geogit.geogitexception import GeoGitException
+from geogitexception import GeoGitException
 
 class Feature(object):
 

@@ -1,11 +1,10 @@
 from commitish import Commitish
-from cliconnector import CLIConnector
 import geogit
 from geogitexception import GeoGitException
 from feature import Feature
 from tree import Tree
 from utils import mkdir
-from geogit.py4jconnector import Py4JCLIConnector
+from py4jconnector import Py4JCLIConnector
 
 class Repository:
     
@@ -122,16 +121,17 @@ class Repository:
         for path, c in _conflicts.iteritems():
             c = tuple(Feature(self, ref, path) for ref in c)
             conflicts[path] = c
-
         return conflicts
 
-    
     def checkout(self, ref, paths = None):
         '''Checks out the passed ref'''
         return self.connector.checkout(ref)
     
     def updatepathtoref(self, ref, paths):
-        '''Updates the element in the passed paths to the version corresponding to the passed ref'''
+        '''
+        Updates the element in the passed paths to the version corresponding to the passed ref.
+        If the path is conflicted (unmerged), it will also resolve the conflict
+        '''
         for path in paths:
             self.connector.reset(ref, path = path)            
         return self.connector.checkout(ref, paths)    
@@ -145,6 +145,10 @@ class Repository:
         return self.commit(message, paths)
 
     def commit(self, message, paths = []):
+        '''
+        Creates a new commit with the changes in the specified paths.
+        If no paths are passed, it will commit all staged features
+        '''        
         return self.connector.commit(message, paths)
     
     def blame(self, path):
@@ -200,6 +204,7 @@ class Repository:
         return self.connector.featurediff(ref, ref2, path)
     
     def reset(self, ref, mode = geogit.RESET_MODE_HARD, path = None):
+        '''Resets the current branch to the passed reference'''
         return self.connector.reset(ref, mode, path)
        
     def exportshp(self, ref, path, shapefile):
@@ -226,7 +231,7 @@ class Repository:
         self.connector.addfeature(path, attributes)
 
     def removefeature(self, path):
-        '''removes the passed feature'''
+        '''Removes the passed feature'''
         self.connector.removefeature(path)
 
     def modifyfeature(self, path, attributes):
@@ -237,17 +242,15 @@ class Repository:
         The attributes must correspond to the current feature type of that feature in the working tree.
         That is, this can be used to modify attribute values, not featuretypes.        
         '''
-        self.connector.modifyfeature(path, attributes)
-
-    def downloadosm(self, osmurl, bbox):
-        self.connector.downloadosm(osmurl, bbox)      
+        self.connector.modifyfeature(path, attributes) 
         
     def merge(self, ref, nocommit = False, message = None):
         '''Merges the passed ref into the current branch'''
         self.connector.merge(ref, nocommit, message)
         
-    def rebase(self, commitish):
-        self.connector.rebase(commitish)          
+    def rebase(self, ref):
+        '''rebases the current branch using the passed ref'''
+        self.connector.rebase(ref)          
 
     def abort(self):
         '''
@@ -285,7 +288,10 @@ class Repository:
     
     def isrebasing(self):
         '''Returns true if the repo is in the middle of a rebase stopped due to conflicts'''
-        return self.connector.isrebasing()            
+        return self.connector.isrebasing()
+    
+    def downloadosm(self, osmurl, bbox):
+        self.connector.downloadosm(osmurl, bbox)               
     
     def init(self):                
         self.connector.init()

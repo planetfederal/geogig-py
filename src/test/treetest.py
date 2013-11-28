@@ -1,10 +1,9 @@
 import unittest
 import os
-from geogit.repo import Repository
+from geogitpy.repo import Repository
 import time
-import shutil
-from geogit.tree import Tree
-import geogit
+from geogitpy.tree import Tree
+from geogitpy import geogit
 
 class GeogitTreeTest(unittest.TestCase):
         
