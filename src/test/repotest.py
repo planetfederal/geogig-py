@@ -1,6 +1,5 @@
 import os
 import time
-import shutil
 from geogit.repo import Repository
 from geogit.geogitexception import GeoGitException
 from geogit.commitish import Commitish

@@ -1,10 +1,11 @@
 from commitish import Commitish
-from cliconnector import CLIConnector, Py4JCLIConnector
+from cliconnector import CLIConnector
 import geogit
 from geogitexception import GeoGitException
 from feature import Feature
 from tree import Tree
 from utils import mkdir
+from geogit.py4jconnector import Py4JCLIConnector
 
 class Repository:
     
