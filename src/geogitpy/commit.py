@@ -1,4 +1,5 @@
 from commitish import Commitish
+from geogit import NULL_ID
 
 class Commit(Commitish):
     
@@ -9,7 +10,7 @@ class Commit(Commitish):
         self.repo = repo
         self.commitid = commitid
         self.treeid = treeid
-        self.parent = parent
+        self.parent = parent or NULL_ID
         self.message = message
         self.authorname = authorname
         self.authordate = authordate

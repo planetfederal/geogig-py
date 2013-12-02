@@ -1,9 +1,9 @@
 from feature import Feature
+from geogit import NULL_ID
 
 TYPE_MODIFIED = "Modified"
 TYPE_ADDED = "Added"
 TYPE_REMOVED = "Removed"
-NULL_ID = "0" * 40
 
 class Diffentry():
     
@@ -33,7 +33,7 @@ class Diffentry():
         if self.oldref == NULL_ID:
             return "%s %s (%s)" % (TYPE_ADDED, self.path, self.newref) 
         elif self.newref == NULL_ID:
-            return TYPE_REMOVED + " " + ref.path
+            return TYPE_REMOVED + " " + self.path
         else:
             return "%s %s (%s --> %s)" % (TYPE_MODIFIED, self.path, self.oldref, self.newref)
                 

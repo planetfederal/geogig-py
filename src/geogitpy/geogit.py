@@ -6,3 +6,5 @@ STAGE_HEAD = 'STAGE_HEAD'
 RESET_MODE_HARD = "hard"
 RESET_MODE_MIXED = "mixed"
 RESET_MODE_SOFT = "soft"
+
+NULL_ID = "0" * 40
