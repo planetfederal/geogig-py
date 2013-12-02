@@ -12,15 +12,20 @@ _gateway = None
 def _connect():
     global _gateway    
     try: 
-        _gateway = JavaGateway()       
+        _gateway = JavaGateway(start_callback_server=True)       
         _gateway.entry_point.isGeoGitServer()        
     except Exception, e:
         _gateway = None                   
         global _proc
-        _proc = subprocess.Popen("geogit-gateway.bat", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+        if os.name == 'nt':
+            _proc = subprocess.Popen("geogit-gateway.bat", shell = True, 
+                        stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr = subprocess.PIPE)
+        else:
+            _proc = subprocess.Popen("geogit-gateway", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+
         time.sleep(3) #improve this and wait until the "server started" string is printed out        
         try:            
-            _gateway = JavaGateway()
+            _gateway = JavaGateway(start_callback_server=True)
             _gateway.entry_point.isGeoGitServer()                   
         except Exception, e:
             _gateway = None
@@ -48,22 +53,25 @@ def _runGateway(command, url):
     command = command.replace("\r", "")
     _javaGateway().entry_point.setRepository(url)    
     returncode = _javaGateway().entry_point.runCommand(command)
-    output = _javaGateway().entry_point.lastOutput()    
+    output = _javaGateway().entry_point.lastOutput()     
+    print output
     output = output.strip("\r\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
-    if returncode:                        
-        logging.error("Error running " + command + "\n" + " ".join(output))
-        raise GeoGitException(output)
+    if returncode:                                
+        raise GeoGitException("\n".join(output))
     logging.info("Executed " + command + "\n" + " ".join(output[:5]))      
     return output    
 
     
 class Py4JCLIConnector(CLIConnector):    
-    ''' A connector that uses a Py4J gateway server to conenct to geogit'''
+    ''' A connector that uses a Py4J gateway server to connect to geogit'''
 
     def __init__(self):
         self.commandslog = []
         
+    def silentProgress(self, int):
+        pass
+    
     @staticmethod
     def clone(url, dest):            
         commands = ['clone', url, dest]
@@ -74,5 +82,19 @@ class Py4JCLIConnector(CLIConnector):
         return _runGateway(commands, self.repo.url)
 
     def setRepository(self, repo):
-        self.repo = repo          
+        self.repo = repo    
+
+    def setProgressListener(self, listenerFunc):
+        class Listener(object):
+            def __init__(self, listener):
+                self.listener = listener
+            
+            def setProgress(self, i):
+                listener.setProgress(i)
+
+            class Java:
+                implements = ['org.geogit.cli.GeoGitPy4JProgressListener']
+        
+        _javaGateway().entry_point.setProgressListener(Listener(listenerFunc))
+
         
