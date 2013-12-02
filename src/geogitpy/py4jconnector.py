@@ -41,8 +41,7 @@ def shutdownServer():
     global _gateway, _proc
     _gateway = None
     if _proc is not None:
-        if os.name == 'nt':
-            print _proc.pid
+        if os.name == 'nt':            
             subprocess.Popen("TASKKILL /F /PID " + str(_proc.pid) + " /T", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
         else:
             pass #TODO        
@@ -53,8 +52,7 @@ def _runGateway(command, url):
     command = command.replace("\r", "")
     _javaGateway().entry_point.setRepository(url)    
     returncode = _javaGateway().entry_point.runCommand(command)
-    output = _javaGateway().entry_point.lastOutput()     
-    print output
+    output = _javaGateway().entry_point.lastOutput()         
     output = output.strip("\r\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
     if returncode:                                

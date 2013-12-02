@@ -239,7 +239,7 @@ class Repository:
         self.connector.addfeature(path, attributes)
 
     def removefeature(self, path):
-        '''Removes the passed feature'''
+        '''Removes the passed feature from the working tree and index, so it is no longer versioned'''
         self.connector.removefeature(path)
 
     def modifyfeature(self, path, attributes):
