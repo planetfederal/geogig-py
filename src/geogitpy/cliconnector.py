@@ -9,7 +9,7 @@ from commit import Commit
 import datetime
 from diff import Diffentry
 from commitish import Commitish
-from geogitexception import GeoGitException
+from geogitpy.geogitexception import GeoGitException
 from shapely.wkt import loads
 
 def _run(command):         
@@ -159,7 +159,9 @@ class CLIConnector():
         remotes = []
         names = []
         for line in output:
-            tokens = line.split(" ")
+            tokens = line.split()
+            if len(tokens) != 2:
+                continue
             if tokens[0] not in names:
                 remotes.append((tokens[0], tokens[1]))
                 names.append(tokens[0])
@@ -170,7 +172,14 @@ class CLIConnector():
         commands = ['rev-list', ref, '--changed']        
         if path is not None:
             commands.extend(["-p", path])
-        output = self.run(commands)
+        try:
+            output = self.run(commands)
+        except GeoGitException, e:
+            if str(e) == "HEAD does not resolve to a commit": #empty repo
+                return []
+            else:
+                raise e
+        
         commitlines = []
         for line in output:
             if line == '':
@@ -426,8 +435,7 @@ class CLIConnector():
             attributes[name]=(value, commitid, authorname)   
         return attributes 
     
-    def merge (self, ref, nocommit = False, message = None):
-        raise GeoGitConflictException("hoal")
+    def merge (self, ref, nocommit = False, message = None):        
         commands = ["merge", ref]
         if nocommit:
             commands.append("--no-commit")
