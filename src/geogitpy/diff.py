@@ -24,7 +24,7 @@ class Diffentry():
     def type(self):
         if self.oldref == NULL_ID:
             return TYPE_ADDED
-        elif self.newref == NULL_ID:
+        elif self.newref == NULL_ID: 
             return TYPE_REMOVED
         else:
             return TYPE_MODIFIED

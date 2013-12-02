@@ -16,7 +16,6 @@ class Repository:
         url: The url of the repository
         connector: the connector to use to communicate with the repository
         init: True if the repository should be initialized
-
         '''
         self.url = url        
         self.connector = Py4JCLIConnector() if connector is None else connector
@@ -62,7 +61,7 @@ class Repository:
         return Commitish(self, geogit.MASTER)
         
     def branches(self):        
-        ''' Returns a list of Commitish with the tips of branches in the repo'''
+        ''' Returns a list of tuples (branch_name, branch_ref) with the tips of branches in the repo'''
         return self.connector.branches()
     
     def tags(self):   
@@ -125,7 +124,7 @@ class Repository:
 
     def checkout(self, ref, paths = None):
         '''Checks out the passed ref'''
-        return self.connector.checkout(ref)
+        return self.connector.checkout(ref, paths)
     
     def updatepathtoref(self, ref, paths):
         '''
@@ -134,7 +133,16 @@ class Repository:
         '''
         for path in paths:
             self.connector.reset(ref, path = path)            
-        return self.connector.checkout(ref, paths)    
+        return self.connector.checkout(ref, paths)
+
+    def solveconflict(self, path, attributes):
+        '''solves a conflict at the specified path with a new feature defined by the passed attributes.
+        Attributes are passed in a dict with attribute names as keys and tuples of 
+        (attribute_value, attribute_type_name) as values.'''
+        self.reset(geogit.HEAD, path)
+        self.modifyfeature(path, attributes)
+        self.add(path)
+
 
     def add(self, paths = []):
         '''Adds the passed paths to the staging area. If no paths are passed, it will add all the unstaged ones'''
@@ -211,7 +219,7 @@ class Repository:
         self.connector.exportshp(ref, path, shapefile)
         
     def exportsl(self, ref, path, database):
-        '''export to a SpatiaLite database'''
+        '''Export to a SpatiaLite database'''
         self.connector.exportsl(ref, path, database)        
     
     def importosm(self, osmfile, add):
@@ -291,7 +299,10 @@ class Repository:
         return self.connector.isrebasing()
     
     def downloadosm(self, osmurl, bbox):
-        self.connector.downloadosm(osmurl, bbox)               
+        self.connector.downloadosm(osmurl, bbox) 
+        
+    def show(self, ref):
+        return self.connector.show(ref)              
     
     def init(self):                
         self.connector.init()

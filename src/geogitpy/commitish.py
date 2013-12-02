@@ -26,7 +26,7 @@ class Commitish(object):
     def diff(self):
         '''Returns a list of DiffEntry with all changes introduced by this commitish'''
         if self._diff is None:
-            self._diff = self.repo.diff(self.ref, self.ref + '~1')
+            self._diff = self.repo.diff(self.ref + '~1', self.ref)
         return self._diff
 
     def parent(self):

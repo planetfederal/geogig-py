@@ -6,7 +6,7 @@ class Commit(Commitish):
     ''' A geogit commit'''
     
     def __init__(self, repo, commitid, treeid, parent, message, authorname, authordate, commitername, commiterdate):
-        self.ref = commitid
+        Commitish.__init__(self, repo, commitid)        
         self.repo = repo
         self.commitid = commitid
         self.treeid = treeid
@@ -17,6 +17,11 @@ class Commit(Commitish):
         self.commitername = commitername
         self.commiterdate = commiterdate
 
+    def diff(self):
+        '''Returns a list of DiffEntry with all changes introduced by this commitish'''
+        if self._diff is None:
+            self._diff = self.repo.diff(self.parent, self.ref)
+        return self._diff
     
     def __str__(self):
         s = "id " + self.commitid + "\n"

@@ -1,8 +1,14 @@
 class GeoGitException(Exception):
-    
-    def __init__(self, message):
-        self.message = message
+	pass
 
-    def __str__(self):
-        return unicode(self.message)
+class InterruptedOperationException(Exception):
+	'''
+	An exception to signal an interrupted operation, not an actual error.
+	To be used, for instance, for a merge/rebase process interrupted due to 
+	conflicts
+	'''
+	pass
+
+class GeoGitConflictException(InterruptedOperationException):
+	pass
     

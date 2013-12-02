@@ -17,8 +17,9 @@ def _run(command):
     commandstr = " ".join(command)
     if os.name != 'nt':
         command = commandstr
-    output = []    
-    proc = subprocess.Popen(commandstr, shell=True, stdout=subprocess.PIPE, 
+    output = []   
+    print commandstr 
+    proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, 
                             stdin=subprocess.PIPE,stderr=subprocess.STDOUT, universal_newlines=True)
     for line in iter(proc.stdout.readline, ""):        
         line = line.strip("\n")
@@ -43,7 +44,11 @@ class CLIConnector():
     @staticmethod
     def clone(url, dest):        
         commands = ['clone', url, dest]
-        _run(commands)        
+        _run(commands)    
+
+    def geogitversion(self):
+        output = self.run(["--version"])
+        return output[0].split(":")[1].strip()    
                 
     def run(self, command):   
         os.chdir(self.repo.url)         
@@ -314,8 +319,9 @@ class CLIConnector():
         refandpath = ref + ":" + path
         self.run(["shp", "export", refandpath, shapefile, "-o"])
         
-    def exportsl(self, ref, database):
-        self.run(["sl", "export", ref, "exported", "--database", database])
+    def exportsl(self, ref, path, database):
+        refandpath = ref + ":" + path
+        self.run(["sl", "export", refandpath,  "--database", database, "exported"])
        
     def featuredata(self, ref, path):  
         refandpath = ref + ":" + path      
@@ -421,18 +427,32 @@ class CLIConnector():
         return attributes 
     
     def merge (self, ref, nocommit = False, message = None):
+        raise GeoGitConflictException("hoal")
         commands = ["merge", ref]
         if nocommit:
             commands.append("--no-commit")
         elif message is not None:
             commands.append("-m")
             commands.apend(message)
-        self.run(commands) 
+        try:
+            self.run(commands) 
+        except GeoGitException, e:
+            if "conflict" in str(e):
+                raise GeoGitConflictException(str(e))
+            else:
+                raise e
+
         
     def rebase(self, commitish):
         commands = ["rebase", commitish]
-        self.run(commands) 
-        
+        try:
+            self.run(commands) 
+        except GeoGitException, e:
+            if "conflict" in str(e):
+                raise GeoGitConflictException(str(e))
+            else:
+                raise e
+            
     
     def continue_(self):
         if self.isrebasing():
@@ -460,7 +480,7 @@ class CLIConnector():
     def init(self):        
         self.run(["init"])
 
-    def addfeature(self, path, attributes):
+    def addfeature(self, path, attributes, types):
         try:
             f = tempfile.NamedTemporaryFile(delete = False)   
             parent = path[:path.rfind("/")]                             
@@ -488,27 +508,14 @@ class CLIConnector():
             #os.remove(f.name) 
 
     def removefeature(self, path):
-        try:
-            f = tempfile.NamedTemporaryFile(delete = False)         
-            parent = path[:path.rfind("/")]                             
-            output = self.run(['show', parent])            
-            ftId = output[3][-40:]          
-            output = self.cat(ftId)
-            output = ["\t".join(s.split()) for s in output]
-            f.write("\n".join(output[1:]))            
-            f.write("\n\n")
-            f.write("R\t" + path + "\t" + ftId + "\n")
-            output = self.cat("WORK_HEAD:" + path)
-            f.write("\n".join(output[1:]))            
-            f.close()            
-            self.applypatch(f.name)
-        finally:
-            f.close()
-            #os.remove(f.name)     
-
+        self.run("rm", path)
+        
     def modifyfeature(self, path, attributes):
         self.removefeature(path)
         self.addfeature(path, attributes)
 
     def applypatch(self, patchfile):
-        self.run(["apply", patchfile])        
+        self.run(["apply", patchfile])   
+        
+    def show(self, ref):
+        return "\n".join(self.run(["show", ref]))     

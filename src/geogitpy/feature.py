@@ -65,8 +65,10 @@ class Feature(object):
 
     def setascurrent(self):
         '''Sets this version of the feature as the current one in the working tree and index'''
-        self.repo.updatepathtoref(self.ref, [self.path])
-
+        if self.exists():
+            self.repo.updatepathtoref(self.ref, [self.path])
+        else:
+            raise GeoGitException("Feature at the specified path does not exist")
 
     def __str__(self):
         return self.path
