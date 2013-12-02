@@ -47,6 +47,12 @@ class GeogitRepositoryTest(unittest.TestCase):
         entries = self.repo.log("conflicted")
         self.assertEquals(4, len(entries))
 
+    def testLogEmptyRepo(self):
+        repoPath =  self.getTempRepoPath()         
+        repo = Repository(repoPath, init = True) 
+        log = repo.log()
+        self.assertFalse(log)
+
     def testTreesAtHead(self):
         trees = self.repo.trees()
         self.assertEquals(1, len(trees))
@@ -194,6 +200,8 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo.removefeature("parks/1")
         f = Feature(repo, geogit.WORK_HEAD, "parks/1")
         self.assertFalse(f.exists())
+        f = Feature(repo, geogit.STAGE_HEAD, "parks/1")
+        self.assertFalse(f.exists()) 
 
     def testAddFeatureWithWrongFeatureType(self):
         try:
