@@ -9,7 +9,7 @@ from commit import Commit
 import datetime
 from diff import Diffentry
 from commitish import Commitish
-from geogitpy.geogitexception import GeoGitException
+from geogitpy.geogitexception import GeoGitException, GeoGitConflictException
 from shapely.wkt import loads
 
 def _run(command):         
@@ -69,9 +69,10 @@ class CLIConnector():
         f = open(headfile)
         line = f.readline()
         f.close()
-        ref = line.strip().split(' ')[-1]
-        branchname = ref[len("refs/heads/"):]
-        return Commitish(self.repo, branchname)
+        ref = line.strip().split()[-1]
+        if ref.startswith("refs/heads/"):
+            ref = ref[len("refs/heads/"):]
+        return Commitish(self.repo, ref)
     
     def isrebasing(self):
         self.checkisrepo()
@@ -160,7 +161,7 @@ class CLIConnector():
         names = []
         for line in output:
             tokens = line.split()
-            if len(tokens) != 2:
+            if len(tokens) != 3:
                 continue
             if tokens[0] not in names:
                 remotes.append((tokens[0], tokens[1]))
@@ -208,11 +209,13 @@ class CLIConnector():
         return _conflicts
             
     
-    def checkout(self, ref, paths = None):
+    def checkout(self, ref, paths = None, force = False):        
         commands = ['checkout', ref]
         if paths is not None and len(paths) > 0:            
             commands.append("-p")
             commands.extend(paths)
+        elif force:
+            commands.append("--force")        
         self.run(commands)
         
     def reset(self, ref, mode = 'hard', path = None):
@@ -256,9 +259,11 @@ class CLIConnector():
         self.run(['tag', '-d', name])        
        
     def add(self, paths = []):
-        commands = ['add']  
-        commands.extend(paths)      
-        self.run(commands)     
+        if paths:
+            for path in paths:      
+                self.run(['add', path])
+        else:
+            self.run(['add'])
             
     def commit(self, message, paths = []):
         commands = ['commit', '-m']
@@ -488,35 +493,20 @@ class CLIConnector():
     def init(self):        
         self.run(["init"])
 
-    def addfeature(self, path, attributes, types):
+    def addfeature(self, path, attributes):
         try:
             f = tempfile.NamedTemporaryFile(delete = False)   
-            parent = path[:path.rfind("/")]                             
-            output = self.run(['show', parent])
-            types = {}
-            for line in output[6:]:
-                tokens = line.split(": ")
-                types[tokens[0]] = tokens[1][1:-1]
-            ftId = output[3][-40:]          
-            output = self.cat(ftId)
-            output = ["\t".join(s.split()) for s in output]
-            f.write("\n".join(output[1:]))            
-            f.write("\n\n")
-            f.write("A\t" + path + "\t" + ftId + "\n")
+                        
             f.write("FEATURE" + "\n")                       
-            for attr in sorted(attributes.iterkeys()):
-                try:
-                    f.write(types[attr] + "\t" + str(attributes[attr]))
-                except KeyError, e:
-                    raise GeoGitException("Attribute %s does not exist in default feature type" % attr)
+            for attr in sorted(attributes.iterkeys()):                
+                f.write(attr[1] + "\t" + str(attr[1]))                
             f.close()
             self.applypatch(f.name)
         finally:
-            f.close()        
-            #os.remove(f.name) 
+            f.close()                    
 
     def removefeature(self, path):
-        self.run("rm", path)
+        self.run(["rm", path])
         
     def modifyfeature(self, path, attributes):
         self.removefeature(path)
@@ -526,4 +516,14 @@ class CLIConnector():
         self.run(["apply", patchfile])   
         
     def show(self, ref):
-        return "\n".join(self.run(["show", ref]))     
+        return "\n".join(self.run(["show", ref]))    
+    
+    def config(self,param, value, global_ = False):
+        commands = ["config", param, value]
+        if global_:
+            commands.append("--global")
+        self.run(commands) 
+        
+    def getconfig(self, param):
+        value =  self.run(["config", "--get", param])
+        value = value[0] if value else None

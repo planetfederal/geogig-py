@@ -1,7 +1,7 @@
 import os
 import time
 from geogitpy.repo import Repository
-from geogitpy.geogitexception import GeoGitException
+from geogitpy.geogitexception import GeoGitException, GeoGitConflictException
 from geogitpy.commitish import Commitish
 from geogitpy.diff import TYPE_MODIFIED
 from geogitpy.feature import Feature
@@ -18,6 +18,7 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def getClonedRepo(self):        
         dst = self.getTempRepoPath()
+        print dst
         return self.repo.clone(dst)        
 
     def testCreateEmptyRepo(self):    
@@ -28,6 +29,17 @@ class GeogitRepositoryTest(unittest.TestCase):
         headid = self.repo.revparse("HEAD")
         entries = self.repo.log()
         self.assertEquals(entries[0].commitid, headid)
+        
+    def testHead(self):
+        head = self.repo.head()
+        self.assertEquals("master", head.ref)        
+        
+    def testIsDetached(self):
+        repo = self.getClonedRepo()
+        self.assertFalse(repo.isdetached())
+        log = repo.log()
+        repo.checkout(log[1].ref)
+        self.assertTrue(repo.isdetached())
 
     def testRevParseWrongReference(self):
         try:
@@ -215,7 +227,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGitConflictException, e:
             pass
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -230,7 +242,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGitConflictException, e:
             pass
         self.assertTrue(repo.ismerging())
         repo.abort()        
@@ -242,7 +254,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.rebase("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGitConflictException, e:
             pass
         self.assertTrue(repo.isrebasing())
         repo.abort()
@@ -253,7 +265,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGitConflictException, e:
             self.assertTrue("conflict" in str(e))
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -261,27 +273,12 @@ class GeogitRepositoryTest(unittest.TestCase):
         conflicts = repo.conflicts()
         self.assertEquals(0, len(conflicts))  
 
-    def testCantContinueMerging(self):
-        repo = self.getClonedRepo()
-        try:
-            repo.merge("conflicted")
-            self.fail()
-        except GeoGitException, e:
-            self.assertTrue("conflict" in str(e))
-        conflicts = repo.conflicts()
-        self.assertEquals(1, len(conflicts))
-        try:
-            repo.continue_()
-            self.fail()
-        except GeoGitException, e:
-            pass
-
     def testContinueRebasing(self):
         repo = self.getClonedRepo()
         try:
             repo.rebase("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGitConflictException, e:
             self.assertTrue("conflict" in str(e))
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -293,7 +290,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGitConflictException, e:
             self.assertTrue("conflict" in str(e))
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -334,7 +331,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo.addremote("myremote", "http://myremoteurl.com")
         remotes = repo.remotes()
         self.assertTrue(("myremote", "http://myremoteurl.com") in remotes)
-        repo.deleteremote("myremote")
+        repo.removeremote("myremote")
         remotes = repo.remotes()
         self.assertEquals(1, len(remotes))
         self.assertFalse(("myremote", "http://myremoteurl.com") in remotes)

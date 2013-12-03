@@ -26,9 +26,10 @@ class Repository:
             self.init()        
         #Only local repos suported so far, so we check it                    
         self.connector.checkisrepo()
+        self.cleancache()
 
     def cleancache(self):
-        self._logcache = []
+        self._logcache = None
         
     def revparse(self, rev):
         '''returns the SHA-1 of a given element, represented as a string'''
@@ -38,12 +39,21 @@ class Repository:
         '''Returns a Commitish representing the current HEAD'''
         return self.connector.head()
     
+    def isdetached(self):
+        ref = self.head().ref
+        resolved = self.revparse(ref)
+        return ref == resolved
+    
     def log(self, ref = None, path = None):
         '''
-        Returns a list of Commitish starting from the passed ref, or HEAD if there is no passed ref.
+        Returns a list of Commit starting from the passed ref, or HEAD if there is no passed ref.
         If a path is passed, it only returns commits in which that path was modified
-        '''        
-        return self.connector.log(ref or geogit.HEAD, path)
+        '''     
+        if self._logcache is not None and path is None or path == geogit.HEAD:  
+            return self._logcache 
+        else:
+            self._logcache = self.connector.log(ref or geogit.HEAD, path)
+            return self._logcache
     
     def trees(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''returns a set of Tree objects with all the trees for the passed ref and path'''       
@@ -122,9 +132,10 @@ class Repository:
             conflicts[path] = c
         return conflicts
 
-    def checkout(self, ref, paths = None):
-        '''Checks out the passed ref'''
-        return self.connector.checkout(ref, paths)
+    def checkout(self, ref, paths = None, force = False):
+        '''Checks out the passed ref'''        
+        self.connector.checkout(ref, paths, force)
+        self.cleancache()
     
     def updatepathtoref(self, ref, paths):
         '''
@@ -146,7 +157,7 @@ class Repository:
 
     def add(self, paths = []):
         '''Adds the passed paths to the staging area. If no paths are passed, it will add all the unstaged ones'''
-        return self.connector.add(paths)
+        self.connector.add(paths)
 
     def addandcommit(self, message, paths = []):
         self.add(paths)
@@ -157,7 +168,9 @@ class Repository:
         Creates a new commit with the changes in the specified paths.
         If no paths are passed, it will commit all staged features
         '''        
-        return self.connector.commit(message, paths)
+        self.connector.commit(message, paths)
+        self.cleancache()
+        #TODO: maybe add the commit instead of invaliating the whole cache
     
     def blame(self, path):
         '''
@@ -212,8 +225,10 @@ class Repository:
         return self.connector.featurediff(ref, ref2, path)
     
     def reset(self, ref, mode = geogit.RESET_MODE_HARD, path = None):
-        '''Resets the current branch to the passed reference'''
-        return self.connector.reset(ref, mode, path)
+        '''Resets the current branch to the passed reference'''        
+        self.connector.reset(ref, mode, path)
+        self.cleancache()
+        
        
     def exportshp(self, ref, path, shapefile):
         self.connector.exportshp(ref, path, shapefile)
@@ -255,10 +270,12 @@ class Repository:
     def merge(self, ref, nocommit = False, message = None):
         '''Merges the passed ref into the current branch'''
         self.connector.merge(ref, nocommit, message)
+        self.cleancache()        
         
     def rebase(self, ref):
         '''rebases the current branch using the passed ref'''
-        self.connector.rebase(ref)          
+        self.connector.rebase(ref)
+        self.cleancache()                  
 
     def abort(self):
         '''
@@ -277,6 +294,7 @@ class Repository:
     def cherrypick(self, ref):
         '''Cherrypicks a commit into the current branch'''
         self.connector.cherrypick(ref)
+        self.cleancache()        
         
     def remotes(self):
         '''Returns a list with tuples (remote_name, remote_url)'''
@@ -286,7 +304,7 @@ class Repository:
         '''Adds a new remote'''
         self.connector.addremote(name, url)        
         
-    def deleteremote(self, name):
+    def removeremote(self, name):
         '''Removes a remote'''
         self.connector.removeremote(name)    
         
@@ -299,10 +317,17 @@ class Repository:
         return self.connector.isrebasing()
     
     def downloadosm(self, osmurl, bbox):
-        self.connector.downloadosm(osmurl, bbox) 
+        self.connector.downloadosm(osmurl, bbox)
+        self.cleancache() 
         
     def show(self, ref):
-        return self.connector.show(ref)              
+        return self.connector.show(ref)  
+    
+    def config(self, param, value):
+        return self.connector.config(param, value)
+    
+    def getconfig(self, param):
+        return self.connector.getconfig(param)
     
     def init(self):                
         self.connector.init()
