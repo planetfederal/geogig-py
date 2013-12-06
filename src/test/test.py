@@ -14,7 +14,6 @@ from repotest import GeogitRepositoryTest
 from treetest import GeogitTreeTest
 from featuretest import GeogitFeatureTest
 from commitishtest import GeogitCommitishTest
-from temptest import GeogitTempTest
 
 def getTempRepoPath():
     return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
