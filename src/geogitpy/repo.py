@@ -5,10 +5,10 @@ from feature import Feature
 from tree import Tree
 from utils import mkdir
 from py4jconnector import Py4JCLIConnector
+import tempfile
 
 class Repository:
-    
-    usecache = True
+        
     _logcache = []
 
     def __init__(self, url, connector = None, init = False):
@@ -40,9 +40,29 @@ class Repository:
         return self.connector.head()
     
     def isdetached(self):
+        '''Returns true if the repos has a detached HEAD'''
         ref = self.head().ref
         resolved = self.revparse(ref)
         return ref == resolved
+    
+    def sync(self):
+        '''Runs a "pull --rebase" command an then a "push" one to synchronize with the remote repository
+        It uses the "origin" remote if it exists, otherwise it uses the first remote available.
+        Throws an exception if the working tree an index are not clean or no remote is defined.
+        It stores the time and date of the sync operation, so it can be later checked'''        
+        pass
+        
+    def synced(self):
+        '''Returns true if the repo is up to date with the remote.
+        It uses the "origin" remote if it exists, otherwise it uses the first remote available.
+        If no remote is defined, it will return false'''
+        #TODO
+        return False
+    
+    def lastsync(self):
+        '''Returns the time the last time this repository was synchronized'''
+        pass
+        
     
     def log(self, ref = None, path = None):
         '''
@@ -236,9 +256,6 @@ class Repository:
     def exportsl(self, ref, path, database):
         '''Export to a SpatiaLite database'''
         self.connector.exportsl(ref, path, database)        
-    
-    def importosm(self, osmfile, add):
-        self.connector.importosm(osmfile, add)
         
     def importshp(self, shpfile, add = False, dest = None):
         self.connector.importshp(shpfile, add, dest)
@@ -317,10 +334,39 @@ class Repository:
         return self.connector.isrebasing()
     
     def downloadosm(self, osmurl, bbox):
-        self.connector.downloadosm(osmurl, bbox)
+        '''Downloads from a OSM server using the overpass API.
+        The bbox parameter defines the extent of features to download.
+        Accepts a mapping or '''
+        self.connector.downloadosm(osmurl, bbox, mappingOrFile = None)
         self.cleancache() 
         
+        
+    def _mapping(self, mappingorfile):
+        if isinstance(mappingorfile, basestring):
+            return mappingorfile
+        else:
+            try:
+                f = tempfile.NamedTemporaryFile(delete = False)
+                f.write(mappingorfile.asjson())   
+                f.close()
+                return f.name
+            finally:
+                f.close()
+                
+    def importosm(self, osmfile, add = False, mappingorfile = None):
+        mappingfile = None
+        if mappingorfile is not None:
+            mappingfile = self._mapping(mappingorfile)        
+        self.connector.importosm(osmfile, add, mappingfile)
+        
+    def maposm(self, mappingorfile):
+        '''Applies a mapping to the OSM ata in the repo.
+        The mapping can be passed as a file path to a mapping file, or as a OSMMapping object'''
+        mappingfile = self._mapping(mappingorfile)
+        self.connector.maposm(mappingfile)
+
     def show(self, ref):
+        '''Returns the description of an element, as printed by the GeoGit show comand'''
         return self.connector.show(ref)  
     
     def config(self, param, value):

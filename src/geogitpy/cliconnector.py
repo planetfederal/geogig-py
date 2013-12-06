@@ -267,7 +267,7 @@ class CLIConnector():
             
     def commit(self, message, paths = []):
         commands = ['commit', '-m']
-        commands.append(message)
+        commands.append('"%s"' % message)
         commands.extend(paths)
         self.run(commands)               
              
@@ -287,16 +287,24 @@ class CLIConnector():
                 diffs.append(self.diffentryFromString(line))
         return diffs
     
-    def importosm(self, osmfile, add):
+    def importosm(self, osmfile, add = False, mappingfile = None):
         commands = ["osm", "import", osmfile]        
         if add:
             commands.extend(["--add"])
+        if mappingfile is not None:
+            commands.extend(["--mapping", mappingfile])
         self.run(commands)
         
-    def downloadosm(self, osmurl, bbox):
+    def downloadosm(self, osmurl, bbox, mappingfile = None):
         commands = ["osm", "download", osmurl, "--bbox"]
-        commands.extend([str(c) for c in bbox])                
+        commands.extend([str(c) for c in bbox])         
+        if mappingfile is not None:
+            commands.extend(["--mapping", mappingfile])       
         self.run(commands)        
+        
+    def maposm(self, mappingfile):
+        commands = ["osm", "map", mappingfile]
+        self.run(commands) 
         
     def importshp(self, shapefile, add = False, dest = None):
         commands = ["shp", "import", shapefile]

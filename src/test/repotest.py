@@ -138,6 +138,24 @@ class GeogitRepositoryTest(unittest.TestCase):
         log = repo.log()
         self.assertEqual(5, len(log))
         self.assertTrue("message", log[4].message)
+        
+    def testCommitWithMessageWithBlankSpaces(self):
+        repo = self.getClonedRepo()
+        log = repo.log()
+        self.assertEqual(4, len(log))
+        path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
+        repo.importshp(path)
+        repo.add()
+        unstaged = repo.unstaged()
+        self.assertFalse(unstaged)
+        staged = repo.staged()
+        self.assertTrue(staged)
+        repo.commit("A message with blank spaces")
+        staged = repo.staged()
+        self.assertFalse(staged)
+        log = repo.log()
+        self.assertEqual(5, len(log))
+        self.assertTrue("A message with blank spaces", log[4].message)
 
     def testCreateReadAndDeleteBranch(self): 
         repo = self.getClonedRepo()       
@@ -353,6 +371,39 @@ class GeogitRepositoryTest(unittest.TestCase):
             self.assertTrue("conflict" in str(e))
         log = repo.log()
         self.assertTrue(ref, log[0].ref)
+        
+    def testOsmImport(self):
+        repoPath =  self.getTempRepoPath()         
+        repo = Repository(repoPath, init = True)
+        osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")        
+        repo.importosm(osmfile)
+        feature = Feature(repo, geogit.WORK_HEAD, "way/31045880")
+        self.assertTrue(feature.exists())
+        
+    def testOsmImportWithMappingFile(self):
+        repoPath =  self.getTempRepoPath()         
+        repo = Repository(repoPath, init = True)
+        osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")
+        mappingfile = os.path.join(os.path.dirname(__file__), "data", "osm", "mapping.json")
+        repo.importosm(osmfile, False, mappingfile)     
+        feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
+        self.assertTrue(feature.exists())
+        
+    def testOsmImportWithMapping(self):
+        pass 
+        
+    def testOsmMapping(self):
+        repoPath =  self.getTempRepoPath()         
+        repo = Repository(repoPath, init = True)
+        osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")
+        mappingfile = os.path.join(os.path.dirname(__file__), "data", "osm", "mapping.json")
+        repo.importosm(osmfile)
+        repo.add()
+        repo.commit("message")   
+        repo.maposm(mappingfile)
+        feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
+        self.assertTrue(feature.exists())
+        
 
 
 
