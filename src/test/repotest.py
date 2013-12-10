@@ -8,6 +8,7 @@ from geogitpy.feature import Feature
 import unittest
 from geogitpy import geogit
 from shapely.geometry import MultiPolygon
+from geogitpy.osmmapping import OSMMapping, OSMMappingRule
 
 class GeogitRepositoryTest(unittest.TestCase):
         
@@ -17,8 +18,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
     def getClonedRepo(self):        
-        dst = self.getTempRepoPath()
-        print dst
+        dst = self.getTempRepoPath()        
         return self.repo.clone(dst)        
 
     def testCreateEmptyRepo(self):    
@@ -390,7 +390,19 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue(feature.exists())
         
     def testOsmImportWithMapping(self):
-        pass 
+        mapping = OSMMapping()
+        rule = OSMMappingRule("onewaystreets")
+        rule.addfilter("oneway", "yes")
+        rule.addfield("lit", "lit", geogit.TYPE_STRING)
+        rule.addfield("geom", "the_geom", geogit.TYPE_LINESTRING)
+        mapping.addrule(rule)
+        repoPath =  self.getTempRepoPath()         
+        repo = Repository(repoPath, init = True)
+        osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")        
+        repo.importosm(osmfile, False, mapping)     
+        feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
+        self.assertTrue(feature.exists())
+        
         
     def testOsmMapping(self):
         repoPath =  self.getTempRepoPath()         
