@@ -79,7 +79,7 @@ That was done on the current branch, but we can use other branches as well. Let'
 
 ::
 
-	>>> branch = repo.branch('my_branch_name')
+	>>> branch = repo.branches['mybranch']
 	>>> log = branch.log()   
 	>>> print log[0]   	
 	[...]    
@@ -91,15 +91,14 @@ Let's explore the tree corresponding to the tip of that branch
 
 ::
 
-	>>> root = log[0].root()
+	>>> root = log[0].root
 
 	
 ``root`` is a ``Tree`` object that points to the root tree in that snapshot. We can see the subtrees it contains.
 	
 ::
-
-	>>> trees = root.trees()
-	>>> for subtree in trees:
+	
+	>>> for subtree in root.trees:
 	>>>     print subtree
 	parks
 	roads
@@ -107,9 +106,8 @@ Let's explore the tree corresponding to the tip of that branch
 Each subtree is a ``Tree`` object itself, and we can see its trees and its features.
 
 ::
-	
-	>>> features = trees[0].features()
-	>>> for feature in features:        
+		
+	>>> for feature in trees[0].features: 
 	>>>     print feature
 	parks/park1
 	parks/park2
@@ -119,8 +117,7 @@ And we can see the attributes of a feature.
 
 ::
 	
-	>>> attrs = features[0].attributes()        
-	>>> print attrs
+	>>> print tree[0].features[0].attributes        	
 	{'open': True, 'name': 'Central park', 'area': 23876.5, "the_geom": MULTIPOLYGON (((-122.87290 42.335, ...
 
 Geometries are Shapely objects, so you can use methods from the Shapely library to operate on them.
