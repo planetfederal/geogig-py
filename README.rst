@@ -8,11 +8,26 @@ This library is designed to provide access to all GeoGit functionality, so it ca
 Installation
 -------------
 
-The `Shapely <https://pypi.python.org/pypi/Shapely>`_ library is required for handling geometries and should be present in your PYTHONPATH.
+To install, use ``pip`` or ``easy_install``
 
-The `Py4J <http://py4j.sourceforge.net/index.html>`_ library is required if using the connector based on a Py4J gateway (see the :ref:`arquitecture` section below to learn more about connectors).
+::
+	
+	$ pip install geogit-py
 
-You can manually install both libraries using ``pip`` or ``easy_install``. There is also a ``setup.py`` script in the repository root folder to install all required dependencies.
+or
+
+::
+
+	$ easy_install geogit-py
+
+For developers wanting to improve or modify ``geogit-py``, you should clone the GitHub repo and then install the library in a virtual environment, following these steps
+
+::
+
+	$ git clone git://github.com/boundlessgeo/geogit-py.git 
+	$ cd geogit-py 
+	$ python setup.py develop (`virtualenv <http://virtualenv.org/>`_ of your choice)
+
 
 GeoGit is not installed, and it is assumed to be already installed in your system.
 
@@ -26,7 +41,7 @@ Instantiate a repository passing its URL, and you will have all commands availab
 ::
 
 	>>> #create an empty repository
-	>>> repo = Repository('path/to/repository/folder', init = true)
+	>>> repo = Repository('path/to/repository/folder', init = True)
 	>>> #import data
 	>>> repo.importshp("/path/to/shp/file")
 	>>> #add unstaged features
@@ -131,5 +146,16 @@ Architecture. Connectors
 The ``repo`` object delegates most of its work to a connector, which communicates with a GeoGit instance. Currently there are two on connectors available:
 
 - A CLI-based connector, which uses the console to call the GeoGit comand-line interface and parses its output. It assumes that GeoGit is installed in your system and available in your current PATH. Basically, if you open a console, type ``geogit`` and you get the GeoGit help, you are ready to use a ``geogitpy`` repository using the CLI connector. This is far from efficient, as it has to call GeoGit (and thus, start a JVM) each time an operation is performed. 
+
 - A Py4J-based connector, which communicates with a GeoGit gateway server. To start the server, you can run ``geogit-gateway`` on a console. If the server is not running and accepting GeoGit commands, the connector will try to start it. In this case, it will assume that, as in the case of running a CLI-based connector, GeoGit is installed and available in your current path. More specifically, the ``geogit-gateway`` script should be available.
+
+If the server is not running and the ``geogit-gateway`` script is not available, you can pass the path to the folder with GeoGit launch scripts as argument to the connector constructor, and then use that connector when creating the ``Repository`` object. Here is an example.
+
+::
+
+	connector = Py4JCLIConnector('path/to/geogit/scritps')
+	repo = Repository('path/to/repo', connector)
+
+
+By default, a ``Repository`` object uses a Py4J-based connector (without any path for GeoGit scripts, so it assumes they are in PATH) if no connector is passed.
 

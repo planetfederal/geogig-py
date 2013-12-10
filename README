@@ -1,1 +1,1 @@
-README.rst
+geogit-py is designed to provide access to all GeoGit functionality, so it can be used to script tasks or as the base library for a GeoGit client.
