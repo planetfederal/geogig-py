@@ -40,27 +40,29 @@ class Repository:
         '''returns the SHA-1 of a given element, represented as a string'''
         return self.connector.revparse(rev)
 
+    @property
     def head(self):
         '''Returns a Commitish representing the current HEAD'''
-        return Commitish(geogit.HEAD)
+        return self.connector.head()
     
+    @property
     def index(self):
         '''Returns a Commitish representing the index'''
-        return Commitish(geogit.STAGE_HEAD)
+        return Commitish(self, geogit.STAGE_HEAD)
     
+    @property
     def workingtree(self):
         '''Returns a Commitish representing workingtree'''
-        return Commitish(geogit.WORK_HEAD)
+        return Commitish(self, geogit.WORK_HEAD)
     
+    @property
     def master(self):
         '''Returns a Commitish representing the master branch'''
         return Commitish(self, geogit.MASTER)
     
     def isdetached(self):
         '''Returns true if the repos has a detached HEAD'''
-        ref = self.head().ref
-        resolved = self.revparse(ref)
-        return ref == resolved
+        return  self.head.id == self.head.ref
     
     def sync(self):
         '''Runs a "pull --rebase" command an then a "push" one to synchronize with the remote repository
@@ -105,21 +107,16 @@ class Repository:
         '''Returns a set of Tree and Feature objects with all the trees for the passed ref and path'''          
         return self.connector.children(ref, path, recursive)                           
         
+    @property
     def branches(self):        
-        ''' Returns a list of tuples (branch_name, branch_ref) with the tips of branches in the repo'''
+        ''' a dict with branch names as keys and branch refs as values'''
         return self.connector.branches()
     
+    @property
     def tags(self):   
-        ''' Returns a list of tuple with the tags in the repo, in the form (tag_name, tag_commitid)'''     
+        ''' a dict with tag names as keys and tag commit ids as values'''     
         return self.connector.tags()
-    
-    def branch(self, name):        
-        '''Returns a Commitish corresponding to the branch of the passed name'''
-        for branch in self.branches():
-            if branch[0] == name:
-                return branch[1]
-        raise GeoGitException("Specified branch does not exist")
-    
+       
     def clone(self, path):
         '''clones this repo in the specified path. Returns a reference to the cloned repo'''
         url = self.url.replace('\\', '/')

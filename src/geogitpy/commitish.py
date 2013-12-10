@@ -11,6 +11,11 @@ class Commitish(object):
         self.repo = repo
         self._diff = None
     
+    @property
+    def id(self):
+        '''Returns the SHA1 ID of this commitish'''
+        return self.repo.revparse(self.ref)
+        
     def log(self):
         '''Return the history up to this Commitish'''
         return self.repo.log(self.ref)

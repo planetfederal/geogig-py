@@ -61,7 +61,17 @@ class CLIConnector():
         if len(id) != 40:
             raise GeoGitException("Cannot resolve the provided reference")        
         return id
-           
+    
+    def head(self):
+        self.checkisrepo()
+        headfile = os.path.join(self.repo.url, '.geogit', 'HEAD')
+        f = open(headfile)
+        line = f.readline()
+        f.close()
+        ref = line.strip().split()[-1]
+        if ref.startswith("refs/heads/"):
+            ref = ref[len("refs/heads/"):]
+        return Commitish(self.repo, ref)           
 
     def isrebasing(self):
         self.checkisrepo()
@@ -216,12 +226,12 @@ class CLIConnector():
             self.run(command)                    
         
     def _refs(self, prefix):
-        refs = []        
+        refs = {}
         output = self.run(['show-ref'])    
         for line in output:            
             tokens = line.strip().split(" ")
             if tokens[1].startswith(prefix):
-                refs.append((tokens[1][len(prefix):], tokens[0]))
+                refs[tokens[1][len(prefix):]] = tokens[0]
         return refs
 
     def branches(self):    
@@ -270,8 +280,7 @@ class CLIConnector():
     
     def diff(self, ref, refb):    
         diffs = []
-        output = self.run(['diff-tree', ref, refb])
-        print output    
+        output = self.run(['diff-tree', ref, refb])        
         for line in output:
             if line != '':
                 diffs.append(self.diffentryFromString(line))

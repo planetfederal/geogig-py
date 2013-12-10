@@ -26,12 +26,12 @@ class GeogitRepositoryTest(unittest.TestCase):
         Repository(repoPath, init = True)    
     
     def testRevParse(self):
-        headid = self.repo.revparse("HEAD")
+        headid = self.repo.revparse(geogit.HEAD)
         entries = self.repo.log()
         self.assertEquals(entries[0].commitid, headid)
         
     def testHead(self):
-        head = self.repo.head()
+        head = self.repo.head
         self.assertEquals("master", head.ref)        
         
     def testIsDetached(self):
@@ -72,7 +72,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(geogit.HEAD, trees[0].ref)        
     
     def testTreesAtCommit(self):
-        head = self.repo.head()
+        head = self.repo.head
         parent = head.parent()
         trees = parent.root().trees()
         self.assertEquals(1, len(trees))
@@ -159,25 +159,17 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testCreateReadAndDeleteBranch(self): 
         repo = self.getClonedRepo()       
-        branches = repo.branches()
+        branches = repo.branches
         self.assertEquals(3, len(branches))
         repo.createbranch(geogit.HEAD, "anewbranch")
-        branches = repo.branches()
-        self.assertEquals(4, len(branches))
-        names = [c[0] for c in branches]        
-        self.assertTrue("anewbranch" in names)
+        branches = repo.branches
+        self.assertEquals(4, len(branches))                                
+        self.assertTrue("anewbranch" in branches)
         repo.deletebranch("anewbranch")
-        branches = repo.branches()
-        self.assertEquals(3, len(branches))
-        names = [c[0] for c in branches]
-        self.assertFalse("anewbranch" in names)
+        branches = repo.branches
+        self.assertEquals(3, len(branches))        
+        self.assertFalse("anewbranch" in branches)
 
-    def testGetWrongBranch(self):
-        try:
-            self.repo.branch("WrOnGReF")
-            self.fail()
-        except GeoGitException, e:
-            pass
 
     def testBlame(self):
         feature = self.repo.feature(geogit.HEAD, "parks/5")
@@ -200,14 +192,14 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testCreateReadAndDeleteTag(self):
         repo = self.getClonedRepo()
-        tags = repo.tags()
+        tags = repo.tags
         self.assertEquals(0, len(tags))
-        self.repo.createtag(self.repo.head().ref, "anewtag", "message1")
-        tags = self.repo.tags()
+        self.repo.createtag(self.repo.head.ref, "anewtag", "message1")
+        tags = self.repo.tags
         self.assertEquals(1, len(tags))        
-        self.assertEquals("anewtag", tags[0][0])
+        self.assertTrue("anewtag" in tags)
         self.repo.deletetag("anewtag")
-        tags = self.repo.tags()
+        tags = self.repo.tags
         self.assertEquals(0, len(tags))        
 
     def testModifyFeature(self):
@@ -253,7 +245,10 @@ class GeogitRepositoryTest(unittest.TestCase):
         conflicted = repo.revparse("conflicted")                
         self.assertEquals(log[1].ref, conflicts["parks/5"][0].ref) 
         self.assertEquals(log[0].ref, conflicts["parks/5"][1].ref)
-        self.assertEquals(conflicted, conflicts["parks/5"][2].ref)      
+        self.assertEquals(conflicted, conflicts["parks/5"][2].ref)   
+        
+    def testSolveConflict(self):
+        pass   
 
     def testIsMerging(self):
         repo = self.getClonedRepo()

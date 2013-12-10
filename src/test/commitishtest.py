@@ -36,10 +36,10 @@ class GeogitCommitishTest(unittest.TestCase):
         repo = self.getClonedRepo()
         branch = Commitish(repo, "conflicted")
         branch.checkout()
-        self.assertEquals(repo.head().ref, branch.ref)
+        self.assertEquals(repo.head.id, branch.id)
         master = Commitish(repo, geogit.MASTER)
         master.checkout()
-        self.assertEquals(repo.head().ref, master.ref)
+        self.assertEquals(repo.head.id, master.id)
 
     def testDiff(self):
         commitish = Commitish(self.repo, geogit.HEAD)

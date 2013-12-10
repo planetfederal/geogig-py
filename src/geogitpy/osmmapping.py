@@ -31,9 +31,6 @@ class OSMMapping(object):
         self.rules.append(rule)
         
     def asjson(self):
-        for rule in self.rules:
-            print rule.asjson()
-        j = json.dumps(self, default=lambda o: o.__dict__,sort_keys=True)
-        print j
-        return j
+        return json.dumps(self, default=lambda o: o.__dict__,sort_keys=True)
+
   
