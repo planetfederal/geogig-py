@@ -28,7 +28,9 @@ def _connect(geogitPath):
             _gateway.entry_point.isGeoGitServer()                   
         except Exception, e:
             _gateway = None
-            raise Exception("Cannot start GeoGit gateway server")               
+            raise Exception("Cannot start GeoGit gateway server.\n"
+                            +"Check that 'geogit-gateway' is available in PATH.\n"
+                            +"If problems persist, start the gateway server manually.")               
 
 def _javaGateway(geogitPath):    
     global _gateway
