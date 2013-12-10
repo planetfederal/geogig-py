@@ -2,7 +2,6 @@ import subprocess
 import os
 import tempfile
 import logging
-import geogit
 from feature import Feature
 from tree import Tree
 from commit import Commit
@@ -63,17 +62,7 @@ class CLIConnector():
             raise GeoGitException("Cannot resolve the provided reference")        
         return id
            
-    def head(self):
-        self.checkisrepo()
-        headfile = os.path.join(self.repo.url, '.geogit', 'HEAD')
-        f = open(headfile)
-        line = f.readline()
-        f.close()
-        ref = line.strip().split()[-1]
-        if ref.startswith("refs/heads/"):
-            ref = ref[len("refs/heads/"):]
-        return Commitish(self.repo, ref)
-    
+
     def isrebasing(self):
         self.checkisrepo()
         headfile = os.path.join(self.repo.url, '.geogit', 'ORIG_HEAD')
@@ -170,7 +159,7 @@ class CLIConnector():
         
     def log(self, ref, path = None):
         commits = []
-        commands = ['rev-list', ref, '--changed']        
+        commands = ['rev-list', ref]        
         if path is not None:
             commands.extend(["-p", path])
         try:
@@ -180,7 +169,7 @@ class CLIConnector():
                 return []
             else:
                 raise e
-        
+                
         commitlines = []
         for line in output:
             if line == '':
@@ -281,7 +270,8 @@ class CLIConnector():
     
     def diff(self, ref, refb):    
         diffs = []
-        output = self.run(['diff-tree', ref, refb])    
+        output = self.run(['diff-tree', ref, refb])
+        print output    
         for line in output:
             if line != '':
                 diffs.append(self.diffentryFromString(line))

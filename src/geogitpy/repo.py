@@ -31,13 +31,30 @@ class Repository:
     def cleancache(self):
         self._logcache = None
         
+    def description(self):
+        '''returns the description of this repository'''
+        #TODO
+        return ''
+    
     def revparse(self, rev):
         '''returns the SHA-1 of a given element, represented as a string'''
         return self.connector.revparse(rev)
 
     def head(self):
         '''Returns a Commitish representing the current HEAD'''
-        return self.connector.head()
+        return Commitish(geogit.HEAD)
+    
+    def index(self):
+        '''Returns a Commitish representing the index'''
+        return Commitish(geogit.STAGE_HEAD)
+    
+    def workingtree(self):
+        '''Returns a Commitish representing workingtree'''
+        return Commitish(geogit.WORK_HEAD)
+    
+    def master(self):
+        '''Returns a Commitish representing the master branch'''
+        return Commitish(self, geogit.MASTER)
     
     def isdetached(self):
         '''Returns true if the repos has a detached HEAD'''
@@ -61,7 +78,8 @@ class Repository:
     
     def lastsync(self):
         '''Returns the time the last time this repository was synchronized'''
-        pass
+        #TODO
+        return ''
         
     
     def log(self, ref = None, path = None):
@@ -85,10 +103,7 @@ class Repository:
     
     def children(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''Returns a set of Tree and Feature objects with all the trees for the passed ref and path'''          
-        return self.connector.children(ref, path, recursive)                   
-            
-    def master(self):
-        return Commitish(self, geogit.MASTER)
+        return self.connector.children(ref, path, recursive)                           
         
     def branches(self):        
         ''' Returns a list of tuples (branch_name, branch_ref) with the tips of branches in the repo'''
