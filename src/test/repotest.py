@@ -66,15 +66,15 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertFalse(log)
 
     def testTreesAtHead(self):
-        trees = self.repo.trees()
+        trees = self.repo.trees
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)            
         self.assertEquals(geogit.HEAD, trees[0].ref)        
     
     def testTreesAtCommit(self):
         head = self.repo.head
-        parent = head.parent()
-        trees = parent.root().trees()
+        parent = head.parent
+        trees = parent.root.trees
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)
         entries = self.repo.log()      
@@ -95,7 +95,7 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testDiff(self):        
         repo = self.getClonedRepo()
-        diffs = repo.diff("master", Commitish(self.repo, "master").parent().ref)
+        diffs = repo.diff("master", Commitish(self.repo, "master").parent.ref)
         self.assertEquals(1, len(diffs))
         self.assertEquals("parks/5", diffs[0].path)
         self.assertEquals(TYPE_MODIFIED, diffs[0].type())
@@ -175,7 +175,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         feature = self.repo.feature(geogit.HEAD, "parks/5")
         blame = self.repo.blame("parks/5")        
         self.assertEquals(8, len(blame))
-        attrs = feature.attributes()
+        attrs = feature.attributes
         for k,v in blame.iteritems():
             self.assertTrue(v[0], attrs[k])
 
@@ -204,17 +204,17 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testModifyFeature(self):
         repo = self.getClonedRepo()
-        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes()
+        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes
         attrs["area"] = 1234.5
         repo.modifyfeature("parks/1", attrs)
-        attrs = Feature(repo, geogit.WORK_HEAD, "parks/1").attributes()
+        attrs = Feature(repo, geogit.WORK_HEAD, "parks/1").attributes
         self.assertEquals(1234.5, attrs["area"])
 
     def testAddFeature(self):
         repo = self.getClonedRepo()
-        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes()        
+        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes    
         repo.addfeature("parks/newfeature", attrs)
-        newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes()
+        newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes
         self.assertEquals(attrs, newattrs)       
 
     def testRemoveFeature(self):

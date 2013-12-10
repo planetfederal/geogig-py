@@ -8,12 +8,15 @@ class Tree(object):
         self.ref = ref
         self.path = path
         
+    @property        
     def trees(self):
-        return self.repo.trees(self.ref, self.path)
+        return self.repo._trees(self.ref, self.path)
         
+    @property        
     def features(self):
         return self.repo.features(self.ref, self.path)
     
+    @property
     def children(self):        
         return self.repo.children(self.ref, self.path)
     

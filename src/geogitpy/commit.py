@@ -10,12 +10,16 @@ class Commit(Commitish):
         self.repo = repo
         self.commitid = commitid
         self.treeid = treeid
-        self.parent = parent or NULL_ID
+        self._parent = parent or NULL_ID
         self.message = message
         self.authorname = authorname
         self.authordate = authordate
         self.commitername = commitername
         self.commiterdate = commiterdate
+        
+    @property
+    def parent(self):
+        return Commitish(self.repo, self._parent)
 
     def diff(self):
         '''Returns a list of DiffEntry with all changes introduced by this commitish'''

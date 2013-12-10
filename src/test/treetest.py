@@ -25,5 +25,5 @@ class GeogitTreeTest(unittest.TestCase):
 
     def testFeatures(self):
         tree = Tree(self.repo, geogit.HEAD, "parks")
-        features = tree.features()
+        features = tree.features
         self.assertEquals(5, len(features))

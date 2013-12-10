@@ -25,7 +25,7 @@ class GeogitCommitishTest(unittest.TestCase):
 
     def testRootTreeListing(self):
         commitish = Commitish(self.repo, geogit.HEAD)
-        trees = commitish.root().trees()        
+        trees = commitish.root.trees    
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)
         entries = self.repo.log()      

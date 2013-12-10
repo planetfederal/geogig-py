@@ -95,7 +95,11 @@ class Repository:
             self._logcache = self.connector.log(ref or geogit.HEAD, path)
             return self._logcache
     
-    def trees(self, ref = geogit.HEAD, path = None, recursive = False): 
+    @property
+    def trees(self):
+        return self._trees()
+        
+    def _trees(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''returns a set of Tree objects with all the trees for the passed ref and path'''       
         return [e for e in self.children(ref, path, recursive)  if isinstance(e, Tree)]
     

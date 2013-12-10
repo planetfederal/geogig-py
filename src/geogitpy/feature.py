@@ -9,6 +9,7 @@ class Feature(object):
         self._attributes = None
         self._featuretype = None
 
+    @property
     def attributes(self):
         '''
         returns the attributes of the feature in a dict  with attributes 
@@ -39,7 +40,7 @@ class Feature(object):
 
     def exists(self):
         try:
-            self.attributes()
+            self.attributes
             return True
         except GeoGitException, e:
             return False

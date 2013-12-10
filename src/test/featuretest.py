@@ -28,7 +28,7 @@ class GeogitFeatureTest(unittest.TestCase):
 
     def testAttributes(self):    	
         feature = Feature(self.repo, geogit.HEAD, "parks/1")    	            
-        data = feature.attributes()        
+        data = feature.attributes    
         self.assertEquals(8, len(data))
         self.assertEquals("Public", data["usage"])
         self.assertTrue("owner" in data)
@@ -54,7 +54,7 @@ class GeogitFeatureTest(unittest.TestCase):
         feature = Feature(self.repo, geogit.HEAD, "parks/5")
         blame = feature.blame()        
         self.assertEquals(8, len(blame))
-        attrs = feature.attributes()
+        attrs = feature.attributes
         for k,v in blame.iteritems():
             self.assertTrue(v[0], attrs[k])
 

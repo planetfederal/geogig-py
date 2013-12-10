@@ -20,6 +20,7 @@ class Commitish(object):
         '''Return the history up to this Commitish'''
         return self.repo.log(self.ref)
     
+    @property
     def root(self):
         '''Returns a Tree that represents the root tree at this snapshot'''
         return Tree(self.repo, self.ref)
@@ -34,6 +35,7 @@ class Commitish(object):
             self._diff = self.repo.diff(self.ref + '~1', self.ref)
         return self._diff
 
+    @property
     def parent(self):
         '''Returns a Commitish that represents the parent of this one'''
         return Commitish(self.repo, self.ref + '~1')
