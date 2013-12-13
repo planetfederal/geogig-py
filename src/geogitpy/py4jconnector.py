@@ -8,9 +8,10 @@ import time
 
 _proc = None
 _gateway = None
+_geogitPath = ""
 
-def _connect(geogitPath):
-    global _gateway    
+def _connect():    
+    global _gateway, _geogitPath    
     try: 
         _gateway = JavaGateway(start_callback_server=True)       
         _gateway.entry_point.isGeoGitServer()        
@@ -18,9 +19,9 @@ def _connect(geogitPath):
         _gateway = None                   
         global _proc
         if os.name == 'nt':
-            _proc = subprocess.Popen([geogitPath + "geogit-gateway.bat"], shell = True)
+            _proc = subprocess.Popen([_geogitPath + "geogit-gateway.bat"], shell = True)
         else:
-            _proc = subprocess.Popen(geogitPath + "geogit-gateway", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+            _proc = subprocess.Popen(_geogitPath + "geogit-gateway", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
         time.sleep(3) #improve this and wait until the "server started" string is printed out        
         try:            
@@ -28,14 +29,14 @@ def _connect(geogitPath):
             _gateway.entry_point.isGeoGitServer()                   
         except Exception, e:
             _gateway = None
-            raise Exception("Cannot start GeoGit gateway server.\n"
+            raise GeoGitException("Cannot start GeoGit gateway server.\n"
                             +"Check that 'geogit-gateway' is available in PATH.\n"
                             +"If problems persist, start the gateway server manually.")               
 
-def _javaGateway(geogitPath):    
+def _javaGateway():    
     global _gateway
     if _gateway is None:
-        _connect(geogitPath)
+        _connect()
     return _gateway
 
 def shutdownServer():    
@@ -48,12 +49,12 @@ def shutdownServer():
             pass #TODO        
         _proc = None
         
-def _runGateway(command, url, geogitPath):     
+def _runGateway(command, url):     
     command = " ".join(command)
     command = command.replace("\r", "")
-    _javaGateway(geogitPath).entry_point.setRepository(url)     
-    returncode = _javaGateway(geogitPath).entry_point.runCommand(command)
-    output = _javaGateway(geogitPath).entry_point.lastOutput()            
+    _javaGateway().entry_point.setRepository(url)     
+    returncode = _javaGateway().entry_point.runCommand(command)
+    output = _javaGateway().entry_point.lastOutput()            
     output = output.strip("\r\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
     if returncode:                                
@@ -61,40 +62,46 @@ def _runGateway(command, url, geogitPath):
     logging.info("Executed " + command + "\n" + " ".join(output[:5]))      
     return output    
 
+
+def removeProgressListener():
+    global _gateway    
+    _javaGateway().entry_point.removeProgressListener()
+
+def setProgressListener(listenerFunc):
+    class Listener(object):
+        def __init__(self, listener):
+            self.listener = listener
+        
+        def setProgress(self, i):
+            self.listener(i)
+
+        class Java:
+            implements = ['org.geogit.cli.GeoGitPy4JProgressListener']
+    
+    _javaGateway().entry_point.setProgressListener(Listener(listenerFunc))
+    
     
 class Py4JCLIConnector(CLIConnector):    
     ''' A connector that uses a Py4J gateway server to connect to geogit'''
 
-    def __init__(self, geogitPath = ""):
-        self.geogitPath = geogitPath 
+    def __init__(self):
         self.commandslog = []
         
     def silentProgress(self, i):
         pass
     
     @staticmethod
-    def clone(url, dest, geogitPath = ""):            
+    def clone(url, dest):            
         commands = ['clone', url, dest]
-        _runGateway(commands, url, geogitPath) 
+        _runGateway(commands, url) 
         
     def run(self, commands):
         self.commandslog.append(" ".join(commands))                
-        return _runGateway(commands, self.repo.url, self.geogitPath)
+        return _runGateway(commands, self.repo.url)
 
     def setRepository(self, repo):
         self.repo = repo    
-
-    def setProgressListener(self, listenerFunc):
-        class Listener(object):
-            def __init__(self, listener):
-                self.listener = listener
-            
-            def setProgress(self, i):
-                self.listener.setProgress(i)
-
-            class Java:
-                implements = ['org.geogit.cli.GeoGitPy4JProgressListener']
         
-        _javaGateway(self.geogitPath).entry_point.setProgressListener(Listener(listenerFunc))
+
 
         
