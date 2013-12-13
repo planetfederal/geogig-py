@@ -9,17 +9,23 @@ class Diffentry():
     
     '''A difference between to references for a given path''' 
     
-    def __init__(self, repo, oldref, newref, path):
+    def __init__(self, repo, oldcommitref, newcommitref, oldref, newref, path):
         self.repo = repo
         self.path = path
         self.oldref = oldref
         self.newref = newref
+        self.oldcommitref = oldcommitref
+        self.newcommitref = newcommitref
 
     def oldobject(self):
         return Feature(self.repo, self.oldref, self.path)
     
     def newobject(self):
         return Feature(self.repo, self.newref, self.path)
+    
+    def featurediff(self):
+        return self.repo.featurediff(self.oldcommitref, self.newcommitref, self.path)
+        
     
     def type(self):
         if self.oldref == NULL_ID:

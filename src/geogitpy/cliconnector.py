@@ -270,20 +270,20 @@ class CLIConnector():
         commands.extend(paths)
         self.run(commands)               
              
-    def diffentryFromString(self,line):
+    def diffentryFromString(self, oldcommitref, newcommitref, line):
         tokens = line.strip().split(" ")
         path = tokens[0]
         oldref = tokens[1]
         newref = tokens[2]
-        return Diffentry(self.repo, oldref, newref, path) 
+        return Diffentry(self.repo, oldcommitref, newcommitref, oldref, newref, path) 
     
     
-    def diff(self, ref, refb):    
+    def diff(self, refa, refb): 
         diffs = []
-        output = self.run(['diff-tree', ref, refb])        
+        output = self.run(['diff-tree', refa, refb])        
         for line in output:
             if line != '':
-                diffs.append(self.diffentryFromString(line))
+                diffs.append(self.diffentryFromString(refa, refb, line))
         return diffs
     
     def importosm(self, osmfile, add = False, mappingfile = None):

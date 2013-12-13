@@ -51,3 +51,10 @@ class GeogitCommitishTest(unittest.TestCase):
         commitish = Commitish(self.repo, geogit.HEAD)
         diff = commitish.diff()
         self.assertEquals(diff, commitish._diff)
+        
+    def testCommitDiff(self):
+        log = self.repo.log()
+        commit = log[0]        
+        diff = commit.diff()
+        self.assertEquals(1, len(diff))
+        self.assertEquals("parks/5", diff[0].path)
