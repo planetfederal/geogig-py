@@ -339,15 +339,15 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testRemotes(self):
         repo = self.getClonedRepo()
-        remotes = repo.remotes()
+        remotes = repo.remotes
         self.assertEquals(1, len(remotes))
         repo.addremote("myremote", "http://myremoteurl.com")
-        remotes = repo.remotes()
-        self.assertTrue(("myremote", "http://myremoteurl.com") in remotes)
+        remotes = repo.remotes
+        self.assertTrue("myremote" in remotes)
         repo.removeremote("myremote")
-        remotes = repo.remotes()
+        remotes = repo.remotes
         self.assertEquals(1, len(remotes))
-        self.assertFalse(("myremote", "http://myremoteurl.com") in remotes)
+        self.assertFalse("myremote" in remotes)
 
     def testCherryPick(self):
         repo = self.getClonedRepo()

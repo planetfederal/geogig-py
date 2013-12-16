@@ -156,15 +156,13 @@ class CLIConnector():
     def remotes(self):
         commands = ["remote", "list", "-v"]
         output = self.run(commands)
-        remotes = []
-        names = []
+        remotes = {}        
         for line in output:
             tokens = line.split()
             if len(tokens) != 3:
                 continue
-            if tokens[0] not in names:
-                remotes.append((tokens[0], tokens[1]))
-                names.append(tokens[0])
+            if tokens[0] not in remotes:
+                remotes[tokens[0]] =  tokens[1]                
         return remotes        
         
     def log(self, ref, path = None):
@@ -346,7 +344,8 @@ class CLIConnector():
        
     def featuredata(self, ref, path):  
         refandpath = ref + ":" + path      
-        output = self.run(["show", "--raw", refandpath])           
+        output = self.run(["show", "--raw", refandpath])  
+        print output         
         return self.parseattribs(output[2:]) 
 
     def cat(self, reference):

@@ -2,7 +2,6 @@ import unittest
 import os
 from geogitpy.repo import Repository
 import time
-import shutil
 from geogitpy import geogit
 from geogitpy.commitish import Commitish
 

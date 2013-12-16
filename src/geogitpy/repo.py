@@ -9,7 +9,7 @@ import tempfile
 
 class Repository:
         
-    _logcache = []
+    _logcache = None
 
     def __init__(self, url, connector = None, init = False):
         '''
@@ -71,12 +71,28 @@ class Repository:
         It stores the time and date of the sync operation, so it can be later checked'''        
         pass
         
-    def synced(self):
-        '''Returns true if the repo is up to date with the remote.
-        It uses the "origin" remote if it exists, otherwise it uses the first remote available.
-        If no remote is defined, it will return false'''
+    def synced(self, branch = geogit.HEAD):
+        '''Returns a tuple with (commits_in_local_but_not_in_remote, commits_in_remote_but_not_in_local)
+        It uses the passed branch or, if not passed, the current branch
+        If the repository is headless, or if not remote is define,, it will throw an exception 
+        It uses the "origin" remote if it exists, otherwise it uses the first remote available.'''
+        
+        return (1,1)
+        
+        if (branch == geogit.HEAD and self.isdetached()):
+            raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
+        remotes = self.remotes()
+        
+        if remotes:
+            if "origin" in remotes:
+                remote = remotes["origin"]
+            else:
+                remote = remotes.values()[0]
+        else:
+            raise GeoGitException("No remotes defined")
+                
         #TODO
-        return False
+        return (0,0)
     
     def lastsync(self):
         '''Returns the time the last time this repository was synchronized'''
@@ -328,9 +344,10 @@ class Repository:
         '''Cherrypicks a commit into the current branch'''
         self.connector.cherrypick(ref)
         self.cleancache()        
-        
+    
+    @property
     def remotes(self):
-        '''Returns a list with tuples (remote_name, remote_url)'''
+        '''Returns a dict with remote names as keys and remote urls as values'''
         return self.connector.remotes()
         
     def addremote(self, name, url):
