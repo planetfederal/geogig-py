@@ -20,7 +20,7 @@ def getTempRepoPath():
 
 
 def createRepo():
-    repo = Repository(getTempRepoPath(), connector = CLIConnector(), init = True)
+    repo = Repository(getTempRepoPath(), init = True)
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
     repo.importshp(path)   
     repo.addandcommit("message")
@@ -43,6 +43,7 @@ def createRepo():
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "6", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_6")
+    shutdownServer()
         
 
 def suite():
@@ -54,7 +55,7 @@ def suite():
     return suite
    
 
-if __name__ == '__main__':      
+if __name__ == '__main__': 
     runner=unittest.TextTestRunner()
     runner.run(suite())
     shutdownServer()
