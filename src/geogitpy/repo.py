@@ -159,10 +159,16 @@ class Repository:
         '''Deletes the passed tag'''
         self.connector.deletetag(name)
     
-    def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
-        '''Returns a list of DiffEntry representing the changes between 2 commits'''
+    def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD, path = None):
+        '''Returns a list of DiffEntry representing the changes between 2 commits.
+        If a path is passed, it only shows changes corresponing to that path'''
         return self.connector.diff(refa, refb)
     
+    def difftreestats(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
+        '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
+        in the form  (added, deleted, modified) corresponding to changes made to that path'''
+        return self.connector.difftreestats(refa, refb)
+        
     def unstaged(self):
         '''Returns a list of diffEntry with the differences between staging area and working tree'''
         return self.diff(geogit.STAGE_HEAD, geogit.WORK_HEAD);
@@ -222,7 +228,9 @@ class Repository:
         '''        
         self.connector.commit(message, paths)
         self.cleancache()
-        #TODO: maybe add the commit instead of invaliating the whole cache
+        print "invalidating"
+        print self._logcache
+        #TODO: maybe add the commit instead of invalidating the whole cache
     
     def blame(self, path):
         '''
@@ -285,12 +293,19 @@ class Repository:
     def exportshp(self, ref, path, shapefile):
         self.connector.exportshp(ref, path, shapefile)
         
-    def exportsl(self, ref, path, database):
+    def exportsl(self, ref, path, database, user = None):
         '''Export to a SpatiaLite database'''
-        self.connector.exportsl(ref, path, database)        
+        self.connector.exportsl(ref, path, database, user)        
         
+    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
+        pass
+            
     def importshp(self, shpfile, add = False, dest = None):
         self.connector.importshp(shpfile, add, dest)
+        
+    def importpg(self, database, user = None, password = None, table = None, 
+                 schema = None, host = None, port = None, add = False, dest = None):
+        pass            
 
     def addfeature(self, path, attributes):
         '''
@@ -393,7 +408,7 @@ class Repository:
         self.connector.importosm(osmfile, add, mappingfile)
         
     def maposm(self, mappingorfile):
-        '''Applies a mapping to the OSM ata in the repo.
+        '''Applies a mapping to the OSM data in the repo.
         The mapping can be passed as a file path to a mapping file, or as a OSMMapping object'''
         mappingfile = self._mapping(mappingorfile)
         self.connector.maposm(mappingfile)
@@ -407,6 +422,29 @@ class Repository:
     
     def getconfig(self, param):
         return self.connector.getconfig(param)
+    
+    def pull(self, remote, branch, rebase = False):
+        '''
+        Pulls from the specifed remote and specified branch. 
+        If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
+        In that case, and exception will be raised
+        If rebase == True, it will do a rebase instead of a merge
+        '''
+        if self.isdetached():
+            raise GeoGitException("HEAD is detached. Cannot pull")
+        branch = branch or self.head
+        return self.connector.pull(remote, branch, rebase)
+    
+    def push(self, remote, branch):
+        '''
+        Pushes to the specifed remote and specified branch. 
+        If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
+        In that case, and exception will be raised
+        '''
+        if self.isdetached():
+            raise GeoGitException("HEAD is detached. Cannot pull")
+        branch = branch or self.head
+        return self.connector.push(remote, branch)    
     
     def init(self):                
         self.connector.init()

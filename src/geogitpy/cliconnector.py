@@ -176,8 +176,7 @@ class CLIConnector():
             if str(e) == "HEAD does not resolve to a commit": #empty repo
                 return []
             else:
-                raise e
-                
+                raise e                
         commitlines = []
         for line in output:
             if line == '':
@@ -276,13 +275,25 @@ class CLIConnector():
         return Diffentry(self.repo, oldcommitref, newcommitref, oldref, newref, path) 
     
     
-    def diff(self, refa, refb): 
-        diffs = []
-        output = self.run(['diff-tree', refa, refb])        
+    def diff(self, refa, refb, path = None): 
+        diffs = []        
+        commands = ['diff-tree', refa, refb]
+        if path is not None:
+            commands.extend(["--", path])
+        output = self.run(commands) 
         for line in output:
             if line != '':
                 diffs.append(self.diffentryFromString(refa, refb, line))
         return diffs
+    
+    def difftreestats(self, refa, refb):
+        output = self.run(['diff-tree', refa, refb, "--tree-stats"])
+        stats = {}
+        for line in output:            
+            tokens = line.split(" ")
+            if len(tokens) == 4: 
+                stats[tokens[0]] = tuple(int(t) for t in tokens[1:])
+        return stats
     
     def importosm(self, osmfile, add = False, mappingfile = None):
         commands = ["osm", "import", osmfile]        
@@ -311,12 +322,15 @@ class CLIConnector():
             commands.append("--add")
         self.run(commands)
     
-    def importpg(self, database, user = None, password = None, table = None, host = None, port = None, add = False, dest = None):
+    def importpg(self, database, user = None, password = None, table = None, 
+                 schema = None, host = None, port = None, add = False, dest = None):
         commands = ["pg", "import", "--database",database]
         if user is not None:
             commands.extend(["--user", user])
         if password is not None:
             commands.extend(["--password", password])
+        if schema is not None:
+            commands.extend(["--schema", schema])            
         if port is not None:
             commands.extend(["--port", str(port)])            
         if dest is not None:
@@ -331,16 +345,32 @@ class CLIConnector():
             commands.append("--add")
         self.run(commands)
 
-    def exportpg(self, ref, path, database, user, password, host = None, port = None):
-        pass
-
+    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
+        table = table or path
+        refandpath = ref + ":" + path
+        commands = ["pg", "export", refandpath, table, "--database", database]                
+        if user is not None:
+            commands.extend(["--user", user])
+        if password is not None:
+            commands.extend(["--password", password])
+        if schema is not None:
+            commands.extend(["--schema", schema])  
+        if port is not None:
+            commands.extend(["--port", str(port)])                    
+        if host is not None:
+            commands.extend(["--host", host])
+        self.run(commands)
+        
     def exportshp(self, ref, path, shapefile):
         refandpath = ref + ":" + path
         self.run(["shp", "export", refandpath, shapefile, "-o"])
         
-    def exportsl(self, ref, path, database):
+    def exportsl(self, ref, path, database, user = None):
         refandpath = ref + ":" + path
-        self.run(["sl", "export", refandpath,  "--database", database, "exported"])
+        commands = ["sl", "export", refandpath,  "--database", database, path]
+        if user is not None:
+            commands.extend(["--user", user])
+        self.run(commands)
        
     def featuredata(self, ref, path):  
         refandpath = ref + ":" + path      
@@ -533,3 +563,13 @@ class CLIConnector():
     def getconfig(self, param):
         value =  self.run(["config", "--get", param])
         value = value[0] if value else None
+        
+    def pull(self, remote, branch, rebase = False):
+        commands = ["pull", remote, branch]
+        if rebase:
+            commands.append("--rebase")
+        self.run(commands)
+        
+    def push(self, remote, branch):
+        commands = ["push", remote, branch]        
+        self.run(commands)

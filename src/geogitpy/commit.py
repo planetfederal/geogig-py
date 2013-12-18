@@ -21,11 +21,16 @@ class Commit(Commitish):
     def parent(self):
         return Commitish(self.repo, self._parent)
 
-    def diff(self):
+    def diff(self, path = None):
         '''Returns a list of DiffEntry with all changes introduced by this commitish'''
         if self._diff is None:
-            self._diff = self.repo.diff(self.parent.ref, self.ref)
+            self._diff = self.repo.diff(self.parent.ref, self.ref, path)
         return self._diff
+    
+    def difftreestats(self):
+        '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
+        in the form  (added, deleted, modified) corresponding to changes made to that path'''
+        return self.repo.difftreestats(self.parent.ref, self.ref)
     
     def __str__(self):
         s = "id " + self.commitid + "\n"
