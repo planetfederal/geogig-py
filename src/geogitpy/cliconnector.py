@@ -371,6 +371,12 @@ class CLIConnector():
         if user is not None:
             commands.extend(["--user", user])
         self.run(commands)
+        
+    def exportdiffs(self, commit1, commit2, path, filepath, old = False):
+        commands = ["shp", "export-diff", commit1, commit2, path, filepath]
+        if old:
+            commands.append("--old")
+        self.run(commands)
        
     def featuredata(self, ref, path):  
         refandpath = ref + ":" + path      

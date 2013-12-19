@@ -102,6 +102,10 @@ class Py4JCLIConnector(CLIConnector):
     def setRepository(self, repo):
         self.repo = repo    
         
+    def checkIsAlive(self):
+        _connect()
+        
+        
 
 
         

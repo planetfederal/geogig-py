@@ -227,9 +227,7 @@ class Repository:
         If no paths are passed, it will commit all staged features
         '''        
         self.connector.commit(message, paths)
-        self.cleancache()
-        print "invalidating"
-        print self._logcache
+        self.cleancache()        
         #TODO: maybe add the commit instead of invalidating the whole cache
     
     def blame(self, path):
@@ -298,14 +296,19 @@ class Repository:
         self.connector.exportsl(ref, path, database, user)        
         
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
-        pass
+        self.connector.exportpg(ref, path, table, database, user, password, schema, host, port)
             
     def importshp(self, shpfile, add = False, dest = None):
         self.connector.importshp(shpfile, add, dest)
         
     def importpg(self, database, user = None, password = None, table = None, 
                  schema = None, host = None, port = None, add = False, dest = None):
-        pass            
+        self.connector.importpg(database, user, password, table, schema, host, port, add, dest)           
+
+    def exportdiffs(self, commit1, commit2, path, filepath, old = False):
+        '''Exports the differences in a given tree between to commits, creating a shapefile 
+        each to the newest of them, or the oldest one if old = False'''
+        self.connector.exportdiffs(commit1, commit2, path, filepath, old)
 
     def addfeature(self, path, attributes):
         '''
