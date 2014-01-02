@@ -1,4 +1,5 @@
 from tree import Tree
+import datetime
 
 class Commitish(object):
     
@@ -39,6 +40,16 @@ class Commitish(object):
     def parent(self):
         '''Returns a Commitish that represents the parent of this one'''
         return Commitish(self.repo, self.ref + '~1')
+    
+    def humantext(self):
+        '''Returns a nice human-readable description of the committish'''
+        if self.repo.head.ref == self.id:
+            return "Current last commit"
+        parent = self.repo.revparse(self.repo.head.ref + "~1")
+        if parent == self.id:
+            return "Commit before the last one"
+        return self.ref
+        
     
     def __str__(self):
         return str(self.ref)

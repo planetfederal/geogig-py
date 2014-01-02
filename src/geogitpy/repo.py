@@ -6,6 +6,8 @@ from tree import Tree
 from utils import mkdir
 from py4jconnector import Py4JCLIConnector
 import tempfile
+import time
+import datetime
 
 class Repository:
         
@@ -98,19 +100,32 @@ class Repository:
         '''Returns the time the last time this repository was synchronized'''
         #TODO
         return ''
-        
-    
-    def log(self, ref = None, path = None):
+            
+    def log(self, tip = None, until = None, since = None, path = None, n = None):
         '''
-        Returns a list of Commit starting from the passed ref, or HEAD if there is no passed ref.
+        Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref.
         If a path is passed, it only returns commits in which that path was modified
         '''     
-        if self._logcache is not None and path is None or path == geogit.HEAD:  
-            return self._logcache 
-        else:
-            self._logcache = self.connector.log(ref or geogit.HEAD, path)
-            return self._logcache
+        tip = tip or geogit.HEAD
+        if path is not None or until != geogit.HEAD:
+            return self.connector.log(tip, until, since, path, n)
+        if self._logcache is None:
+            self._logcache = self.connector.log(tip, until, since, path, n)  
+        return self._logcache 
     
+    def commitatdate(self, t):
+        '''Returns a Commit corresponding to a given instant, which is passed as a datetime.datetime'''        
+        epoch = datetime.datetime.utcfromtimestamp(0)
+        delta = t - epoch
+        milisecs = int(delta.total_seconds()) * 1000        
+        log = self.connector.log(geogit.HEAD, str(milisecs), n=1)
+        if log:
+            self._logcache = log
+            return log[0]
+        else:
+            raise GeoGitException("Invalid date for this repository")
+        
+        
     @property
     def trees(self):
         return self._trees()
@@ -182,7 +197,8 @@ class Repository:
         return self.diff(geogit.HEAD, geogit.WORK_HEAD);
     
     def conflicts(self):
-        '''Returns a list of tuples, each of them with the 3 versions defining a conflict, as Feature objects'''
+        '''Returns a dict of tuples. Keys are paths, values are tuples with the 3 versions 
+        defining a conflict, as Feature objects'''
         conflicts = {}
         _conflicts = self.connector.conflicts()
         for path, c in _conflicts.iteritems():
@@ -264,7 +280,7 @@ class Repository:
         Values are converted to appropiate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''            
-        entries = self.log(geogit.HEAD, path)        
+        entries = self.log(geogit.HEAD, path = path)        
         refs = [entry.ref + ":" + path for entry in entries]
         features = self.connector.featuresdata(refs)                
         versions = []

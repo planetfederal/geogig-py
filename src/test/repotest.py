@@ -9,6 +9,7 @@ import unittest
 from geogitpy import geogit
 from shapely.geometry import MultiPolygon
 from geogitpy.osmmapping import OSMMapping, OSMMappingRule
+import datetime
 
 class GeogitRepositoryTest(unittest.TestCase):
         
@@ -58,7 +59,21 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testLogInBranch(self):
         entries = self.repo.log("conflicted")
         self.assertEquals(4, len(entries))
-
+        
+    def testCommitAtDate(self):        
+        now = datetime.datetime.now()                
+        commit = self.repo.commitatdate(now)
+        log = self.repo.log()
+        self.assertEquals(log[0].message, commit.message)
+        
+    def testCommitAtWrongDate(self):
+        epoch = datetime.datetime.utcfromtimestamp(0)
+        try:
+            commit = self.repo.commitatdate(epoch)
+            self.fail()
+        except GeoGitException, e:
+            self.assertTrue("Invalid date" in str(e))
+            
     def testLogEmptyRepo(self):
         repoPath =  self.getTempRepoPath()         
         repo = Repository(repoPath, init = True) 

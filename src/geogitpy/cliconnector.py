@@ -165,11 +165,17 @@ class CLIConnector():
                 remotes[tokens[0]] =  tokens[1]                
         return remotes        
         
-    def log(self, ref, path = None):
-        commits = []
-        commands = ['rev-list', ref]        
+    def log(self, tip, until = None, since = None, path = None, n = None):
+        commits = []        
+        commands = ['rev-list', tip]        
         if path is not None:
             commands.extend(["-p", path])
+        if until is not None:
+            commands.extend(["--until", until])
+        if since is not None:
+            commands.extend(["--since", since])            
+        if n is not None:
+            commands.extend(["-n", str(n)])            
         try:
             output = self.run(commands)
         except GeoGitException, e:
