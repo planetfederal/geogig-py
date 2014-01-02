@@ -6,7 +6,7 @@ def read(*rnames):
 
 setup(
     name="geogit-py",
-    version="0.1",
+    version="0.1.1",
     install_requires=['Shapely>=1.2.9', 'py4j>=0.8'],
     author="Victor Olaya",
     author_email="volaya@boundlessgeo.com",
