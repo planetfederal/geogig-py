@@ -52,8 +52,8 @@ def shutdownServer():
 def _runGateway(command, url):     
     command = " ".join(command)
     command = command.replace("\r", "")
-    _javaGateway().entry_point.setRepository(url)     
-    returncode = _javaGateway().entry_point.runCommand(command)
+    #_javaGateway().entry_point.setRepository(url)     
+    returncode = _javaGateway().entry_point.runCommand(url, command)
     output = _javaGateway().entry_point.lastOutput()            
     output = output.strip("\r\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
