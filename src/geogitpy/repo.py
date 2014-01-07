@@ -74,16 +74,14 @@ class Repository:
         pass
         
     def synced(self, branch = geogit.HEAD):
-        '''Returns a tuple with (commits_in_local_but_not_in_remote, commits_in_remote_but_not_in_local)
+        '''Returns true if the repo is synced with a remote.
         It uses the passed branch or, if not passed, the current branch
         If the repository is headless, or if not remote is define,, it will throw an exception 
-        It uses the "origin" remote if it exists, otherwise it uses the first remote available.'''
-        
-        return (1,1)
+        It uses the "origin" remote if it exists, otherwise it uses the first remote available.'''    
         
         if (branch == geogit.HEAD and self.isdetached()):
             raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
-        remotes = self.remotes()
+        remotes = self.remotes
         
         if remotes:
             if "origin" in remotes:
@@ -93,8 +91,15 @@ class Repository:
         else:
             raise GeoGitException("No remotes defined")
                 
-        #TODO
-        return (0,0)
+        
+        conn = self.connector.__class__()
+        repo = Repository(remote.strip("file:/"), conn)
+        
+        remoteHead = repo.revparse(branch)
+        localHead = self.revparse(branch)
+        
+        return remoteHead == localHead
+        
     
     def lastsync(self):
         '''Returns the time the last time this repository was synchronized'''
@@ -177,7 +182,7 @@ class Repository:
     def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD, path = None):
         '''Returns a list of DiffEntry representing the changes between 2 commits.
         If a path is passed, it only shows changes corresponing to that path'''
-        return self.connector.diff(refa, refb)
+        return self.connector.diff(refa, refb, path)
     
     def difftreestats(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
         '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
@@ -314,8 +319,8 @@ class Repository:
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
         self.connector.exportpg(ref, path, table, database, user, password, schema, host, port)
             
-    def importshp(self, shpfile, add = False, dest = None):
-        self.connector.importshp(shpfile, add, dest)
+    def importshp(self, shpfile, add = False, dest = None, idAttribute = None):
+        self.connector.importshp(shpfile, add, dest, idAttribute)
         
     def importpg(self, database, user = None, password = None, table = None, 
                  schema = None, host = None, port = None, add = False, dest = None):
