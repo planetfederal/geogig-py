@@ -5,6 +5,7 @@ from cliconnector import CLIConnector
 import subprocess
 import os
 import time
+import gc
 
 _proc = None
 _gateway = None
@@ -49,13 +50,13 @@ def shutdownServer():
             pass #TODO        
         _proc = None
         
-def _runGateway(command, url):     
+def _runGateway(command, url): 
+    gc.collect()    
     command = " ".join(command)
-    command = command.replace("\r", "")
-    #_javaGateway().entry_point.setRepository(url)     
+    command = command.replace("\r", "")    
     returncode = _javaGateway().entry_point.runCommand(url, command)
     output = _javaGateway().entry_point.lastOutput()            
-    output = output.strip("\r\n").split("\n")
+    output = output.strip("\n\r").replace("\r", "\n").replace("\n\n", "\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
     if returncode:                                
         raise GeoGitException("\n".join(output))
