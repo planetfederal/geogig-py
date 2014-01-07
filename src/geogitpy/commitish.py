@@ -11,11 +11,14 @@ class Commitish(object):
         self.ref = ref
         self.repo = repo
         self._diff = None
+        self._id = None
     
     @property
     def id(self):
         '''Returns the SHA1 ID of this commitish'''
-        return self.repo.revparse(self.ref)
+        if self._id is None:
+            self._id = self.repo.revparse(self.ref)
+        return self._id
         
     def log(self):
         '''Return the history up to this Commitish'''
@@ -43,9 +46,10 @@ class Commitish(object):
     
     def humantext(self):
         '''Returns a nice human-readable description of the committish'''
-        if self.repo.head.ref == self.id:
+        headid = self.repo.revparse(self.repo.head.ref) 
+        if headid == self.id:
             return "Current last commit"
-        parent = self.repo.revparse(self.repo.head.ref + "~1")
+        parent = self.repo.revparse(headid + "~1")
         if parent == self.id:
             return "Commit before the last one"
         return self.ref

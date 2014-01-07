@@ -47,7 +47,7 @@ class Commit(Commitish):
         headid = self.repo.revparse(self.repo.head.ref) 
         if headid == self.id:
             return "Current last commit"
-        parent = self.repo.revparse(self.repo.head.ref + "~1")
+        parent = self.repo.revparse(headid + "~1")
         if parent == self.id:
             return "Commit before the last one"
         return "Commit from " + self.committerprettydate() +  self.committerdate.strftime(" (%m/%d/%y %H:%M)")
@@ -61,7 +61,7 @@ class Commit(Commitish):
     def prettydate(self, d):
         diff = datetime.datetime.utcnow() - d
         s = diff.seconds
-        if diff.days > 30 or diff.days < 0:
+        if diff.days > 30 or diff.days < 0:            
             return d.strftime('%d %b %y')
         elif diff.days == 1:
             return '1 day ago'
