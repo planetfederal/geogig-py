@@ -17,7 +17,6 @@ def _run(command):
     if os.name != 'nt':
         command = commandstr
     output = []   
-    print commandstr 
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, 
                             stdin=subprocess.PIPE,stderr=subprocess.STDOUT, universal_newlines=True)
     for line in iter(proc.stdout.readline, ""):        
@@ -132,10 +131,10 @@ class CLIConnector():
                         parent = tokens[1]                    
                 elif tokens[0] == 'author':
                     author = " ".join(tokens[1:-3])
-                    authordate = datetime.datetime.fromtimestamp(int(tokens[-2])//1000)                
+                    authordate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1]))//1000)                
                 elif tokens[0] == 'committer':
                     committer = tokens[1]
-                    committerdate = datetime.datetime.fromtimestamp(int(tokens[-2])//1000)
+                    committerdate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1]))//1000)
                 elif tokens[0] == 'message':
                     message = True                
             
@@ -179,7 +178,7 @@ class CLIConnector():
         try:
             output = self.run(commands)
         except GeoGitException, e:
-            if str(e) == "HEAD does not resolve to a commit": #empty repo
+            if "HEAD does not resolve" in str(e): #empty repo
                 return []
             else:
                 raise e                
@@ -202,7 +201,7 @@ class CLIConnector():
     def conflicts(self):
         commands = ["conflicts", "--refspecs-only"]
         lines = self.run(commands)
-        _conflicts = {}        
+        _conflicts = {}
         for line in lines:
             if line.startswith("No elements need merging"):
                 return {}
@@ -230,8 +229,8 @@ class CLIConnector():
         
     def _refs(self, prefix):
         refs = {}
-        output = self.run(['show-ref'])    
-        for line in output:            
+        output = self.run(['show-ref'])
+        for line in output:                 
             tokens = line.strip().split(" ")
             if tokens[1].startswith(prefix):
                 refs[tokens[1][len(prefix):]] = tokens[0]
@@ -320,10 +319,12 @@ class CLIConnector():
         commands = ["osm", "map", mappingfile]
         self.run(commands) 
         
-    def importshp(self, shapefile, add = False, dest = None):
+    def importshp(self, shapefile, add = False, dest = None, idAttribute = None):
         commands = ["shp", "import", shapefile]
         if dest is not None:
             commands.extend(["--dest", dest])
+        if idAttribute is not None:
+            commands.extend(["--fid-attrib", idAttribute])            
         if add:
             commands.append("--add")
         self.run(commands)
@@ -387,7 +388,6 @@ class CLIConnector():
     def featuredata(self, ref, path):  
         refandpath = ref + ":" + path      
         output = self.run(["show", "--raw", refandpath])  
-        print output         
         return self.parseattribs(output[2:]) 
 
     def cat(self, reference):
@@ -478,7 +478,7 @@ class CLIConnector():
             
     def blame(self, path):
         attributes = {}
-        output = self.run(["blame", path, "--porcelain"])        
+        output = self.run(["blame", path, "--porcelain"])  
         for line in output:
             tokens = line.split(" ")
             name = tokens[0]
