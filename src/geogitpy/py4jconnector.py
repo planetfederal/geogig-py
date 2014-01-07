@@ -9,20 +9,20 @@ import gc
 
 _proc = None
 _gateway = None
-_geogitPath = ""
 
 def _connect():    
-    global _gateway, _geogitPath    
+    global _gateway
     try: 
         _gateway = JavaGateway(start_callback_server=True)       
         _gateway.entry_point.isGeoGitServer()        
     except Exception, e:
         _gateway = None                   
         global _proc
+        geogitPath = os.getenv("GEOGIT_HOME", "")
         if os.name == 'nt':
-            _proc = subprocess.Popen([_geogitPath + "geogit-gateway.bat"], shell = True)
+            _proc = subprocess.Popen([geogitPath + "geogit-gateway.bat"], shell = True)
         else:
-            _proc = subprocess.Popen(_geogitPath + "geogit-gateway", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+            _proc = subprocess.Popen(geogitPath + "geogit-gateway", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
 
         time.sleep(3) #improve this and wait until the "server started" string is printed out        
         try:            
