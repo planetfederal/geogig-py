@@ -6,11 +6,11 @@ def read(*rnames):
 
 setup(
     name="geogit-py",
-    version="0.1.1",
+    version="0.1.2",
     install_requires=['Shapely>=1.2.9', 'py4j>=0.8'],
     author="Victor Olaya",
     author_email="volaya@boundlessgeo.com",
-    description="Python bindings for GeoGit",
+    description="Python bindings for GeoGit",    
     long_description=(read('README')),
     # Full list of classifiers can be found at:
     # http://pypi.python.org/pypi?%3Aaction=list_classifiers
