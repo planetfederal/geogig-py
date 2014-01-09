@@ -30,7 +30,7 @@ def _run(command):
     logging.info("Executed " + commandstr + "\n" + " ".join(output[:5]))      
     return output
     
-class CLIConnector():
+class CLIConnector(object):
     ''' A connector that calls the CLI version of geogit and parses CLI output'''
     
     def __init__(self):
@@ -379,10 +379,12 @@ class CLIConnector():
             commands.extend(["--user", user])
         self.run(commands)
         
-    def exportdiffs(self, commit1, commit2, path, filepath, old = False):
+    def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
         commands = ["shp", "export-diff", commit1, commit2, path, filepath]
         if old:
             commands.append("--old")
+        if overwrite:
+            commands.append("-o")            
         self.run(commands)
        
     def featuredata(self, ref, path):  

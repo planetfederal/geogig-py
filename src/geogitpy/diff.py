@@ -5,7 +5,7 @@ TYPE_MODIFIED = "Modified"
 TYPE_ADDED = "Added"
 TYPE_REMOVED = "Removed"
 
-class Diffentry():
+class Diffentry(object):
     
     '''A difference between to references for a given path''' 
     

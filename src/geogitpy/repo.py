@@ -9,7 +9,7 @@ import tempfile
 import time
 import datetime
 
-class Repository:
+class Repository(object):
         
     _logcache = None
 
@@ -326,10 +326,10 @@ class Repository:
                  schema = None, host = None, port = None, add = False, dest = None):
         self.connector.importpg(database, user, password, table, schema, host, port, add, dest)           
 
-    def exportdiffs(self, commit1, commit2, path, filepath, old = False):
+    def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
         '''Exports the differences in a given tree between to commits, creating a shapefile 
         each to the newest of them, or the oldest one if old = False'''
-        self.connector.exportdiffs(commit1, commit2, path, filepath, old)
+        self.connector.exportdiffs(commit1, commit2, path, filepath, old, overwrite)
 
     def addfeature(self, path, attributes):
         '''
