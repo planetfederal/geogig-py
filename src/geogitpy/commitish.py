@@ -48,10 +48,7 @@ class Commitish(object):
         '''Returns a nice human-readable description of the committish'''
         headid = self.repo.revparse(self.repo.head.ref) 
         if headid == self.id:
-            return "Current last commit"
-        parent = self.repo.revparse(headid + "~1")
-        if parent == self.id:
-            return "Commit before the last one"
+            return "Current branch"        
         return self.ref
         
     

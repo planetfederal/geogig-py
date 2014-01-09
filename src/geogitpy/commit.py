@@ -46,11 +46,8 @@ class Commit(Commitish):
         '''Returns a nice human-readable description of the commit'''
         headid = self.repo.revparse(self.repo.head.ref) 
         if headid == self.id:
-            return "Current last commit"
-        parent = self.repo.revparse(headid + "~1")
-        if parent == self.id:
-            return "Commit before the last one"
-        return "Commit from " + self.committerprettydate() +  self.committerdate.strftime(" (%m/%d/%y %H:%M)")
+            return "Current last commit"        
+        return self.message + self.committerdate.strftime(" (%m/%d/%y %H:%M)")
     
     def committerprettydate(self):
         return self.prettydate(self.committerdate)
