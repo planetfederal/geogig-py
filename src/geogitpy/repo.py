@@ -21,13 +21,23 @@ class Repository(object):
         '''
         self.url = url        
         self.connector = Py4JCLIConnector() if connector is None else connector
-        if init:
+        if init:                        
             mkdir(url)
-        self.connector.setRepository(self) 
+                
+        self.connector.setRepository(self)         
+        try:
+            self.connector.checkisrepo()
+            isAlreadyRepo = True
+        except GeoGitException, e:
+            isAlreadyRepo = False
+
         if init:
-            self.init()        
-        #Only local repos suported so far, so we check it                    
-        self.connector.checkisrepo()
+            if isAlreadyRepo:
+                raise GeoGitException("Cannot init, the folder is already a geogit repository")
+            else:
+                self.init()        
+        self.connector.checkisrepo()                    
+        
         self.cleancache()
 
     def cleancache(self):
@@ -318,7 +328,10 @@ class Repository(object):
         
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
         self.connector.exportpg(ref, path, table, database, user, password, schema, host, port)
-            
+
+    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None):
+        self.connector.importgeojson(geojsonfile, add, dest, idAttribute)
+                    
     def importshp(self, shpfile, add = False, dest = None, idAttribute = None):
         self.connector.importshp(shpfile, add, dest, idAttribute)
         
@@ -331,29 +344,21 @@ class Repository(object):
         each to the newest of them, or the oldest one if old = False'''
         self.connector.exportdiffs(commit1, commit2, path, filepath, old, overwrite)
 
-    def addfeature(self, path, attributes):
+    def insertfeature(self, path, geom, attributes):
         '''
-        Adds a feature to the working tree.
+        Inserts a feature to the working tree.
 
         The attributes are passed in a map with attribute names as keys and attribute values as values.
-        The attributes must correspond to the current default feature type of the corresponding tree in the working tree.  
-        Otherwise, and exception will be raised
+        The geometry must be a Shapely object. This method only support features with a single geometry 
+        
+        It will overwrite any feature in the same path, so this can be used to add a new feature or to 
+        modify an existing one
         '''
-        self.connector.addfeature(path, attributes)
+        self.connector.insertfeature(path, geom, attributes)
 
     def removefeature(self, path):
         '''Removes the passed feature from the working tree and index, so it is no longer versioned'''
         self.connector.removefeature(path)
-
-    def modifyfeature(self, path, attributes):
-        '''
-        Modifies a feature, inserting a different version in the working tree.
-
-        The attributes are passed in a map with attribute names as keys and attribute values as values.
-        The attributes must correspond to the current feature type of that feature in the working tree.
-        That is, this can be used to modify attribute values, not featuretypes.        
-        '''
-        self.connector.modifyfeature(path, attributes) 
         
     def merge(self, ref, nocommit = False, message = None):
         '''Merges the passed ref into the current branch'''

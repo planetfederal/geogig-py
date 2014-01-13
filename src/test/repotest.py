@@ -231,16 +231,18 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo = self.getClonedRepo()
         attrs = Feature(repo, geogit.HEAD, "parks/1").attributes
         attrs["area"] = 1234.5
-        repo.modifyfeature("parks/1", attrs)
+        geom = attrs["the_geom"]
+        repo.insertfeature("parks/1", geom, attrs)
         attrs = Feature(repo, geogit.WORK_HEAD, "parks/1").attributes
         self.assertEquals(1234.5, attrs["area"])
 
     def testAddFeature(self):
         repo = self.getClonedRepo()
-        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes    
-        repo.addfeature("parks/newfeature", attrs)
-        newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes
-        self.assertEquals(attrs, newattrs)       
+        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes        
+        geom = attrs["the_geom"]    
+        repo.insertfeature("parks/newfeature", geom, attrs)
+        newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes        
+        self.assertEquals(attrs["area"], newattrs["area"])    
 
     def testRemoveFeature(self):
         repo = self.getClonedRepo()        
@@ -249,13 +251,6 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertFalse(f.exists())
         f = Feature(repo, geogit.STAGE_HEAD, "parks/1")
         self.assertFalse(f.exists()) 
-
-    def testAddFeatureWithWrongFeatureType(self):
-        try:
-            self.repo.addfeature("parks/1", {"field1" : 1, "field2": "a"})
-            self.fail()
-        except GeoGitException, e:
-            pass
 
     def testConflicts(self):
         repo = self.getClonedRepo()

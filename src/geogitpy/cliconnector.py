@@ -2,6 +2,7 @@ import subprocess
 import os
 import tempfile
 import logging
+import geojson
 from feature import Feature
 from tree import Tree
 from commit import Commit
@@ -10,6 +11,7 @@ from diff import Diffentry
 from commitish import Commitish
 from geogitpy.geogitexception import GeoGitException, GeoGitConflictException
 from shapely.wkt import loads
+from shapely.geometry import mapping
 
 def _run(command):         
     command = ['geogit'] + command
@@ -319,6 +321,16 @@ class CLIConnector(object):
         commands = ["osm", "map", mappingfile]
         self.run(commands) 
         
+    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None):
+        commands = ["geojson", "import", geojsonfile]
+        if dest is not None:
+            commands.extend(["--dest", dest])
+        if idAttribute is not None:
+            commands.extend(["--fid-attrib", idAttribute])            
+        if add:
+            commands.append("--add")
+        self.run(commands)
+        
     def importshp(self, shapefile, add = False, dest = None, idAttribute = None):
         commands = ["shp", "import", shapefile]
         if dest is not None:
@@ -543,18 +555,22 @@ class CLIConnector(object):
     def init(self):        
         self.run(["init"])
 
-    def addfeature(self, path, attributes):
+    def insertfeature(self, path, geom, attributes):
+        dest = os.path.dirname(path)
+        fid = os.path.basename(path)        
+        geommap = mapping(geom)
+        features = [geojson.Feature(id=fid, geometry=geommap, properties=attributes)]
+        fco = geojson.FeatureCollection(features=features)
+        json = geojson.dumps(fco)
+        print json
         try:
-            f = tempfile.NamedTemporaryFile(delete = False)   
-                        
-            f.write("FEATURE" + "\n")                       
-            for attr in sorted(attributes.iterkeys()):                
-                f.write(attr[1] + "\t" + str(attr[1]))                
+            f = tempfile.NamedTemporaryFile(delete = False)                           
+            f.write(json)              
             f.close()
-            self.applypatch(f.name)
+            self.importgeojson(f.name, add = False, dest = dest)
         finally:
-            f.close()                    
-
+            f.close()  
+                         
     def removefeature(self, path):
         self.run(["rm", path])
         
