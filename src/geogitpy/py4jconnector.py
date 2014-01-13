@@ -9,30 +9,33 @@ import gc
 
 _proc = None
 _gateway = None
+_geogitPath = None
+
+def setGeoGitPath(path):
+    global geogitPath
+    _geogitPath = path
 
 def _connect():    
     global _gateway
     try: 
-        _gateway = JavaGateway(start_callback_server=True)       
+        _gateway = JavaGateway()       
         _gateway.entry_point.isGeoGitServer()        
     except Exception, e:
         _gateway = None                   
-        global _proc
-        geogitPath = os.getenv("GEOGIT_HOME", "")
-        if os.name == 'nt':
-            _proc = subprocess.Popen([geogitPath + "geogit-gateway.bat"], shell = True)
-        else:
-            _proc = subprocess.Popen(geogitPath + "geogit-gateway", stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-
-        time.sleep(3) #improve this and wait until the "server started" string is printed out        
+        global _proc, _geogitPath
+        geogitPath = _geogitPath or os.getenv("GEOGIT_HOME", "")
         try:            
-            _gateway = JavaGateway(start_callback_server=True)
+            if os.name == 'nt':
+                _proc = subprocess.Popen([os.path.join(geogitPath , "geogit-gateway.bat")], shell = True)
+            else:
+                _proc = subprocess.Popen(os.path.join(geogitPath, geogitPath + "geogit-gateway"), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+    
+            time.sleep(3) #improve this and wait until the "server started" string is printed out                            
+            _gateway = JavaGateway()
             _gateway.entry_point.isGeoGitServer()                   
         except Exception, e:
             _gateway = None
-            raise GeoGitException("Cannot start GeoGit gateway server.\n"
-                            +"Check that 'geogit-gateway' is available in PATH.\n"
-                            +"If problems persist, start the gateway server manually.")               
+            raise Py4JConnectionException()               
 
 def _javaGateway():    
     global _gateway
@@ -56,7 +59,7 @@ def _runGateway(command, url):
     command = command.replace("\r", "")    
     returncode = _javaGateway().entry_point.runCommand(url, command)
     output = _javaGateway().entry_point.lastOutput()            
-    output = output.strip("\n\r").replace("\r", "\n").replace("\n\n", "\n").split("\n")
+    output = output.strip("\n\r").replace("\r\n", "\n").replace("\r    ", "\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
     if returncode:                                
         raise GeoGitException("\n".join(output))
@@ -81,6 +84,8 @@ def setProgressListener(listenerFunc):
     
     _javaGateway().entry_point.setProgressListener(Listener(listenerFunc))
     
+class Py4JConnectionException(Exception):
+    pass
     
 class Py4JCLIConnector(CLIConnector):    
     ''' A connector that uses a Py4J gateway server to connect to geogit'''
