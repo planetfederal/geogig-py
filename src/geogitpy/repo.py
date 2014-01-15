@@ -235,12 +235,12 @@ class Repository(object):
             self.connector.reset(ref, path = path)            
         return self.connector.checkout(ref, paths)
 
-    def solveconflict(self, path, attributes):
+    def solveconflict(self, path, geom, attributes):
         '''solves a conflict at the specified path with a new feature defined by the passed attributes.
-        Attributes are passed in a dict with attribute names as keys and tuples of 
-        (attribute_value, attribute_type_name) as values.'''
+        Attributes are passed in a dict with attribute names as keys and attribute values as values.
+        Geometry is a shapely geometry'''
         self.reset(geogit.HEAD, path)
-        self.modifyfeature(path, attributes)
+        self.insertfeature(path, geom, attributes)
         self.add(path)
 
 
