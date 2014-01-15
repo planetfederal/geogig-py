@@ -12,7 +12,7 @@ _gateway = None
 _geogitPath = None
 
 def setGeoGitPath(path):
-    global geogitPath
+    global _geogitPath
     _geogitPath = path
 
 def _connect():    
@@ -28,7 +28,7 @@ def _connect():
             if os.name == 'nt':
                 _proc = subprocess.Popen([os.path.join(geogitPath , "geogit-gateway.bat")], shell = True)
             else:
-                _proc = subprocess.Popen(os.path.join(geogitPath, geogitPath + "geogit-gateway"), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                _proc = subprocess.Popen(os.path.join(geogitPath, "geogit-gateway"), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
     
             time.sleep(3) #improve this and wait until the "server started" string is printed out                            
             _gateway = JavaGateway()
@@ -50,7 +50,7 @@ def shutdownServer():
         if os.name == 'nt':            
             subprocess.Popen("TASKKILL /F /PID " + str(_proc.pid) + " /T", shell = True)
         else:
-            pass #TODO        
+            os.kill(_proc.pid, signal.SIGKILL)        
         _proc = None
         
 def _runGateway(command, url): 
