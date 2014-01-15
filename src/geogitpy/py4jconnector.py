@@ -59,7 +59,7 @@ def _runGateway(command, url):
     command = command.replace("\r", "")    
     returncode = _javaGateway().entry_point.runCommand(url, command)
     output = _javaGateway().entry_point.lastOutput()            
-    output = output.strip("\n\r").replace("\r\n", "\n").replace("\r    ", "\n").split("\n")
+    output = output.strip("\n\r").replace("\r\n", "\n").replace("\r", "\n").split("\n")
     output = [s.strip("\r\n") for s in output]        
     if returncode:                                
         raise GeoGitException("\n".join(output))
