@@ -20,6 +20,10 @@ class Tree(object):
     def children(self):        
         return self.repo.children(self.ref, self.path)
     
+    @property
+    def count(self):
+        return self.repo.count(self.ref, self.path)
+    
     def exportshp(self, shapefile):
         '''exports this tree to the specified shapefile'''
         self.repo.exportshp(self.ref, self.path, shapefile)

@@ -154,7 +154,7 @@ class Repository(object):
         return [e for e in self.children(ref, path, recursive)  if isinstance(e, Feature)]
     
     def children(self, ref = geogit.HEAD, path = None, recursive = False): 
-        '''Returns a set of Tree and Feature objects with all the trees for the passed ref and path'''          
+        '''Returns a set of Tree and Feature objects with all the children for the passed ref and path'''          
         return self.connector.children(ref, path, recursive)                           
         
     @property
@@ -269,6 +269,11 @@ class Repository(object):
         Values are tuples of (value, commitid, authorname)
         '''
         return self.connector.blame(path)
+    
+    def count(self, ref, path):
+        '''Returns the count of objects in a given path'''
+        output = self.show(ref + ":" + path)        
+        return int(output.split("\n")[1][5:].strip())
     
     def feature(self, ref, path): 
         '''Returns a Feature object corresponding to the passed ref and path'''
@@ -446,7 +451,7 @@ class Repository(object):
 
     def show(self, ref):
         '''Returns the description of an element, as printed by the GeoGit show comand'''
-        return self.connector.show(ref)  
+        return self.connector.show(ref)          
     
     def config(self, param, value):
         return self.connector.config(param, value)
