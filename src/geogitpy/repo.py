@@ -295,14 +295,16 @@ class Repository(object):
         Values are converted to appropiate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''            
-        entries = self.log(geogit.HEAD, path = path)        
+        entries = self.log(geogit.HEAD, path = path)    
+        print entries    
         refs = [entry.ref + ":" + path for entry in entries]
-        features = self.connector.featuresdata(refs)                
         versions = []
-        for i, ref in enumerate(features):
-            feature = features[ref]
-            commit = entries[i]
-            versions.append((commit, feature))
+        if refs:
+            features = self.connector.featuresdata(refs)                        
+            for i, ref in enumerate(features):
+                feature = features[ref]
+                commit = entries[i]
+                versions.append((commit, feature))
         return versions
     
     def featurediff(self, ref, ref2, path):
