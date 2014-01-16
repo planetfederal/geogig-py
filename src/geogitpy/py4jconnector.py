@@ -72,7 +72,7 @@ def _runGateway(command, url):
     output = [s.strip("\r\n") for s in output]        
     if returncode:                             
         errormsg = "\n".join(output)
-        _logger.error("Error running command '%s': %s" (command, errormsg))
+        _logger.error("Error running command '%s': %s" % (command, errormsg))
         raise GeoGitException("\n".join(output))
     logging.info("Executed " + command + "\n" + " ".join(output[:5]))      
     return output    

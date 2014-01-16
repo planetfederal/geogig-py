@@ -44,8 +44,8 @@ def createRepo():
     repo.importshp(path)
     repo.addandcommit("message_6")
     shutdownServer()
+               
         
-
 def suite():
     suite = unittest.makeSuite(GeogitTreeTest, 'test')    
     suite.addTests(unittest.makeSuite(GeogitRepositoryTest, 'test'))
