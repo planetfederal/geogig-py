@@ -561,8 +561,7 @@ class CLIConnector(object):
         geommap = mapping(geom)
         features = [geojson.Feature(id=fid, geometry=geommap, properties=attributes)]
         fco = geojson.FeatureCollection(features=features)
-        json = geojson.dumps(fco)
-        print json
+        json = geojson.dumps(fco)        
         try:
             f = tempfile.NamedTemporaryFile(delete = False)                           
             f.write(json)              
