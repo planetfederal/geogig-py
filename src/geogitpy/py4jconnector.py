@@ -6,6 +6,7 @@ import subprocess
 import os
 import time
 import gc
+import signal
 
 _proc = None
 _gateway = None
