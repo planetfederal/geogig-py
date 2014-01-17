@@ -566,7 +566,7 @@ class CLIConnector(object):
             f = tempfile.NamedTemporaryFile(delete = False)                           
             f.write(json)              
             f.close()
-            self.importgeojson(f.name, add = False, dest = dest)
+            self.importgeojson(f.name, add = True, dest = dest)
         finally:
             f.close()  
                          
