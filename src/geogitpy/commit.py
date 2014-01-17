@@ -57,21 +57,23 @@ class Commit(Commitish):
         
     def prettydate(self, d):
         diff = datetime.datetime.utcnow() - d
-        s = diff.seconds
-        if diff.days > 30 or diff.days < 0:            
-            return d.strftime('%d %b %y')
-        elif diff.days == 1:
-            return '1 day ago'
+        s = ''
+        secs = diff.seconds
+        if diff.days == 1:
+            s = '1 day ago'
         elif diff.days > 1:
-            return '{} days ago'.format(diff.days)
-        elif s < 120:
-            return '1 minute ago'
-        elif s < 3600:
-            return '{} minutes ago'.format(s/60)
-        elif s < 7200:
-            return '1 hour ago'
+            s = '{} days ago'.format(diff.days)
+        elif secs < 120:
+            s = '1 minute ago'
+        elif secs < 3600:
+            s = '{} minutes ago'.format(secs/60)
+        elif secs < 7200:
+            s = '1 hour ago'
         else:
-            return '{} hours ago'.format(s/3600) 
+            s = '{} hours ago'.format(secs/3600)
+        
+        s += d.strftime(' [%x %H:%M]')
+        return s 
         
     def __str__(self):
         s = "id " + self.commitid + "\n"

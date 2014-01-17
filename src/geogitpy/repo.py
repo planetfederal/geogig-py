@@ -355,7 +355,7 @@ class Repository(object):
         '''
         Inserts a feature to the working tree.
 
-        The attributes are passed in a map with attribute names as keys and attribute values as values.
+        The attributes are passed in a dict with attribute names as keys and attribute values as values.
         The geometry must be a Shapely object. This method only support features with a single geometry 
         
         It will overwrite any feature in the same path, so this can be used to add a new feature or to 
