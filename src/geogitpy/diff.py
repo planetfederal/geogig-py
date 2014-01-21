@@ -17,11 +17,17 @@ class Diffentry(object):
         self.oldcommitref = oldcommitref
         self.newcommitref = newcommitref
 
-    def oldobject(self):
-        return Feature(self.repo, self.oldref, self.path)
+    def oldobject(self):        
+        if self.oldref == NULL_ID:
+            return None
+        else:
+            return Feature(self.repo, self.oldcommitref, self.path)
     
     def newobject(self):
-        return Feature(self.repo, self.newref, self.path)
+        if self.newref == NULL_ID:
+            return None
+        else:
+            return Feature(self.repo, self.newcommitref, self.path)
     
     def featurediff(self):
         return self.repo.featurediff(self.oldcommitref, self.newcommitref, self.path)
