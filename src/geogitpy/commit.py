@@ -18,8 +18,12 @@ class Commit(Commitish):
         self.committername = committername
         self.committerdate = committerdate
         
-    @staticmethod
+    @staticmethod    
     def fromref(repo, ref):
+        '''
+        Returns a Commit corresponding to a given id.
+        ref is passed as a string.
+        '''
         id = repo.revparse(ref)
         log = repo.log(id, n = 1)
         return log[0]        
