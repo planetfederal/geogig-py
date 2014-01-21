@@ -167,7 +167,7 @@ And here is a more complex example, in which shapefiles are assumed to be in sub
 ::
 
 	import os
-	
+
 	def import_subfolders_and_commit(repo, folder, dest = None):		
 		for p in os.listdir(folder):
     		if os.path.isdir(p):
@@ -183,3 +183,42 @@ And here is a more complex example, in which shapefiles are assumed to be in sub
 	        		message = "%i features imported. %i features modified" % (n, total)
 	        		repo.addandcommit(message)
 
+
+A simple GeoGit workflow
+--------------------------
+
+::
+
+	# Crate repo
+	repo = Repository('path/to/repo/folder', True)
+
+	# Configure
+	repo.config(geogit.USER_NAME, 'myuser')
+	repo.config(geogit.USER_EMAIL, 'myuser@mymail.com')
+
+	# Add some data and create a snapshot
+	repo.importshp('myshapefile.shp')
+	repo.addandcommit('first import')	
+	
+	# Create a branch to work on it
+	repo.createbranch(repo.head, "mybranch", checkout = True)
+	
+	# Take a feature and modify its geometry
+	feature = repo.feature(geogit.HEAD, 'parks/1')		
+	geom = feature.geom
+	attributes = feature.attributesnogeom
+	newgeom = geom.buffer(5.0)
+
+	# insert the modified geometry and create a new snapshot with the changes
+	repo.insertfeature(feature.path, attributes, newgeom)
+	repo.addandcommit("modified parks/1 (buffer computed)")
+
+	# Bring changes to master branch
+	# [...] There might be changes in the master branch as well
+
+	repo.checkout(geogit.MASTER)
+	try:
+		repo.merge("mybranch")
+		print "No merge conflicts"
+	except GeoGitConflictException, e:
+		print "There are merge conflicts"

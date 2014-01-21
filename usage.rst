@@ -106,6 +106,10 @@ This way of editing/adding features only supports features with a single geometr
 Failed operations and exceptions
 ================================
 
-When a GeoGit operation exits with a non-zero exit code, geogit-py will raise a ``GeoGitException`` exception, containing the error message output by GeoGit as exception message. This will happen, for instance, if you do something like this
+When a GeoGit operation exits with a non-zero exit code, geogit-py will raise a ``GeoGitException`` exception, containing the error message output by GeoGit as exception message. This will happen, for instance, if you do something like this.
 
-When GeoGit exist with a non-zero exit code, and it is not caused by an error but by a problem in the operation performed (such as, for instance, a conflicted merge), geogit-py will raise a ``InterruptedOperationException`` instead. That allows to differentiate between exceptions that are actually a problem, most likely related to the input parameters, from those that arise commonly in a normal GeoGit workflow and should be treated differently
+::
+
+	repo.show('a_reference_that_does_not_exist')
+
+However, when GeoGit exist with a non-zero exit code, and it is not caused by an error but by a problem in the operation performed (such as, for instance, a conflicted merge), geogit-py will raise a ``InterruptedOperationException`` instead. That allows to differentiate between exceptions that are actually a problem, most likely related to the input parameters, and those that arise commonly in a normal GeoGit workflow and should be treated differently.
