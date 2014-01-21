@@ -6,13 +6,28 @@ from tree import Tree
 from utils import mkdir
 from py4jconnector import Py4JCLIConnector
 import tempfile
-import time
 import datetime
 
+def _resolveref(ref):
+    '''
+    Tries to resolve the pased object into a string representing a commit reference 
+    (a SHA-1, branch name, or something like HEAD~1)
+    This should be called by all commands using references, so they can accept both
+    strings a Commitish objects indistinctly
+    ''' 
+    if ref is None:
+        return None
+    if isinstance(ref, Commitish):
+        return ref.ref
+    elif isinstance(ref, basestring):
+        return ref
+    else:
+        return str(ref)
+    
 class Repository(object):
         
     _logcache = None
-
+    
     def __init__(self, url, connector = None, init = False):
         '''
         url: The url of the repository
@@ -123,9 +138,9 @@ class Repository(object):
         '''     
         tip = tip or geogit.HEAD
         if path is not None or until != geogit.HEAD:
-            return self.connector.log(tip, until, since, path, n)
+            return self.connector.log(_resolveref(tip), _resolveref(until), _resolveref(since), path, n)
         if self._logcache is None:
-            self._logcache = self.connector.log(tip, until, since, path, n)  
+            self._logcache = self.connector.log(_resolveref(tip), _resolveref(until), _resolveref(since), path, n)  
         return self._logcache 
     
     def commitatdate(self, t):
@@ -155,7 +170,7 @@ class Repository(object):
     
     def children(self, ref = geogit.HEAD, path = None, recursive = False): 
         '''Returns a set of Tree and Feature objects with all the children for the passed ref and path'''          
-        return self.connector.children(ref, path, recursive)                           
+        return self.connector.children(_resolveref(ref), path, recursive)                           
         
     @property
     def branches(self):        
@@ -173,9 +188,9 @@ class Repository(object):
         self.connector.clone(url, path)
         return Repository(path, self.connector, False)
     
-    def createbranch(self, commitish, name, force = False, checkout = False):
+    def createbranch(self, ref, name, force = False, checkout = False):
         '''Creates a new branch in the repo. Returns the commitish representing the branch'''
-        return self.connector.createbranch(commitish, name, force, checkout)
+        return self.connector.createbranch(_resolveref(ref), name, force, checkout)
 
     def deletebranch(self, name):
         '''deletes the passed branch'''
@@ -183,7 +198,7 @@ class Repository(object):
 
     def createtag(self, ref, name, message):
         '''creates a new tag'''
-        self.connector.createtag(ref, name, message)
+        self.connector.createtag(_resolveref(ref), name, message)
 
     def deletetag(self, name):
         '''Deletes the passed tag'''
@@ -192,12 +207,12 @@ class Repository(object):
     def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD, path = None):
         '''Returns a list of DiffEntry representing the changes between 2 commits.
         If a path is passed, it only shows changes corresponing to that path'''
-        return self.connector.diff(refa, refb, path)
+        return self.connector.diff(_resolveref(refa), _resolveref(refb), path)
     
     def difftreestats(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
         '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
         in the form  (added, deleted, modified) corresponding to changes made to that path'''
-        return self.connector.difftreestats(refa, refb)
+        return self.connector.difftreestats(_resolveref(refa), _resolveref(refb))
         
     def unstaged(self):
         '''Returns a list of diffEntry with the differences between staging area and working tree'''
@@ -223,7 +238,7 @@ class Repository(object):
 
     def checkout(self, ref, paths = None, force = False):
         '''Checks out the passed ref'''        
-        self.connector.checkout(ref, paths, force)
+        self.connector.checkout(_resolveref(ref), paths, force)
         self.cleancache()
     
     def updatepathtoref(self, ref, paths):
@@ -231,6 +246,7 @@ class Repository(object):
         Updates the element in the passed paths to the version corresponding to the passed ref.
         If the path is conflicted (unmerged), it will also resolve the conflict
         '''
+        ref = _resolveref(ref)
         for path in paths:
             self.connector.reset(ref, path = path)            
         return self.connector.checkout(ref, paths)
@@ -272,7 +288,7 @@ class Repository(object):
     
     def count(self, ref, path):
         '''Returns the count of objects in a given path'''
-        output = self.show(ref + ":" + path)        
+        output = self.show(_resolveref(ref) + ":" + path)        
         return int(output.split("\n")[1][5:].strip())
     
     def feature(self, ref, path): 
@@ -286,7 +302,7 @@ class Repository(object):
         Values are converted to appropiate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''
-        data = self.connector.featuredata(ref, path)
+        data = self.connector.featuredata(_resolveref(ref), path)
         if len(data) == 0:            
             raise GeoGitException("The specified feature does not exist")
         return data
@@ -300,8 +316,7 @@ class Repository(object):
         Values are converted to appropiate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''            
-        entries = self.log(geogit.HEAD, path = path)    
-        print entries    
+        entries = self.log(geogit.HEAD, path = path)     
         refs = [entry.ref + ":" + path for entry in entries]
         versions = []
         if refs:
@@ -318,7 +333,7 @@ class Repository(object):
         Keys are attribute names. Values are tuples of "(oldvalue, newvalue)"
         Both values are always strings
         '''
-        return self.connector.featurediff(ref, ref2, path)
+        return self.connector.featurediff(_resolveref(ref), _resolveref(ref2), path)
     
     def reset(self, ref, mode = geogit.RESET_MODE_HARD, path = None):
         '''Resets the current branch to the passed reference'''        
@@ -327,14 +342,14 @@ class Repository(object):
         
        
     def exportshp(self, ref, path, shapefile):
-        self.connector.exportshp(ref, path, shapefile)
+        self.connector.exportshp(_resolveref(ref), path, shapefile)
         
     def exportsl(self, ref, path, database, user = None):
         '''Export to a SpatiaLite database'''
-        self.connector.exportsl(ref, path, database, user)        
+        self.connector.exportsl(_resolveref(ref), path, database, user)        
         
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
-        self.connector.exportpg(ref, path, table, database, user, password, schema, host, port)
+        self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port)
 
     def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None):
         self.connector.importgeojson(geojsonfile, add, dest, idAttribute)
@@ -349,7 +364,7 @@ class Repository(object):
     def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
         '''Exports the differences in a given tree between to commits, creating a shapefile 
         each to the newest of them, or the oldest one if old = False'''
-        self.connector.exportdiffs(commit1, commit2, path, filepath, old, overwrite)
+        self.connector.exportdiffs(_resolveref(commit1), _resolveref(commit2), path, filepath, old, overwrite)
 
     def insertfeature(self, path, geom, attributes):
         '''
@@ -369,12 +384,12 @@ class Repository(object):
         
     def merge(self, ref, nocommit = False, message = None):
         '''Merges the passed ref into the current branch'''
-        self.connector.merge(ref, nocommit, message)
+        self.connector.merge(_resolveref(ref), nocommit, message)
         self.cleancache()        
         
     def rebase(self, ref):
         '''rebases the current branch using the passed ref'''
-        self.connector.rebase(ref)
+        self.connector.rebase(_resolveref(ref))
         self.cleancache()                  
 
     def abort(self):
@@ -393,7 +408,7 @@ class Repository(object):
         
     def cherrypick(self, ref):
         '''Cherrypicks a commit into the current branch'''
-        self.connector.cherrypick(ref)
+        self.connector.cherrypick(_resolveref(ref))
         self.cleancache()        
     
     @property
@@ -451,12 +466,14 @@ class Repository(object):
 
     def show(self, ref):
         '''Returns the description of an element, as printed by the GeoGit show comand'''
-        return self.connector.show(ref)          
+        return self.connector.show(_resolveref(ref))          
     
-    def config(self, param, value):
-        return self.connector.config(param, value)
+    def config(self, param, value, global_ = False):
+        '''Configures a geogit parameter with a the passed value'''
+        return self.connector.config(param, value, global_)
     
     def getconfig(self, param):
+        '''Returns the current value for a given parameter'''
         return self.connector.getconfig(param)
     
     def pull(self, remote, branch, rebase = False):

@@ -93,7 +93,7 @@ class Feature(object):
             raise GeoGitException("Feature at the specified path does not exist")
 
     def __str__(self):
-        return self.path
+        return self.ref + ":" + self.path
         
     
 

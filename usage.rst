@@ -95,13 +95,19 @@ You can even add new elements to the repository, or modify existing ones.
 
 ::
 
-	geom = tree[0].feeatures[0].attributes['the_geom']
+	geom = tree[0].features[0].attributes['the_geom']
 	newattributes = {'open': False, 'name': 'New Central park', 'area': 23876.5}
 	repo.modifyfeature("parks/parks1", newattributes, geom)
 
 This sets the new feature in the working tree, with two attributes changed (*open* and *name*). Then you can add and commit as usual.
 
 This way of editing/adding features only supports features with a single geometry attribute. If you need to insert a feature with several geometry attributes, you must manually export it to a format that supports it (i.e. a PostGIS database) and then import using the corresponding method
+
+Handling references.
+----------------------
+
+Many of the methods in the ``Repository`` class require a reference, which eventually will be resolved to a SHA-1 id by GeoGit and used to identify an element in the repository. All those methods accept strings with a valid identifier such as "13dc523ffda", "HEAD", "master~1" (those 3 for the case of refering a commit) or "branch:mytree/34" (for a feature). Also, they accept any object that contains the reference data, so you can use Commit, Commitish, Tree and Feature objects as well. In that case geogit-py will try to extract the id string before calling the corresponding GeoGit method.
+
 
 Failed operations and exceptions
 ================================

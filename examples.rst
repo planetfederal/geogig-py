@@ -7,7 +7,7 @@ Notice that these scripts are not optimized (using them in very large repositori
 
 
 Squashing the latest *n* commits
-==========================================
+------------------------------------------
 
 The following method squashes the latest *n* commits in the current history
 
@@ -105,7 +105,7 @@ Note: both methods described above assume that the history of the repository is 
 
 
 List of the last author to modify each tree 
-============================================
+--------------------------------------------
 
 ::
 
@@ -123,7 +123,7 @@ List of the last author to modify each tree
 	            
 
 Exporting all trees to a single PostGIS database
-=================================================
+------------------------------------------------
 
 It creates a table for each tree in the repository, using the name of the tree as name of the table.
 
@@ -136,7 +136,7 @@ It creates a table for each tree in the repository, using the name of the tree a
     
 
 Importing all shapefiles in a folder
-=====================================
+------------------------------------
 
 The following method imports all shapefiles in a folder into a repository
 
@@ -180,7 +180,7 @@ And here is a more complex example, in which shapefiles are assumed to be in sub
         		if n:
 	        		diffs = repo.difftreestats()        
 	        		total = sum(diffs.iterator().next())	        		
-	        		message = "%i features imported. %i features modified" % (n, total)
+	        		message = "Imported %s. %i features imported. %i features modified" % (p, n, total)
 	        		repo.addandcommit(message)
 
 
