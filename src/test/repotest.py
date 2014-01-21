@@ -175,12 +175,13 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertFalse(unstaged)
         staged = repo.staged()
         self.assertTrue(staged)
-        repo.commit("A message with blank spaces")
+        repo.commit("A message with blank spaces\nand a line break")
         staged = repo.staged()
         self.assertFalse(staged)
         log = repo.log()
         self.assertEqual(5, len(log))
-        self.assertTrue("A message with blank spaces", log[4].message)
+        self.assertTrue("A message with blank spaces\nand a line break", log[4].message)
+     
 
     def testCreateReadAndDeleteBranch(self): 
         repo = self.getClonedRepo()       
@@ -491,4 +492,4 @@ class GeogitRepositoryTest(unittest.TestCase):
         cloned.reset(cloned.head.parent.ref, geogit.RESET_MODE_MIXED)
         self.assertEqual("message_3", cloned.log()[0].message)
         self.assertTrue(len(cloned.unstaged()) > 0)      
-       
+           
