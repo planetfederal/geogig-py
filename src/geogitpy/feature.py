@@ -1,4 +1,5 @@
 from geogitexception import GeoGitException
+from shapely.geometry.base import BaseGeometry
 
 class Feature(object):
 
@@ -20,7 +21,27 @@ class Feature(object):
         if self._attributes is None:
             self.query()
         return self._attributes
+    
+    @property
+    def attributesnogeom(self):
+        '''returns a filtered set of attributes, with only those attributes that are not geometries'''
+        attrs = self.attributes
+        return {k : v for k,v in attrs.iteritems() if not isinstance(v, BaseGeometry)} 
 
+    @property
+    def geom(self):
+        '''
+        Returns the geometry of this feature.
+        It assumes that the feeature contains one and only one geometry.
+        If there is no geoetry, and exception is raised.
+        If there are several of them, the first one found is returned.
+        '''
+        attrs = self.attributes 
+        for v in attrs.values():
+            if isinstance(v, BaseGeometry):
+                return v
+        raise GeoGitException("Feature has no geometry")
+            
     def featuretype(self):        
         if self._featuretype is None:
             self.query()

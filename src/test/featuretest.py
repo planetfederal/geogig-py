@@ -6,6 +6,7 @@ import shutil
 from geogitpy import geogit
 from geogitpy.feature import Feature
 from shapely.geometry import Polygon
+from shapely.geometry.multipolygon import MultiPolygon
 
 class GeogitFeatureTest(unittest.TestCase):
         
@@ -61,4 +62,30 @@ class GeogitFeatureTest(unittest.TestCase):
     def testFeatureType(self):
         feature = Feature(self.repo, geogit.HEAD, "parks/5")
         ftype = feature.featuretype()
+        self.assertTrue("owner" in ftype)
+        self.assertTrue("agency" in ftype)
+        self.assertTrue("name" in ftype)
+        self.assertTrue("parktype" in ftype)
+        self.assertTrue("area" in ftype)
+        self.assertTrue("perimeter" in ftype)  
+        self.assertTrue("the_geom" in ftype) 
+        self.assertEquals("MULTIPOLYGON", ftype['the_geom'])
+        
+    def testGeom(self):
+        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        geom = feature.geom
+        self.assertTrue(isinstance(geom, MultiPolygon)) 
+        
+    def testNoGeom(self):
+        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        allattrs = feature.attributes
+        attrs = feature.attributesnogeom
+        self.assertEquals(len(allattrs), len(attrs) + 1)
+        self.assertTrue("owner" in attrs)
+        self.assertTrue("agency" in attrs)
+        self.assertTrue("name" in attrs)
+        self.assertTrue("parktype" in attrs)
+        self.assertTrue("area" in attrs)
+        self.assertTrue("perimeter" in attrs)  
+        self.assertFalse("the_geom" in attrs)     
 
