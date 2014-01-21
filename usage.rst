@@ -1,7 +1,7 @@
 Using the geogit-py library
 *****************************
 
-this documet describes the main ideas about using the goegit-py library
+This document describes the main ideas about using the goegit-py library
 
 Most of the functionality is available through the ``Repository`` class.
 
@@ -110,7 +110,7 @@ Many of the methods in the ``Repository`` class require a reference, which event
 
 
 Failed operations and exceptions
-================================
+----------------------------------
 
 When a GeoGit operation exits with a non-zero exit code, geogit-py will raise a ``GeoGitException`` exception, containing the error message output by GeoGit as exception message. This will happen, for instance, if you do something like this.
 
