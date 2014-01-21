@@ -20,8 +20,8 @@ class GeogitDiffTest(unittest.TestCase):
         old = diff.oldobject()
         self.assertIsNotNone(old)       
         self.assertEquals("parks/5", old.path)
-        attrs = old.attributes
-        self.assertEqual(15246.59765625, attrs['area'])
+        attrs = old.attributes        
+        self.assertEqual(15297.503295898438, attrs['area'])
         
     def testNewFeature(self): 
         diff = self.repo.log()[0].diff()[0]
@@ -29,4 +29,5 @@ class GeogitDiffTest(unittest.TestCase):
         self.assertIsNotNone(new)       
         self.assertEquals("parks/5", new.path)
         attrs = new.attributes
-        self.assertEqual(15297.503295898438, attrs['area'])
+        self.assertEqual(15246.59765625, attrs['area'])
+        

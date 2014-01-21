@@ -431,7 +431,59 @@ class GeogitRepositoryTest(unittest.TestCase):
         feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
         self.assertTrue(feature.exists())
         
-
-
-
-
+    def testConfig(self):
+        repo = self.getClonedRepo()
+        repo.config(geogit.USER_NAME, "mytestusername")
+        repo.config(geogit.USER_EMAIL, "mytestuseremail@email.com") 
+        username = repo.getconfig(geogit.USER_NAME)
+        self.assertTrue("mytestusername", username)
+        email = repo.getconfig(geogit.USER_EMAIL)
+        self.assertTrue("mytestuseremail@email.com", email)
+        
+    def testShow(self):
+        text = self.repo.show(geogit.HEAD)        
+        self.assertTrue('volaya' in text)
+        self.assertTrue('message_4' in text)
+        
+    def testPull(self):
+        origin = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
+        dst = self.getTempRepoPath()        
+        cloned = origin.clone(dst) 
+        dst = self.getTempRepoPath()        
+        cloned2 = cloned.clone(dst) 
+        path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
+        cloned.importshp(path)
+        cloned.addandcommit("new_message")
+        cloned2.pull("origin", geogit.MASTER)
+        log = cloned2.log()
+        self.assertTrue("new_message", log[0].message)
+        
+    def testPush(self):
+        origin = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
+        dst = self.getTempRepoPath()        
+        cloned = origin.clone(dst) 
+        dst = self.getTempRepoPath()        
+        cloned2 = cloned.clone(dst) 
+        path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
+        cloned2.importshp(path)
+        cloned2.addandcommit("new_message")
+        cloned.push("origin", geogit.MASTER)
+        log = cloned.log()
+        self.assertTrue("new_message", log[0].message)
+        
+    def testCount(self):
+        count = self.repo.count(geogit.HEAD, "parks")
+        self.assertEquals(5, count)
+        
+    def testResetHard(self):
+        repo = self.getClonedRepo()
+        repo.reset(repo.head.parent.ref, geogit.RESET_MODE_HARD)
+        self.assertEqual("message_3", repo.log()[0].message)
+        self.assertFalse(len(repo.unstaged()) > 0)
+        
+    def testResetMixed(self):
+        repo = self.getClonedRepo()
+        repo.reset(repo.head.parent.ref, geogit.RESET_MODE_MIXED)
+        self.assertEqual("message_3", repo.log()[0].message)
+        self.assertTrue(len(repo.unstaged()) > 0)        
+        
