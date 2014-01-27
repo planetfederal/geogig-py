@@ -7,7 +7,7 @@ TYPE_REMOVED = "Removed"
 
 class Diffentry(object):
     
-    '''A difference between to references for a given path''' 
+    '''A difference between two references for a given path''' 
     
     def __init__(self, repo, oldcommitref, newcommitref, oldref, newref, path):
         self.repo = repo

@@ -329,9 +329,11 @@ class Repository(object):
     
     def featurediff(self, ref, ref2, path):
         '''
-        Returns a dict with attributes that have changed in the specified path between the specified refs
+        Returns a dict with attributes that have changed in the specified feature path between the specified refs
         Keys are attribute names. Values are tuples of "(oldvalue, newvalue)"
-        Both values are always strings
+        If the feature has been added, oldvalue = None
+        If the feature has been removed, newvalue = None
+        Values are converted to appropriate types if possible, otherwise they are stored as strings
         '''
         return self.connector.featurediff(_resolveref(ref), _resolveref(ref2), path)
     
@@ -344,9 +346,9 @@ class Repository(object):
     def exportshp(self, ref, path, shapefile):
         self.connector.exportshp(_resolveref(ref), path, shapefile)
         
-    def exportsl(self, ref, path, database, user = None):
+    def exportsl(self, ref, path, database, user = None, table = None):
         '''Export to a SpatiaLite database'''
-        self.connector.exportsl(_resolveref(ref), path, database, user)        
+        self.connector.exportsl(_resolveref(ref), path, database, user, table)        
         
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
         self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port)

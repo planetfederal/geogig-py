@@ -384,7 +384,8 @@ class CLIConnector(object):
         refandpath = ref + ":" + path
         self.run(["shp", "export", refandpath, shapefile, "-o"])
         
-    def exportsl(self, ref, path, database, user = None):
+    def exportsl(self, ref, path, database, user = None, table = None):
+        table = table or path
         refandpath = ref + ":" + path
         commands = ["sl", "export", refandpath,  "--database", database, path]
         if user is not None:
@@ -420,16 +421,20 @@ class CLIConnector(object):
             except StopIteration:
                 return attributes 
         
-    def valuefromstring(self, value, valuetype):
+    def valuefromstring(self, value, valuetype):        
+        tokens = valuetype.split(" ")
         if valuetype == "BOOLEAN":
             return str(value).lower() == "true"
         elif valuetype in ["BYTE","SHORT","INTEGER","LONG"]:
             return int(value)
         elif valuetype in ["FLOAT","DOUBLE"]:
             return float(value)
-        elif valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"]:            
+        elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"] 
+                or len(tokens) == 2):            
             try:
                 geom = loads(value)
+                if len(tokens) == 2:
+                    geom.crs = tokens[1]
                 return geom
             except:
                 return value            
@@ -465,30 +470,34 @@ class CLIConnector(object):
 
     
     def featurediff(self, ref, ref2, path):
+        try:
+            data = self.featuredata(ref, path)
+        except GeoGitException:
+            data = None
+        try:
+            data2 = self.featuredata(ref2, path)
+        except GeoGitException:
+            data2 = None         
+                
+        if data is None:
+            if data2 is None:
+                return {}
+            else:
+                return {k: (None, v[0]) for k,v in data.iteritems()}
+        elif data2 is None:
+            return {k: (v[0], None) for k,v in data.iteritems()}
+        
         diffs = {}
-        output = self.run(["diff-tree", ref, ref2, "--", path, "--describe"])
-        lines = iter(output[1:])
-        while True:
-            try:
-                line = lines.next()
-                value1 = None
-                value2 = None
-                tokens = line.split(" ")
-                if len(tokens) == 2:
-                    changetype = tokens[0]
-                    field = tokens[1]
-                    if changetype == "M":
-                        value1 = lines.next()
-                        value2 = lines.next()
-                    elif changetype == "R":
-                        value1 = lines.next()
-                    elif changetype == "A":
-                        value2 = lines.next()
-                    else:
-                        continue
-                    diffs[field] = (value1, value2);
-            except StopIteration:
-                return diffs    
+        for attr in data:
+            if attr in data2:
+                if data[attr] != data2[attr]:
+                    diffs[attr] =(data[attr][0], data2[attr][0])
+            else:
+                diffs[attr] = (data[attr][0], None)
+        for attr in data2:
+            if attr not in data:                
+                diffs[attr] = add(data2[attr][0], None)
+        return diffs
             
     def blame(self, path):
         attributes = {}
