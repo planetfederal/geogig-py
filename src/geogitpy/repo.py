@@ -28,7 +28,7 @@ class Repository(object):
         
     _logcache = None
     
-    def __init__(self, url, connector = None, init = False):
+    def __init__(self, url, connector = None, init = False, initParams = None):
         '''
         url: The url of the repository
         connector: the connector to use to communicate with the repository
@@ -50,7 +50,7 @@ class Repository(object):
             if isAlreadyRepo:
                 raise GeoGitException("Cannot init, the folder is already a geogit repository")
             else:
-                self.init()        
+                self.init(initParams)        
         self.connector.checkisrepo()                    
         
         self.cleancache()
@@ -501,5 +501,5 @@ class Repository(object):
         branch = branch or self.head
         return self.connector.push(remote, branch)    
     
-    def init(self):                
-        self.connector.init()
+    def init(self, initParams = None):                
+        self.connector.init(initParams)

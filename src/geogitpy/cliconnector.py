@@ -561,8 +561,13 @@ class CLIConnector(object):
         commands = ["cherry-pick", commitish]
         self.run(commands)
     
-    def init(self):        
-        self.run(["init"])
+    def init(self, initParams = None):
+        if initParams is None: initParams = {}    
+        commands = ["init"]
+        for k,v in initParams.iteritems():
+            commands.append(k)     
+            commands.append(v)
+        self.run(commands)
 
     def insertfeature(self, path, geom, attributes):
         dest = os.path.dirname(path)
