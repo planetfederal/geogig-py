@@ -26,5 +26,9 @@ TYPE_STRING = "STRING"
 
 USER_NAME = "user.name"
 USER_EMAIL = "user.email"
-
+STORAGE_OBJECTS = "storage.objects" 
+MONGODB = "mongodb" 
+STORAGE_GRAPH = "storage.graph" 
+STORAGE_STAGING = "storage.staging" 
+MONGODB_VERSION = "mongodb.version"
 
