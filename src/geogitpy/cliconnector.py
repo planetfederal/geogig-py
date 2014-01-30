@@ -3,6 +3,7 @@ import os
 import tempfile
 import logging
 import geojson
+import geogit
 from feature import Feature
 from tree import Tree
 from commit import Commit
@@ -483,7 +484,7 @@ class CLIConnector(object):
             if data2 is None:
                 return {}
             else:
-                return {k: (None, v[0]) for k,v in data.iteritems()}
+                return {k: (None, v[0]) for k,v in data2.iteritems()}
         elif data2 is None:
             return {k: (v[0], None) for k,v in data.iteritems()}
         
@@ -552,10 +553,10 @@ class CLIConnector(object):
         
     def abort(self):
         if self.isrebasing():
-            commands=["rebase", "--abort"]            
+            commands=["rebase", "--abort"]
+            self.run(commands)            
         elif self.ismerging():
-            commands = ["merge", "--abort"]
-        self.run(commands)
+            self.reset(geogit.HEAD)        
             
     def cherrypick(self, commitish):
         commands = ["cherry-pick", commitish]
