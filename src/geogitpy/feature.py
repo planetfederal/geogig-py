@@ -14,7 +14,7 @@ class Feature(object):
     def attributes(self):
         '''
         returns the attributes of the feature in a dict  with attributes 
-        names as keys and tuples of (attribute_value, attribute_type_name) as values.
+        names as keys and attribute values as values.
         Values are converted to appropiate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''
@@ -32,8 +32,8 @@ class Feature(object):
     def geom(self):
         '''
         Returns the geometry of this feature.
-        It assumes that the feeature contains one and only one geometry.
-        If there is no geoetry, and exception is raised.
+        It assumes that the feature contains one and only one geometry.
+        If there is no geometry, and exception is raised.
         If there are several of them, the first one found is returned.
         '''
         attrs = self.attributes 
@@ -42,7 +42,13 @@ class Feature(object):
                 return v
         raise GeoGitException("Feature has no geometry")
             
-    def featuretype(self):        
+    def featuretype(self):  
+        '''
+        returns the feature type definition of the feature in a dict  with attributes 
+        names as keys and attribute type names as values.
+        Values are converted to appropriate types when possible, otherwise they are stored 
+        as the string representation of the attribute
+        '''
         if self._featuretype is None:
             self.query()
         return self._featuretype        
