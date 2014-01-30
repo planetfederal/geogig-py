@@ -313,7 +313,7 @@ class Repository(object):
         It returns a dict with Commit objects as keys, and feature data for the corresponding
         commit as values. Feature data is another dict with attributes 
         names as keys and tuples of (attribute_value, attribute_type_name) as values.
-        Values are converted to appropiate types when possible, otherwise they are stored 
+        Values are converted to appropriate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''            
         entries = self.log(geogit.HEAD, path = path)     
