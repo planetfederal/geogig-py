@@ -87,7 +87,15 @@ class CLIConnector(object):
         mergeheadfile = os.path.join(self.repo.url, '.geogit', 'MERGE_HEAD')        
         return os.path.exists(headfile) and os.path.exists(mergeheadfile)    
         
-    
+    def mergemessage(self):
+        msgfile = headfile = os.path.join(self.repo.url, '.geogit', 'MERGE_MSG')
+        if os.path.exists(msgfile):
+            with open(msgfile) as f:
+                lines = f.readlines()
+            return "".join(lines)
+        else:            
+            return "" 
+        
     def checkisrepo(self):
         if not os.path.exists(os.path.join(self.repo.url, '.geogit')):
             raise GeoGitException("Not a valid GeoGit repository: " + self.repo.url)
@@ -212,7 +220,19 @@ class CLIConnector(object):
             _conflicts[tokens[0]] = (tokens[1][:40], tokens[2][:40], tokens [3][:40])
         return _conflicts
             
-    
+    def solveconflicts(self, paths, version = geogit.OURS):
+        commands = ["checkout"]        
+        if version == geogit.OURS:
+            commands.append("--ours")
+        elif version == geogit.THEIRS:
+            commands.append("--theirs")
+        else:
+            raise GeoGitException("Unknown option:" + version)        
+        commands.append("-p")
+        commands.extend(paths)
+        self.run(commands)   
+        self.add(paths)         
+        
     def checkout(self, ref, paths = None, force = False):        
         commands = ['checkout', ref]
         if paths is not None and len(paths) > 0:            
@@ -497,7 +517,7 @@ class CLIConnector(object):
                 diffs[attr] = (data[attr][0], None)
         for attr in data2:
             if attr not in data:                
-                diffs[attr] = add(data2[attr][0], None)
+                diffs[attr] = (data2[attr][0], None)
         return diffs
             
     def blame(self, path):
@@ -581,9 +601,13 @@ class CLIConnector(object):
             f = tempfile.NamedTemporaryFile(delete = False)                           
             f.write(json)              
             f.close()
-            self.importgeojson(f.name, add = True, dest = dest)
+            self.importgeojson(f.name, add = True, dest = dest)            
         finally:
-            f.close()  
+            f.close() 
+            try:
+                os.remove(f.name)
+            except:
+                pass 
                          
     def removefeature(self, path):
         self.run(["rm", path])

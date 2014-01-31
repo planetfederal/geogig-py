@@ -33,7 +33,7 @@ class Feature(object):
         '''
         Returns the geometry of this feature.
         It assumes that the feature contains one and only one geometry.
-        If there is no geometry, and exception is raised.
+        If there is no geometry, an exception is raised.
         If there are several of them, the first one found is returned.
         '''
         attrs = self.attributes 

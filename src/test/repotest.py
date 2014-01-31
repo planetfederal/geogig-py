@@ -267,9 +267,64 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(log[1].ref, conflicts["parks/5"][0].ref) 
         self.assertEquals(log[0].ref, conflicts["parks/5"][1].ref)
         self.assertEquals(conflicted, conflicts["parks/5"][2].ref)   
-        
+    
     def testSolveConflict(self):
-        pass   
+        repo = self.getClonedRepo()
+        try:
+            repo.merge("conflicted")
+            self.fail()
+        except GeoGitConflictException, e:
+            pass
+        conflicts = repo.conflicts()        
+        self.assertEquals(1, len(conflicts))
+        path = conflicts.keys()[0]
+        self.assertTrue("parks/5", path)
+        features = conflicts[path]
+        origFeature = features[0]
+        repo.solveconflict(path, origFeature.geom, origFeature.attributesnogeom)
+        conflicts = repo.conflicts()        
+        self.assertEquals(0, len(conflicts))
+        feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
+        self.assertEquals(feature.attributes["area"], origFeature.attributes["area"])
+        
+    def testSolveConflictOurs(self):
+        repo = self.getClonedRepo()
+        try:
+            repo.merge("conflicted")
+            self.fail()
+        except GeoGitConflictException, e:
+            pass
+        conflicts = repo.conflicts()        
+        self.assertEquals(1, len(conflicts))
+        path = conflicts.keys()[0]
+        self.assertTrue("parks/5", path)
+        features = conflicts[path]
+        oursFeature = features[1]
+        repo.solveconflicts([path], geogit.OURS)
+        conflicts = repo.conflicts()        
+        self.assertEquals(0, len(conflicts))
+        feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
+        self.assertEquals(feature.attributes["area"], oursFeature.attributes["area"])        
+
+    def testSolveConflictTheirs(self):
+        repo = self.getClonedRepo()
+        try:
+            repo.merge("conflicted")
+            self.fail()
+        except GeoGitConflictException, e:
+            pass
+        conflicts = repo.conflicts()        
+        self.assertEquals(1, len(conflicts))
+        path = conflicts.keys()[0]
+        self.assertTrue("parks/5", path)
+        features = conflicts[path]
+        theirsFeature = features[2]
+        repo.solveconflicts([path], geogit.THEIRS)
+        conflicts = repo.conflicts()        
+        self.assertEquals(0, len(conflicts))
+        feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
+        self.assertEquals(feature.attributes["area"], theirsFeature.attributes["area"])  
+                      
 
     def testIsMerging(self):
         repo = self.getClonedRepo()

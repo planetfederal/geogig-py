@@ -32,3 +32,6 @@ STORAGE_GRAPH = "storage.graph"
 STORAGE_STAGING = "storage.staging" 
 MONGODB_VERSION = "mongodb.version"
 
+OURS = "ours"
+THEIRS = "theirs"
+

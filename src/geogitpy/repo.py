@@ -130,6 +130,13 @@ class Repository(object):
         '''Returns the time the last time this repository was synchronized'''
         #TODO
         return ''
+    
+    def mergemessage(self):
+        '''
+        Return the merge message if the repo is in a merge operation stopped due to conflicts.
+        Returns an empty string if it is not the case
+        '''
+        return self.connector.mergemessage()
             
     def log(self, tip = None, until = None, since = None, path = None, n = None):
         '''
@@ -252,12 +259,18 @@ class Repository(object):
         return self.connector.checkout(ref, paths)
 
     def solveconflict(self, path, geom, attributes):
-        '''solves a conflict at the specified path with a new feature defined by the passed attributes.
+        '''
+        Solves a conflict at the specified path with a new feature defined by the passed attributes.
         Attributes are passed in a dict with attribute names as keys and attribute values as values.
-        Geometry is a shapely geometry'''
-        self.reset(geogit.HEAD, path)
+        Geometry is a shapely geometry
+        '''
+        self.reset(geogit.HEAD, path = path)
         self.insertfeature(path, geom, attributes)
-        self.add(path)
+        self.add([path])
+        
+    def solveconflicts(self, paths, version = geogit.OURS):
+        '''Solves the specified paths with one of the corresponding existing versions (ours or theirs)'''
+        self.connector.solveconflicts(paths, version)
 
 
     def add(self, paths = []):
