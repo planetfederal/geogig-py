@@ -14,6 +14,7 @@ from commitish import Commitish
 from geogitpy.geogitexception import GeoGitException, GeoGitConflictException
 from shapely.wkt import loads
 from shapely.geometry import mapping
+from shapely.geometry.base import BaseGeometry
 
 def _run(command):         
     command = ['geogit'] + command
@@ -521,7 +522,13 @@ class CLIConnector(object):
         diffs = {}
         for attr in data:
             if attr in data2:
-                if data[attr] != data2[attr]:
+                v = data[attr][0]
+                v2 = data2[attr][0]
+                if isinstance(v, BaseGeometry):
+                    equal = v.to_wkt() == v2.to_wkt()
+                else:
+                    equal = v == v2                
+                if not equal:
                     diffs[attr] =(data[attr][0], data2[attr][0])
             else:
                 diffs[attr] = (data[attr][0], None)
