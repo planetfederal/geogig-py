@@ -4,6 +4,7 @@ import tempfile
 import logging
 import geojson
 import geogit
+from collections import defaultdict
 from feature import Feature
 from tree import Tree
 from commit import Commit
@@ -489,6 +490,15 @@ class CLIConnector(object):
             features[name] = self.parseattribs(lines)     
         return features
 
+    def featuretype(self, ref, tree):
+        show = self.show(ref + ":" + tree)
+        ftypeid = show.splitlines()[3].split(" ")[-1]
+        show = self.show(ftypeid)
+        attribs = {}
+        for line in show.splitlines()[3:]:
+            tokens = line.split(":")
+            attribs[tokens[0]] = tokens[1].strip()[1:-1]
+        return attribs
     
     def featurediff(self, ref, ref2, path):
         try:
@@ -517,7 +527,7 @@ class CLIConnector(object):
                 diffs[attr] = (data[attr][0], None)
         for attr in data2:
             if attr not in data:                
-                diffs[attr] = (data2[attr][0], None)
+                diffs[attr] = (None, data2[attr][0])
         return diffs
             
     def blame(self, path):
@@ -589,26 +599,31 @@ class CLIConnector(object):
             commands.append(k)     
             commands.append(v)
         self.run(commands)
-
-    def insertfeature(self, path, geom, attributes):
-        dest = os.path.dirname(path)
-        fid = os.path.basename(path)        
-        geommap = mapping(geom)
-        features = [geojson.Feature(id=fid, geometry=geommap, properties=attributes)]
-        fco = geojson.FeatureCollection(features=features)
-        json = geojson.dumps(fco)        
-        try:
-            f = tempfile.NamedTemporaryFile(delete = False)                           
-            f.write(json)              
-            f.close()
-            self.importgeojson(f.name, add = True, dest = dest)            
-        finally:
-            f.close() 
+        
+    def insertfeatures(self, paths, geoms, attributes):
+        trees = defaultdict(list)
+        if len(paths) != len(geoms) or len(geoms) != len(attributes):
+            raise Exception("The provided lists do not have the same length")
+        for path,geom,attrs in zip(paths, geoms, attributes):
+            dest = os.path.dirname(path)
+            fid = os.path.basename(path)        
+            geommap = mapping(geom)            
+            trees[dest].append(geojson.Feature(id=fid, geometry=geommap, properties=attrs))
+        for tree, features in trees.iteritems():
+            fco = geojson.FeatureCollection(features=features)
+            json = geojson.dumps(fco)        
             try:
-                os.remove(f.name)
-            except:
-                pass 
-                         
+                f = tempfile.NamedTemporaryFile(delete = False)                           
+                f.write(json)              
+                f.close()
+                self.importgeojson(f.name, add = True, dest = tree)            
+            finally:
+                f.close() 
+                try:
+                    os.remove(f.name)
+                except:
+                    pass 
+                             
     def removefeature(self, path):
         self.run(["rm", path])
         
@@ -636,7 +651,14 @@ class CLIConnector(object):
         commands = ["pull", remote, branch]
         if rebase:
             commands.append("--rebase")
-        self.run(commands)
+        try:
+            self.run(commands)
+        except GeoGitException, e:
+            if "conflict" in str(e):
+                raise GeoGitConflictException(str(e))
+            else:
+                raise e
+
         
     def push(self, remote, branch):
         commands = ["push", remote, branch]        

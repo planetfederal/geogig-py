@@ -17,6 +17,9 @@ class Tree(object):
         return self.repo.features(self.ref, self.path)
     
     @property
+    def featuretype(self):
+        return self.repo.featuretype(self.ref, self.path)
+    @property
     def children(self):        
         return self.repo.children(self.ref, self.path)
     

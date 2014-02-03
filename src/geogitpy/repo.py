@@ -320,6 +320,10 @@ class Repository(object):
             raise GeoGitException("The specified feature does not exist")
         return data
     
+    def featuretype(self, ref, tree):
+        '''Returns the featuretype of a tree as a dict in the form attrib_name : attrib_type_name'''
+        return self.connector.featuretype(ref, tree)
+    
     def versions(self, path):
         '''
         Returns all versions os a given feature.
@@ -391,7 +395,21 @@ class Repository(object):
         It will overwrite any feature in the same path, so this can be used to add a new feature or to 
         modify an existing one
         '''
-        self.connector.insertfeature(path, geom, attributes)
+        self.connector.insertfeatures([path], [geom], [attributes])
+        
+    def insertfeature(self, paths, geoms, attributes):
+        '''
+        Inserts a set of features into the working tree.
+        All three parameters are lists, with each element corresponding to the value for a feature.
+        All three list must have the same number of elements
+
+        The attributes for each feature are passed in a dict with attribute names as keys and attribute values as values.
+        The geometries must be a Shapely objects. This method only support features with a single geometry 
+        
+        It will overwrite any feature in the same path, so this can be used to add a new feature or to 
+        modify an existing one
+        '''
+        self.connector.insertfeatures([paths], [geoms], [attributes])        
 
     def removefeature(self, path):
         '''Removes the passed feature from the working tree and index, so it is no longer versioned'''
@@ -514,5 +532,9 @@ class Repository(object):
         branch = branch or self.head
         return self.connector.push(remote, branch)    
     
-    def init(self, initParams = None):                
+    def init(self, initParams = None):  
+        '''
+        Inits the repository.
+        Init params is a dict of paramName : paramValues to be supplied to the init command
+        '''                      
         self.connector.init(initParams)
