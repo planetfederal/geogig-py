@@ -546,5 +546,13 @@ class GeogitRepositoryTest(unittest.TestCase):
         cloned = origin.clone(dst)       
         cloned.reset(cloned.head.parent.ref, geogit.RESET_MODE_MIXED)
         self.assertEqual("message_3", cloned.log()[0].message)
-        self.assertTrue(len(cloned.unstaged()) > 0)      
+        self.assertTrue(len(cloned.unstaged()) > 0)     
+        
+        
+    def testFeatureType(self):
+        repo = self.getClonedRepo()
+        ftype = repo.featuretype(geogit.HEAD, "parks")
+        self.assertEqual("DOUBLE", ftype["perimeter"])
+        self.assertEqual("STRING", ftype["name"])
+        self.assertEqual("MULTIPOLYGON", ftype["the_geom"])         
            

@@ -27,3 +27,10 @@ class GeogitTreeTest(unittest.TestCase):
         tree = Tree(self.repo, geogit.HEAD, "parks")
         features = tree.features
         self.assertEquals(5, len(features))
+                
+    def testFeatureType(self):
+        tree = Tree(self.repo, geogit.HEAD, "parks")
+        ftype = tree.featuretype
+        self.assertEqual("DOUBLE", ftype["perimeter"])
+        self.assertEqual("STRING", ftype["name"])
+        self.assertEqual("MULTIPOLYGON", ftype["the_geom"])        
