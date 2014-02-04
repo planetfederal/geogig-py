@@ -445,24 +445,24 @@ class CLIConnector(object):
                 return attributes 
         
     def valuefromstring(self, value, valuetype):        
-        tokens = valuetype.split(" ")
-        if valuetype == "BOOLEAN":
-            return str(value).lower() == "true"
-        elif valuetype in ["BYTE","SHORT","INTEGER","LONG"]:
-            return int(value)
-        elif valuetype in ["FLOAT","DOUBLE"]:
-            return float(value)
-        elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"] 
-                or len(tokens) == 2):            
-            try:
+        tokens = valuetype.split(" ")        
+        try:
+            if valuetype == "BOOLEAN":
+                return str(value).lower() == "true"
+            elif valuetype in ["BYTE","SHORT","INTEGER","LONG"]:
+                return int(value)
+            elif valuetype in ["FLOAT","DOUBLE"]:
+                return float(value)
+            elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"] 
+                    or len(tokens) == 2):                    
                 geom = loads(value)
                 if len(tokens) == 2:
                     geom.crs = tokens[1]
-                return geom
-            except:
-                return value            
-        else:
-            return value
+                return geom        
+            else:
+                return value
+        except:
+            return value 
 
     def featuresdata(self, refs):
         features = {}
