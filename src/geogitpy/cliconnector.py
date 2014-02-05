@@ -191,7 +191,7 @@ class CLIConnector(object):
         try:
             output = self.run(commands)
         except GeoGitException, e:
-            if "HEAD does not resolve" in str(e): #empty repo
+            if "HEAD does not resolve" in unicode(e, errors = 'ignore'): #empty repo
                 return []
             else:
                 raise e                
@@ -559,8 +559,9 @@ class CLIConnector(object):
         try:
             self.run(commands) 
         except GeoGitException, e:
-            if "conflict" in str(e):
-                raise GeoGitConflictException(str(e))
+            msg = unicode(e, error='ignore')
+            if "conflict" in msg:
+                raise GeoGitConflictException(msg)
             else:
                 raise e
 
@@ -570,8 +571,9 @@ class CLIConnector(object):
         try:
             self.run(commands) 
         except GeoGitException, e:
-            if "conflict" in str(e):
-                raise GeoGitConflictException(str(e))
+            msg = unicode(e, error='ignore')
+            if "conflict" in msg:
+                raise GeoGitConflictException(msg)
             else:
                 raise e
             
@@ -662,8 +664,9 @@ class CLIConnector(object):
         try:
             self.run(commands)
         except GeoGitException, e:
-            if "conflict" in str(e):
-                raise GeoGitConflictException(str(e))
+            msg = unicode(e, error='ignore')
+            if "conflict" in msg:
+                raise GeoGitConflictException(msg)
             else:
                 raise e
 
