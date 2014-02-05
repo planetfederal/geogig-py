@@ -84,6 +84,6 @@ class Commit(Commitish):
         s += "parent " + str(self.parent) + "\n"
         s += "tree " + self.treeid + "\n"
         s += "author " + self.authorname + " " + str(self.authordate) + "\n"
-        s += "message " + str(self.message) + "\n" 
+        s += "message " + unicode(self.message, errors = "ignore") + "\n" 
         
         return s
