@@ -642,7 +642,7 @@ class CLIConnector(object):
         self.run(["apply", patchfile])   
         
     def show(self, ref):
-        return "\n".join(self.run(["show", ref]))    
+        return "\n".join(self.run(["show", ref, "--color", "never"]))    
     
     def config(self,param, value, global_ = False):
         commands = ["config", param, value]
