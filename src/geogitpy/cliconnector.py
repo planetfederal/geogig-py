@@ -653,6 +653,7 @@ class CLIConnector(object):
     def getconfig(self, param):
         value =  self.run(["config", "--get", param])
         value = value[0] if value else None
+        return value
         
     def pull(self, remote, branch, rebase = False):
         commands = ["pull", remote, branch]
