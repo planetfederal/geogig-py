@@ -388,7 +388,16 @@ class CLIConnector(object):
         if add:
             commands.append("--add")
         self.run(commands)
-
+        
+    def importsl(self, database, table, add = False, dest = None):         
+        commands = ["sl", "import", "--database",database]                    
+        if dest is not None:
+            commands.extend(["--dest", dest])        
+        commands.extend(["--table", table])        
+        if add:
+            commands.append("--add")
+        self.run(commands)
+        
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
         table = table or path
         refandpath = ref + ":" + path
