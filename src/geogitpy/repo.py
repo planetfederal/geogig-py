@@ -258,14 +258,14 @@ class Repository(object):
             self.connector.reset(ref, path = path)            
         return self.connector.checkout(ref, paths)
 
-    def solveconflict(self, path, geom, attributes):
+    def solveconflict(self, path, attributes):
         '''
         Solves a conflict at the specified path with a new feature defined by the passed attributes.
         Attributes are passed in a dict with attribute names as keys and attribute values as values.
-        Geometry is a shapely geometry
+        This can be used only with features containing one and only one geometry attribute
         '''
         self.reset(geogit.HEAD, path = path)
-        self.insertfeature(path, geom, attributes)
+        self.insertfeature(path, attributes)
         self.add([path])
         
     def solveconflicts(self, paths, version = geogit.OURS):
@@ -385,31 +385,30 @@ class Repository(object):
         each to the newest of them, or the oldest one if old = False'''
         self.connector.exportdiffs(_resolveref(commit1), _resolveref(commit2), path, filepath, old, overwrite)
 
-    def insertfeature(self, path, geom, attributes):
+    def insertfeature(self, path, attributes):
         '''
         Inserts a feature to the working tree.
 
         The attributes are passed in a dict with attribute names as keys and attribute values as values.
-        The geometry must be a Shapely object. This method only support features with a single geometry 
+        There must be one an only one geometry attribute, with a Shapely object.  
         
         It will overwrite any feature in the same path, so this can be used to add a new feature or to 
         modify an existing one
         '''
-        self.connector.insertfeatures([path], [geom], [attributes])
+        self.connector.insertfeatures({path : attributes})
         
-    def insertfeature(self, paths, geoms, attributes):
+    def insertfeatures(self, features):
         '''
         Inserts a set of features into the working tree.
-        All three parameters are lists, with each element corresponding to the value for a feature.
-        All three list must have the same number of elements
 
+        Features are passed in a dict with paths as keys and attributes as values 
         The attributes for each feature are passed in a dict with attribute names as keys and attribute values as values.
-        The geometries must be a Shapely objects. This method only support features with a single geometry 
+        There must be one an only one geometry attribute, with a Shapely object.
         
-        It will overwrite any feature in the same path, so this can be used to add a new feature or to 
-        modify an existing one
+        It will overwrite any feature in the same path, so this can be used to add new features or to 
+        modify existing ones
         '''
-        self.connector.insertfeatures([paths], [geoms], [attributes])        
+        self.connector.insertfeatures(features)        
 
     def removefeature(self, path):
         '''Removes the passed feature from the working tree and index, so it is no longer versioned'''

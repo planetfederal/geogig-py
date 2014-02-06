@@ -344,12 +344,14 @@ class CLIConnector(object):
         commands = ["osm", "map", mappingfile]
         self.run(commands) 
         
-    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None):
+    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None):
         commands = ["geojson", "import", geojsonfile]
         if dest is not None:
             commands.extend(["--dest", dest])
         if idAttribute is not None:
             commands.extend(["--fid-attrib", idAttribute])            
+        if geomName is not None:
+            commands.extend(["--geom-name", geomName])            
         if add:
             commands.append("--add")
         self.run(commands)
@@ -609,15 +611,24 @@ class CLIConnector(object):
             commands.append(v)
         self.run(commands)
         
-    def insertfeatures(self, paths, geoms, attributes):
-        trees = defaultdict(list)
-        if len(paths) != len(geoms) or len(geoms) != len(attributes):
-            raise Exception("The provided lists do not have the same length")
-        for path,geom,attrs in zip(paths, geoms, attributes):
+    def insertfeatures(self, features):
+        trees = defaultdict(list)   
+        geomNames = {}     
+        for path, attrs in features.iteritems():
             dest = os.path.dirname(path)
-            fid = os.path.basename(path)        
+            fid = os.path.basename(path)
+            filteredAttrs = {}
+            geom = None
+            for attrName, attrValue in attrs.iteritems():
+                if isinstance(attrValue, BaseGeometry):
+                    if geom is not None:
+                        raise GeoGitException("Cannot insert feature with more than one geometry attribute")
+                    geom = attrValue
+                    geomNames[dest] = attrName
+                else:
+                    filteredAttrs[attrName] = attrValue  
             geommap = mapping(geom)            
-            trees[dest].append(geojson.Feature(id=fid, geometry=geommap, properties=attrs))
+            trees[dest].append(geojson.Feature(id=fid, geometry=geommap, properties=filteredAttrs))
         for tree, features in trees.iteritems():
             fco = geojson.FeatureCollection(features=features)
             json = geojson.dumps(fco)        
@@ -625,7 +636,7 @@ class CLIConnector(object):
                 f = tempfile.NamedTemporaryFile(delete = False)                           
                 f.write(json)              
                 f.close()
-                self.importgeojson(f.name, add = True, dest = tree)            
+                self.importgeojson(f.name, add = True, dest = tree, geomName = geomNames.get(tree))            
             finally:
                 f.close() 
                 try:
