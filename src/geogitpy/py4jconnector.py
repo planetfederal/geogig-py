@@ -62,8 +62,9 @@ def shutdownServer():
             os.kill(_proc.pid, signal.SIGKILL)        
         _proc = None
         
-def _runGateway(commands, url): 
+def _runGateway(commands, url):     
     gc.collect()    
+    commands.extend(["--color", "never"])
     command = " ".join(commands)
     command = command.replace("\r", "")   
     _logger.debug("Running GeoGit command: " + command)     

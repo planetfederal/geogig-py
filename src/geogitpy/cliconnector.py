@@ -18,6 +18,7 @@ from shapely.geometry.base import BaseGeometry
 
 def _run(command):         
     command = ['geogit'] + command
+    command.extend(["--color", "never"])
     commandstr = " ".join(command)
     if os.name != 'nt':
         command = commandstr
@@ -124,14 +125,14 @@ class CLIConnector(object):
     
     def commitFromString(self, lines):                
         message = False
-        messagetext = None
+        messagetext = []
         parent = None
         commitid = None
         for line in lines:
             tokens = line.split(' ')
             if message:
                 if line.startswith("\t") or line.startswith(" "):
-                    messagetext = line.strip() if messagetext is None else messagetext + "\n" + line.strip()
+                    messagetext.append(line.strip())
                 else:
                     message = False            
             else:                
@@ -151,8 +152,8 @@ class CLIConnector(object):
                 elif tokens[0] == 'message':
                     message = True                
             
-        if commitid is not None:
-            c = Commit(self.repo, commitid, tree, parent, messagetext, author, authordate, committer, committerdate)
+        if commitid is not None:            
+            c = Commit(self.repo, commitid, tree, parent, "\n".join(messagetext), author, authordate, committer, committerdate)
             return c
         else:
             return None
@@ -191,7 +192,7 @@ class CLIConnector(object):
         try:
             output = self.run(commands)
         except GeoGitException, e:
-            if "HEAD does not resolve" in unicode(e, errors = 'ignore'): #empty repo
+            if "HEAD does not resolve" in e.message: #empty repo
                 return []
             else:
                 raise e                
@@ -569,9 +570,8 @@ class CLIConnector(object):
             commands.apend(message)
         try:
             self.run(commands) 
-        except GeoGitException, e:
-            msg = unicode(e, error='ignore')
-            if "conflict" in msg:
+        except GeoGitException, e:            
+            if "conflict" in e.message:
                 raise GeoGitConflictException(msg)
             else:
                 raise e
@@ -582,8 +582,7 @@ class CLIConnector(object):
         try:
             self.run(commands) 
         except GeoGitException, e:
-            msg = unicode(e, error='ignore')
-            if "conflict" in msg:
+            if "conflict" in e.message:
                 raise GeoGitConflictException(msg)
             else:
                 raise e
@@ -664,7 +663,7 @@ class CLIConnector(object):
         self.run(["apply", patchfile])   
         
     def show(self, ref):
-        return "\n".join(self.run(["show", ref, "--color", "never"]))    
+        return "\n".join(self.run(["show", ref]))    
     
     def config(self,param, value, global_ = False):
         commands = ["config", param, value]
@@ -684,8 +683,7 @@ class CLIConnector(object):
         try:
             self.run(commands)
         except GeoGitException, e:
-            msg = unicode(e, error='ignore')
-            if "conflict" in msg:
+            if "conflict" in e.message:
                 raise GeoGitConflictException(msg)
             else:
                 raise e
