@@ -572,7 +572,7 @@ class CLIConnector(object):
             self.run(commands) 
         except GeoGitException, e:            
             if "conflict" in e.message:
-                raise GeoGitConflictException(msg)
+                raise GeoGitConflictException(e.message)
             else:
                 raise e
 
@@ -583,7 +583,7 @@ class CLIConnector(object):
             self.run(commands) 
         except GeoGitException, e:
             if "conflict" in e.message:
-                raise GeoGitConflictException(msg)
+                raise GeoGitConflictException(e.message)
             else:
                 raise e
             
@@ -684,7 +684,7 @@ class CLIConnector(object):
             self.run(commands)
         except GeoGitException, e:
             if "conflict" in e.message:
-                raise GeoGitConflictException(msg)
+                raise GeoGitConflictException(e.message)
             else:
                 raise e
 
