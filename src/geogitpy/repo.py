@@ -370,16 +370,19 @@ class Repository(object):
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
         self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port)
 
-    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None):
-        self.connector.importgeojson(geojsonfile, add, dest, idAttribute)
+    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None):
+        self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName)
                     
     def importshp(self, shpfile, add = False, dest = None, idAttribute = None):
         self.connector.importshp(shpfile, add, dest, idAttribute)
         
     def importpg(self, database, user = None, password = None, table = None, 
                  schema = None, host = None, port = None, add = False, dest = None):
-        self.connector.importpg(database, user, password, table, schema, host, port, add, dest)           
+        self.connector.importpg(database, user, password, table, schema, host, port, add, dest)                     
 
+    def importsl(self, database, table, add = False, dest = None):   
+        self.connector.importpg(database, table, add, dest)
+        
     def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
         '''Exports the differences in a given tree between to commits, creating a shapefile 
         each to the newest of them, or the oldest one if old = False'''
