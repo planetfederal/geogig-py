@@ -338,10 +338,8 @@ class Repository(object):
         versions = []
         if refs:
             features = self.connector.featuresdata(refs)                        
-            for i, ref in enumerate(features):
-                feature = features[ref]
-                commit = entries[i]
-                versions.append((commit, feature))
+            for entry, ref in zip(entries, refs):              
+                versions.append((entry, features[ref]))
         return versions
     
     def featurediff(self, ref, ref2, path):
