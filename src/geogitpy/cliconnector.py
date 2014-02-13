@@ -192,7 +192,7 @@ class CLIConnector(object):
         try:
             output = self.run(commands)
         except GeoGitException, e:
-            if "HEAD does not resolve" in e.message: #empty repo
+            if "HEAD does not resolve" in e.args[0]: #empty repo
                 return []
             else:
                 raise e                
@@ -469,6 +469,7 @@ class CLIConnector(object):
                     or len(tokens) == 2):                    
                 geom = loads(value)
                 if len(tokens) == 2:
+                    print tokens
                     geom.crs = tokens[1]
                 return geom        
             else:
@@ -571,8 +572,8 @@ class CLIConnector(object):
         try:
             self.run(commands) 
         except GeoGitException, e:            
-            if "conflict" in e.message:
-                raise GeoGitConflictException(e.message)
+            if "conflict" in e.args[0]:
+                raise GeoGitConflictException(e.args[0])
             else:
                 raise e
 
@@ -582,8 +583,8 @@ class CLIConnector(object):
         try:
             self.run(commands) 
         except GeoGitException, e:
-            if "conflict" in e.message:
-                raise GeoGitConflictException(e.message)
+            if "conflict" in e.args[0]:
+                raise GeoGitConflictException(e.args[0])
             else:
                 raise e
             
@@ -683,8 +684,8 @@ class CLIConnector(object):
         try:
             self.run(commands)
         except GeoGitException, e:
-            if "conflict" in e.message:
-                raise GeoGitConflictException(e.message)
+            if "conflict" in e.args[0]:
+                raise GeoGitConflictException(e.args[0])
             else:
                 raise e
 
