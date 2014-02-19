@@ -34,12 +34,12 @@ GeoGit is not included with geogit-py, and it is assumed to be already installed
 Usage
 -----
 
-Usage is described `here <./usage.rst>`_
+Usage is described `here <./doc/source/usage.rst>`_
 
 Examples
 --------
 
-You can find `here <./examples.rst>`_ some examples on how to use geogit-py for basic and more complex scripting tasks.
+You can find `here <./doc/source/examples.rst>`_ some examples on how to use geogit-py for basic and more complex scripting tasks.
 
 Testing
 --------
