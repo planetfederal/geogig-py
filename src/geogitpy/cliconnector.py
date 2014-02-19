@@ -528,9 +528,9 @@ class CLIConnector(object):
             if data2 is None:
                 return {}
             else:
-                return {k: (None, v[0]) for k,v in data2.iteritems()}
+                return dict(( (k, (None, v[0])) for k,v in data2.iteritems() ))
         elif data2 is None:
-            return {k: (v[0], None) for k,v in data.iteritems()}
+            return dict(( (k, (v[0], None)) for k,v in data.iteritems() ))
         
         diffs = {}
         for attr in data:
