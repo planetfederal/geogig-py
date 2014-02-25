@@ -17,7 +17,6 @@ from featuretest import GeogitFeatureTest
 from commitishtest import GeogitCommitishTest
 from committest import GeogitCommitTest
 from difftest import GeogitDiffTest
-from temptest import GeogitTempTest
 
 def getTempRepoPath():
     return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
@@ -57,7 +56,6 @@ def suite():
     suite.addTests(unittest.makeSuite(GeogitCommitishTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogitCommitTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogitDiffTest, 'test'))
-    suite = unittest.makeSuite(GeogitTempTest, 'test')
     return suite
    
 
