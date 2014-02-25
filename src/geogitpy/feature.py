@@ -26,7 +26,7 @@ class Feature(object):
     def attributesnogeom(self):
         '''returns a filtered set of attributes, with only those attributes that are not geometries'''
         attrs = self.attributes
-        return {k : v for k,v in attrs.iteritems() if not isinstance(v, BaseGeometry)} 
+        return dict((i for i in attrs.iteritems() if not isinstance(i[1], BaseGeometry) ))
 
     @property
     def geom(self):
@@ -62,8 +62,8 @@ class Feature(object):
         data = self.repo.featuredata(self.ref, self.path)
         if len(data) == 0:
             raise GeoGitException("Feature at the specified path does not exist")
-        self._attributes = {k: v[0] for k,v in data.iteritems()}
-        self._featuretype = {k: v[1] for k,v in data.iteritems()}
+        self._attributes = dict(( (k, v[0]) for k,v in data.iteritems()))
+        self._featuretype = dict(( (k, v[1]) for k,v in data.iteritems()))
 
     def exists(self):
         try:
