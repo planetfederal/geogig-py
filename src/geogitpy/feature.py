@@ -41,6 +41,20 @@ class Feature(object):
             if isinstance(v, BaseGeometry):
                 return v
         raise GeoGitException("Feature has no geometry")
+    
+    @property
+    def geomfieldname(self):
+        '''
+        Returns the name of the geometry field of this feature.
+        It assumes that the feature contains one and only one geometry.
+        If there is no geometry, an exception is raised.
+        If there are several of them, the first one found is returned.
+        '''
+        attrs = self.attributes 
+        for k, v in attrs.iteritems():
+            if isinstance(v, BaseGeometry):
+                return k
+        raise GeoGitException("Feature has no geometry")
             
     def featuretype(self):  
         '''

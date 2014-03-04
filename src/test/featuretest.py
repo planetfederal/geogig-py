@@ -76,6 +76,11 @@ class GeogitFeatureTest(unittest.TestCase):
         geom = feature.geom
         self.assertTrue(isinstance(geom, MultiPolygon)) 
         
+    def testGeomFieldName(self):
+        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        name = feature.geomfieldname
+        self.assertEquals("the_geom", name)
+        
     def testNoGeom(self):
         feature = Feature(self.repo, geogit.HEAD, "parks/5")
         allattrs = feature.attributes

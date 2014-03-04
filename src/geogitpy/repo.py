@@ -387,7 +387,7 @@ class Repository(object):
         Inserts a feature to the working tree.
 
         The attributes are passed in a dict with attribute names as keys and attribute values as values.
-        There must be one an only one geometry attribute, with a Shapely object.  
+        There must be one and only one geometry attribute, with a Shapely object.  
         
         It will overwrite any feature in the same path, so this can be used to add a new feature or to 
         modify an existing one
