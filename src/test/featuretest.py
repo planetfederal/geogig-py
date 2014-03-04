@@ -47,8 +47,8 @@ class GeogitFeatureTest(unittest.TestCase):
         diffs = feature.diff(featureB)        
         self.assertTrue(2, len(diffs))
         areas = diffs["area"]
-        self.assertEquals("15297.503295898438", areas[1])
-        self.assertEquals("15246.59765625", areas[0])
+        self.assertEquals(15297.503295898438, areas[1])
+        self.assertEquals(15246.59765625, areas[0])
         self.assertTrue("the_geom" in diffs)
 
     def testBlame(self):
@@ -69,7 +69,7 @@ class GeogitFeatureTest(unittest.TestCase):
         self.assertTrue("area" in ftype)
         self.assertTrue("perimeter" in ftype)  
         self.assertTrue("the_geom" in ftype) 
-        self.assertEquals("MULTIPOLYGON", ftype['the_geom'])
+        self.assertEquals("MULTIPOLYGON EPSG:4326", ftype['the_geom'])
         
     def testGeom(self):
         feature = Feature(self.repo, geogit.HEAD, "parks/5")

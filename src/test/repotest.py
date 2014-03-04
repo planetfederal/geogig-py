@@ -72,7 +72,7 @@ class GeogitRepositoryTest(unittest.TestCase):
             commit = self.repo.commitatdate(epoch)
             self.fail()
         except GeoGitException, e:
-            self.assertTrue("Invalid date" in str(e))
+            self.assertTrue("Invalid date" in e.args[0])
             
     def testLogEmptyRepo(self):
         repoPath =  self.getTempRepoPath()         
@@ -232,16 +232,14 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo = self.getClonedRepo()
         attrs = Feature(repo, geogit.HEAD, "parks/1").attributes
         attrs["area"] = 1234.5
-        geom = attrs["the_geom"]
-        repo.insertfeature("parks/1", geom, attrs)
+        repo.insertfeature("parks/1", attrs)
         attrs = Feature(repo, geogit.WORK_HEAD, "parks/1").attributes
         self.assertEquals(1234.5, attrs["area"])
 
     def testAddFeature(self):
         repo = self.getClonedRepo()
-        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes        
-        geom = attrs["the_geom"]    
-        repo.insertfeature("parks/newfeature", geom, attrs)
+        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes                
+        repo.insertfeature("parks/newfeature", attrs)
         newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes        
         self.assertEquals(attrs["area"], newattrs["area"])    
 
@@ -281,7 +279,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue("parks/5", path)
         features = conflicts[path]
         origFeature = features[0]
-        repo.solveconflict(path, origFeature.geom, origFeature.attributesnogeom)
+        repo.solveconflict(path, origFeature.attributes)
         conflicts = repo.conflicts()        
         self.assertEquals(0, len(conflicts))
         feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
@@ -355,7 +353,7 @@ class GeogitRepositoryTest(unittest.TestCase):
             repo.merge("conflicted")
             self.fail()
         except GeoGitConflictException, e:
-            self.assertTrue("conflict" in str(e))
+            self.assertTrue("conflict" in e.args[0])
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
         conflicts.itervalues().next()[0].setascurrent()        
@@ -368,7 +366,7 @@ class GeogitRepositoryTest(unittest.TestCase):
             repo.rebase("conflicted")
             self.fail()
         except GeoGitConflictException, e:
-            self.assertTrue("conflict" in str(e))
+            self.assertTrue("conflict" in e.args[0])
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
         conflicts.itervalues().next()[0].setascurrent()        
@@ -377,10 +375,10 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testCantContinueRebasing(self):
         repo = self.getClonedRepo()
         try:
-            repo.merge("conflicted")
+            repo.rebase("conflicted")
             self.fail()
         except GeoGitConflictException, e:
-            self.assertTrue("conflict" in str(e))
+            self.assertTrue("conflict" in e.args[0])
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
         try:
@@ -439,7 +437,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.cherrypick("unconflicted")
         except GeoGitException, e:
-            self.assertTrue("conflict" in str(e))
+            self.assertTrue("conflict" in e.args[0])
         log = repo.log()
         self.assertTrue(ref, log[0].ref)
         
