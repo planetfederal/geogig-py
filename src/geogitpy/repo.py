@@ -438,8 +438,9 @@ class Repository(object):
 
     def continue_(self):
         '''
-        Abort a merge or rebase operation, if it was stopped due to conflicts
-        Throws a GeoGitException if the repo is not clean and cannot continue the operation
+        Continues a rebase operation that was stopped due to conflicts
+        Raises a GeoGitException if the repo is not clean and cannot continue the operation
+        Does nothing if the repo is not in a conflicted state caused by a rebase operation
         '''
         self.connector.continue_()
         

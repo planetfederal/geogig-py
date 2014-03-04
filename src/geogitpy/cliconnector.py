@@ -599,8 +599,7 @@ class CLIConnector(object):
             if "conflict" in e.args[0]:
                 raise GeoGitConflictException(e.args[0])
             else:
-                raise e
-            
+                raise e            
     
     def continue_(self):
         if self.isrebasing():
@@ -608,11 +607,6 @@ class CLIConnector(object):
             self.run(commands)
             if self.isrebasing():
                 raise GeoGitException("Could not continue rebasing")
-        elif self.ismerging():
-            commands = ["merge", "--continue"]
-            self.run(commands)
-            if self.ismerging():
-                raise GeoGitException("Could not continue merging")
         
     def abort(self):
         if self.isrebasing():
