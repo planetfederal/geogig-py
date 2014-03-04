@@ -470,8 +470,7 @@ class CLIConnector(object):
             elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"] 
                     or len(tokens) == 2):                    
                 geom = loads(value)
-                if len(tokens) == 2:
-                    print tokens
+                if len(tokens) == 2:                    
                     geom.crs = tokens[1]
                 return geom        
             else:
