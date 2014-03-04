@@ -64,15 +64,15 @@ class Commit(Commitish):
         s = ''
         secs = diff.seconds
         if diff.days == 1:
-            s = '1 day ago'
+            s = "1 day ago"
         elif diff.days > 1:
-            s = '{} days ago'.format(diff.days)
+            s = "{} days ago".format(diff.days)
         elif secs < 120:
-            s = '1 minute ago'
+            s = "1 minute ago"
         elif secs < 3600:
-            s = '{} minutes ago'.format(secs/60)
+            s = "{} minutes ago".format(secs/60)
         elif secs < 7200:
-            s = '1 hour ago'
+            s = "1 hour ago"
         else:
             s = '{} hours ago'.format(secs/3600)
         
@@ -80,10 +80,14 @@ class Commit(Commitish):
         return s 
         
     def __str__(self):
+        try:
+            msg = unicode(self.message, errors = "ignore") 
+        except TypeError:
+            msg = self.message        
         s = "id " + self.commitid + "\n"
         s += "parent " + str(self.parent) + "\n"
         s += "tree " + self.treeid + "\n"
         s += "author " + self.authorname + " " + str(self.authordate) + "\n"
-        s += "message " + unicode(self.message, errors = "ignore") + "\n" 
+        s += "message " + msg + "\n" 
         
         return s
