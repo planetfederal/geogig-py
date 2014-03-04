@@ -27,11 +27,12 @@ A simple GeoGit workflow
 	# Take a feature and modify its geometry
 	feature = repo.feature(geogit.HEAD, 'parks/1')		
 	geom = feature.geom
-	attributes = feature.attributesnogeom
+	attributes = feature.attributes
 	newgeom = geom.buffer(5.0)
+	attributes[feature.geomfieldname] = newgeom
 
 	# insert the modified geometry and create a new snapshot with the changes
-	repo.insertfeature(feature.path, attributes, newgeom)
+	repo.insertfeature(feature.path, attributes)
 	repo.addandcommit("modified parks/1 (buffer computed)")
 
 	# Bring changes to master branch

@@ -95,9 +95,10 @@ You can even add new elements to the repository, or modify existing ones.
 
 ::
 
-	geom = tree[0].features[0].attributes['the_geom']
-	newattributes = {'open': False, 'name': 'New Central park', 'area': 23876.5}
-	repo.modifyfeature("parks/parks1", newattributes, geom)
+	attribs = tree[0].features[0]
+	attribs['open'] = False
+	attribs['name'] = 'New Central park'}
+	repo.insertfeature("parks/parks1", attribs)
 
 This sets the new feature in the working tree, with two attributes changed (*open* and *name*). Then you can add and commit as usual.
 
