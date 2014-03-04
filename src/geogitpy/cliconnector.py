@@ -562,6 +562,17 @@ class CLIConnector(object):
             attributes[name]=(value, commitid, authorname)   
         return attributes 
     
+    def commonancestor(self, refa, refb):
+        commands = ["merge-base", refa, refb]        
+        try:
+            output = self.run(commands)            
+            return Commitish(self.repo, output[0].strip())
+        except GeoGitException, e:                    
+            if "No common ancestor" in e.args[0]:
+                return None
+            else:
+                raise e 
+            
     def merge (self, ref, nocommit = False, message = None):        
         commands = ["merge", ref]
         if nocommit:

@@ -13,7 +13,7 @@ def _resolveref(ref):
     Tries to resolve the pased object into a string representing a commit reference 
     (a SHA-1, branch name, or something like HEAD~1)
     This should be called by all commands using references, so they can accept both
-    strings a Commitish objects indistinctly
+    strings and Commitish objects indistinctly
     ''' 
     if ref is None:
         return None
@@ -91,13 +91,7 @@ class Repository(object):
         '''Returns true if the repos has a detached HEAD'''
         return  self.head.id == self.head.ref
     
-    def sync(self):
-        '''Runs a "pull --rebase" command an then a "push" one to synchronize with the remote repository
-        It uses the "origin" remote if it exists, otherwise it uses the first remote available.
-        Throws an exception if the working tree an index are not clean or no remote is defined.
-        It stores the time and date of the sync operation, so it can be later checked'''        
-        pass
-        
+       
     def synced(self, branch = geogit.HEAD):
         '''Returns true if the repo is synced with a remote.
         It uses the passed branch or, if not passed, the current branch
@@ -125,12 +119,7 @@ class Repository(object):
         
         return remoteHead == localHead
         
-    
-    def lastsync(self):
-        '''Returns the time the last time this repository was synchronized'''
-        #TODO
-        return ''
-    
+        
     def mergemessage(self):
         '''
         Return the merge message if the repo is in a merge operation stopped due to conflicts.
@@ -142,6 +131,8 @@ class Repository(object):
         '''
         Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref.
         If a path is passed, it only returns commits in which that path was modified
+        tip is the branch from which to start listing the history. HEAD is used if no tip is specified
+        A maximum number of commits can be set uing the n parameter
         '''     
         tip = tip or geogit.HEAD
         if path is not None or until != geogit.HEAD:
@@ -168,11 +159,11 @@ class Repository(object):
         return self._trees()
         
     def _trees(self, ref = geogit.HEAD, path = None, recursive = False): 
-        '''returns a set of Tree objects with all the trees for the passed ref and path'''       
+        '''Returns a set of Tree objects with all the trees for the passed ref and path'''       
         return [e for e in self.children(ref, path, recursive)  if isinstance(e, Tree)]
     
     def features(self, ref = geogit.HEAD, path = None, recursive = False): 
-        '''returns a set of Feature objects with all the features for the passed ref and path'''                  
+        '''Returns a set of Feature objects with all the features for the passed ref and path'''                  
         return [e for e in self.children(ref, path, recursive)  if isinstance(e, Feature)]
     
     def children(self, ref = geogit.HEAD, path = None, recursive = False): 
@@ -181,16 +172,16 @@ class Repository(object):
         
     @property
     def branches(self):        
-        ''' a dict with branch names as keys and branch refs as values'''
+        ''' Returns a dict with branch names as keys and branch refs as values'''
         return self.connector.branches()
     
     @property
     def tags(self):   
-        ''' a dict with tag names as keys and tag commit ids as values'''     
+        '''Returns a dict with tag names as keys and tag commit ids as values'''     
         return self.connector.tags()
        
     def clone(self, path):
-        '''clones this repo in the specified path. Returns a reference to the cloned repo'''
+        '''Clones this repo in the specified path. Returns a reference to the cloned repo'''
         url = self.url.replace('\\', '/')
         self.connector.clone(url, path)
         return Repository(path, self.connector, False)
@@ -200,11 +191,11 @@ class Repository(object):
         return self.connector.createbranch(_resolveref(ref), name, force, checkout)
 
     def deletebranch(self, name):
-        '''deletes the passed branch'''
+        '''Deletes the passed branch'''
         self.connector.deletebranch(name)
 
     def createtag(self, ref, name, message):
-        '''creates a new tag'''
+        '''Creates a new tag, with the passed message'''
         self.connector.createtag(_resolveref(ref), name, message)
 
     def deletetag(self, name):
@@ -213,7 +204,7 @@ class Repository(object):
     
     def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD, path = None):
         '''Returns a list of DiffEntry representing the changes between 2 commits.
-        If a path is passed, it only shows changes corresponing to that path'''
+        If a path is passed, it only shows changes corresponding to that path'''
         return self.connector.diff(_resolveref(refa), _resolveref(refb), path)
     
     def difftreestats(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
@@ -244,7 +235,9 @@ class Repository(object):
         return conflicts
 
     def checkout(self, ref, paths = None, force = False):
-        '''Checks out the passed ref'''        
+        '''Checks out the passed ref into the working tree.
+        If a path list is passed, it will just checkout those paths.
+        If force is True, it will check out even if the working tree is not clean'''        
         self.connector.checkout(_resolveref(ref), paths, force)
         self.cleancache()
     
@@ -269,7 +262,10 @@ class Repository(object):
         self.add([path])
         
     def solveconflicts(self, paths, version = geogit.OURS):
-        '''Solves the specified paths with one of the corresponding existing versions (ours or theirs)'''
+        '''
+        Solves the specified paths with one of the corresponding existing versions (ours or theirs)
+        Version is specified using geogit.OURS or geogit.THEIRS
+        '''
         self.connector.solveconflicts(paths, version)
 
 
@@ -383,7 +379,7 @@ class Repository(object):
         
     def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
         '''Exports the differences in a given tree between to commits, creating a shapefile 
-        each to the newest of them, or the oldest one if old = False'''
+        with the changed features corresponding to the newest of them, or the oldest if old = False'''
         self.connector.exportdiffs(_resolveref(commit1), _resolveref(commit2), path, filepath, old, overwrite)
 
     def insertfeature(self, path, attributes):
@@ -415,13 +411,21 @@ class Repository(object):
         '''Removes the passed feature from the working tree and index, so it is no longer versioned'''
         self.connector.removefeature(path)
         
+        
+    def commonancestor(self, refa, refb):
+        '''
+        Returns the common ancestor of the two passed references as a Commitish object
+        Returns None if no acommon ancestor exists for the passed references
+        '''
+        return self.connector.commonancestor(refa, refb)
+        
     def merge(self, ref, nocommit = False, message = None):
         '''Merges the passed ref into the current branch'''
         self.connector.merge(_resolveref(ref), nocommit, message)
         self.cleancache()        
         
     def rebase(self, ref):
-        '''rebases the current branch using the passed ref'''
+        '''Rebases the current branch using the passed ref'''
         self.connector.rebase(_resolveref(ref))
         self.cleancache()                  
 
@@ -465,11 +469,14 @@ class Repository(object):
         '''Returns true if the repo is in the middle of a rebase stopped due to conflicts'''
         return self.connector.isrebasing()
     
-    def downloadosm(self, osmurl, bbox):
+    def downloadosm(self, osmurl, bbox, mappingorfile = None):
         '''Downloads from a OSM server using the overpass API.
         The bbox parameter defines the extent of features to download.
-        Accepts a mapping or '''
-        self.connector.downloadosm(osmurl, bbox, mappingOrFile = None)
+        Accepts a mapping object or a string with the path to a mapping file'''
+        mappingfile = None
+        if mappingorfile is not None:
+            mappingfile = self._mapping(mappingorfile) 
+        self.connector.downloadosm(osmurl, bbox, mappingfile)
         self.cleancache() 
         
         
@@ -486,6 +493,10 @@ class Repository(object):
                 f.close()
                 
     def importosm(self, osmfile, add = False, mappingorfile = None):
+        '''
+        Imports an osm file.        
+        Accepts a mapping object or a string with the path to a mapping file to define an import mapping
+        '''        
         mappingfile = None
         if mappingorfile is not None:
             mappingfile = self._mapping(mappingorfile)        
@@ -523,7 +534,7 @@ class Repository(object):
     
     def push(self, remote, branch):
         '''
-        Pushes to the specifed remote and specified branch. 
+        Pushes to the specified remote and specified branch. 
         If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
         In that case, and exception will be raised
         '''
