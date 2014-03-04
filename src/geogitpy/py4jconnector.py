@@ -88,18 +88,22 @@ def removeProgressListener():
     global _gateway    
     _javaGateway().entry_point.removeProgressListener()
 
-def setProgressListener(listenerFunc):
+def setProgressListener(progressFunc, progressTextFunc):
     class Listener(object):
-        def __init__(self, listener):
-            self.listener = listener
+        def __init__(self, progressFunc, progressTextFunc):
+            self.progressFunc = progressFunc
+            self.progressTextFunc = progressTextFunc
         
         def setProgress(self, i):
-            self.listener(i)
+            self.progressFunc(i)
+            
+        def setProgressText(self, s):
+            self.progressTextFunc(s)
 
         class Java:
             implements = ['org.geogit.cli.GeoGitPy4JProgressListener']
     
-    _javaGateway().entry_point.setProgressListener(Listener(listenerFunc))
+    _javaGateway().entry_point.setProgressListener(Listener(progressFunc, progressTextFunc))
     
 class Py4JConnectionException(Exception):
     pass
@@ -110,8 +114,6 @@ class Py4JCLIConnector(CLIConnector):
     def __init__(self):
         self.commandslog = []
         
-    def silentProgress(self, i):
-        pass
     
     @staticmethod
     def clone(url, dest):            
