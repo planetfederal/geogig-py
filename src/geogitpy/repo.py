@@ -361,8 +361,8 @@ class Repository(object):
         '''Export to a SpatiaLite database'''
         self.connector.exportsl(_resolveref(ref), path, database, user, table)        
         
-    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
-        self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port)
+    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None, overwrite = False):
+        self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port, overwrite)
 
     def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None):
         self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName)

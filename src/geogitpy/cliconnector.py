@@ -399,7 +399,7 @@ class CLIConnector(object):
             commands.append("--add")
         self.run(commands)
         
-    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None):
+    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None,  overwrite = False):
         table = table or path
         refandpath = ref + ":" + path
         commands = ["pg", "export", refandpath, table, "--database", database]                
@@ -413,6 +413,8 @@ class CLIConnector(object):
             commands.extend(["--port", str(port)])                    
         if host is not None:
             commands.extend(["--host", host])
+        if overwrite:
+            commands.append("-o")
         self.run(commands)
         
     def exportshp(self, ref, path, shapefile):
