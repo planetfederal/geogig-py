@@ -419,7 +419,7 @@ class CLIConnector(object):
         
     def exportshp(self, ref, path, shapefile):
         refandpath = ref + ":" + path
-        self.run(["shp", "export", refandpath, shapefile, "-o"])
+        self.run(["shp", "export", refandpath, shapefile, "-o", "--defaulttype"])
         
     def exportsl(self, ref, path, database, user = None, table = None):
         table = table or path
