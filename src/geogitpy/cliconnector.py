@@ -626,9 +626,8 @@ class CLIConnector(object):
     def init(self, initParams = None):
         if initParams is None: initParams = {}    
         commands = ["init"]
-        for k,v in initParams.iteritems():
-            commands.append(k)     
-            commands.append(v)
+        if initParams is not None:
+            commands.append(",".join([k + "=" + v for k,v in initParams.iteritems()]))            
         self.run(commands)
         
     def insertfeatures(self, features):
