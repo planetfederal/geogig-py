@@ -511,6 +511,13 @@ class Repository(object):
         '''
         self.connector.exportosm(osmfile, _resolveref(ref), bbox)
         
+    def exportosmchangeset(self, osmfile, changesetid = None, refa = None, refb = None):
+        '''
+        Exports the difference between the osm data in two commits as a osm changeset.
+        An alternative changeset id can be used to replace negative ids if they exist
+        '''        
+        self.connector.exportosmchangeset(osmfile, changesetid, _resolveref(refa), _resolveref(refb))        
+        
     def maposm(self, mappingorfile):
         '''Applies a mapping to the OSM data in the repo.
         The mapping can be passed as a file path to a mapping file, or as a OSMMapping object'''

@@ -339,7 +339,17 @@ class CLIConnector(object):
         if ref is not None:
             commands.append(ref)
         if bbox is not None:
-            commands.extend(bbox)   
+            commands.extend(bbox)  
+    
+    def exportosmchangeset(self, osmfile, changesetid = None, refa = None, refb = None):
+        commands = ["osm", "create-changeset", "-f" , osmfile]
+        if refa is not None:
+            commands.append(refa) 
+        if refb is not None:
+            commands.append(refb)
+        if id is not None:
+            commands.extend(["--id", changesetid])
+        self.run(commands)                    
         
     def downloadosm(self, osmurl, bbox, mappingfile = None):
         commands = ["osm", "download", osmurl, "--bbox"]
