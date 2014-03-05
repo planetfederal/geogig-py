@@ -503,6 +503,14 @@ class Repository(object):
             mappingfile = self._mapping(mappingorfile)        
         self.connector.importosm(osmfile, add, mappingfile)
         
+    def exportosm(self, osmfile, ref = None, bbox = None):
+        '''
+        Exports the OSM data in the repository to an OSM XML file
+        A bounding box can be passed to be used as a filter. 
+        It is passed as a tuple of 4 elements containing the boundary coordinates in the form (S, W, N, E)
+        '''
+        self.connector.exportosm(osmfile, _resolveref(ref), bbox)
+        
     def maposm(self, mappingorfile):
         '''Applies a mapping to the OSM data in the repo.
         The mapping can be passed as a file path to a mapping file, or as a OSMMapping object'''

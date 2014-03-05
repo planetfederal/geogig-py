@@ -334,6 +334,13 @@ class CLIConnector(object):
             commands.extend(["--mapping", mappingfile])
         self.run(commands)
         
+    def exportosm(self, osmfile, ref = None, bbox = None):
+        commands = ["osm", "export", osmfile]
+        if ref is not None:
+            commands.append(ref)
+        if bbox is not None:
+            commands.extend(bbox)   
+        
     def downloadosm(self, osmurl, bbox, mappingfile = None):
         commands = ["osm", "download", osmurl, "--bbox"]
         commands.extend([str(c) for c in bbox])         
