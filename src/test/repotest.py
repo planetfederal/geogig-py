@@ -392,7 +392,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         log = repo.log()        
         repo.rebase("unconflicted")
         newlog = repo.log()
-        self.assertEquals(log[0].ref, newlog[0].ref)
+        self.assertEquals(log[0].message, newlog[0].message)
         self.assertEquals(len(log) + 1, len(newlog))
 
     def testMerge(self):
