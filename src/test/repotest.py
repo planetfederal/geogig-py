@@ -496,7 +496,6 @@ class GeogitRepositoryTest(unittest.TestCase):
        
     def testShow(self):
         text = self.repo.show(geogit.HEAD)     
-        print text   
         self.assertTrue('volaya' in text)
         self.assertTrue('message_4' in text)
         
