@@ -85,16 +85,30 @@ def _runGateway(commands, url):
     array = _javaGateway().new_array(strclass,len(commands))
     for i, c in enumerate(commands):
         array[i] = c
+    import time
+    start = time.clock()
     returncode = _javaGateway().entry_point.runCommand(url, array)
-    output = _javaGateway().entry_point.lastOutput()            
-    output = output.strip("\n\r").replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    end = time.clock()
+    diff = end - start
+    _logger.debug("Executed " + command  + "in " + str(diff) + " millisecs")
+    output = [""]
+    start = time.clock()
+    page = _javaGateway().entry_point.nextOutputPage()
+    while page is not None:
+        output.append(page)
+        page = _javaGateway().entry_point.nextOutputPage()
+    output = "".join(output)
+    end = time.clock()
+    diff = end - start
+    _logger.debug("Output string retrieved in " + str(diff) + " millisecs")       
+    output = output.splitlines()    
     output = [s.strip("\r\n") for s in output]        
     if returncode:                             
         errormsg = "\n".join(output)
         _logger.error("Error running command '%s': %s" % (command, errormsg))
         raise GeoGitException("\n".join(output))
-    logging.info("Executed " + command + "\n" + " ".join(output[:5]))      
-    return output    
+         
+    return output 
 
 
 def removeProgressListener():
