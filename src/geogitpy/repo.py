@@ -132,10 +132,10 @@ class Repository(object):
         Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref.
         If a path is passed, it only returns commits in which that path was modified
         tip is the branch from which to start listing the history. HEAD is used if no tip is specified
-        A maximum number of commits can be set uing the n parameter
+        A maximum number of commits can be set using the n parameter
         '''     
         tip = tip or geogit.HEAD
-        if path is not None or until != geogit.HEAD:
+        if path is not None or tip != geogit.HEAD or n is not None or since is not None or until is not None:
             return self.connector.log(_resolveref(tip), _resolveref(until), _resolveref(since), path, n)
         if self._logcache is None:
             self._logcache = self.connector.log(_resolveref(tip), _resolveref(until), _resolveref(since), path, n)  
