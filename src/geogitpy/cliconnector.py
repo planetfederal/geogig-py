@@ -11,7 +11,7 @@ from commit import Commit
 import datetime
 from diff import Diffentry
 from commitish import Commitish
-from geogitpy.geogitexception import GeoGitException, GeoGitConflictException
+from geogitpy.geogitexception import GeoGitException, GeoGitConflictException, UnconfiguredUserException
 from shapely.wkt import loads
 from shapely.geometry import mapping
 from shapely.geometry.base import BaseGeometry
@@ -296,7 +296,15 @@ class CLIConnector(object):
         commands = ['commit', '-m']
         commands.append('"%s"' % message)
         commands.extend(paths)
-        self.run(commands)               
+        try:
+            self.run(commands)
+        except GeoGitException, e:
+            print "ERROR" + e.args[0]
+            if "user.name not found" in e.args[0] or "user.email not found" in e.args[0]: 
+                raise UnconfiguredUserException()
+            else:
+                raise e
+                           
              
     def diffentryFromString(self, oldcommitref, newcommitref, line):
         tokens = line.strip().split(" ")
@@ -529,6 +537,7 @@ class CLIConnector(object):
         attribs = {}
         for line in show.splitlines()[3:]:
             tokens = line.split(":")
+            print tokens
             attribs[tokens[0]] = tokens[1].strip()[1:-1]
         return attribs
     

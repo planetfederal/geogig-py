@@ -100,8 +100,8 @@ def _runGateway(commands, url):
     output = "".join(output)
     end = time.clock()
     diff = end - start
-    _logger.debug("Output string retrieved in " + str(diff) + " millisecs")       
-    output = output.splitlines()    
+    _logger.debug("Output string retrieved in " + str(diff) + " millisecs")           
+    output = output.strip("\r\n").splitlines()
     output = [s.strip("\r\n") for s in output]        
     if returncode:                             
         errormsg = "\n".join(output)
@@ -146,6 +146,25 @@ class Py4JCLIConnector(CLIConnector):
     def clone(url, dest):            
         commands = ['clone', url, dest]
         _runGateway(commands, url) 
+    
+    @staticmethod    
+    def config(param, value):
+        commands = ['config', param, value, '--global']
+        _runGateway(commands, os.path.dirname(__file__)) 
+        
+    @staticmethod    
+    def getconfig(param = None):
+        if param is None:
+            commands = ['config', '--list', '--global']
+            output = _runGateway(commands, os.path.dirname(__file__))
+            params = {}
+            for line in output:
+                k,v = line.split('=')
+                params[k] = v
+            return params
+        else:
+            commands = ['config', '--get', param]
+            return _runGateway(commands, "dummy")
         
     def run(self, commands):
         self.commandslog.append(" ".join(commands))                

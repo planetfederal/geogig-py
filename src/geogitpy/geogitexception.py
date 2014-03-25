@@ -1,6 +1,9 @@
 class GeoGitException(Exception):
 	pass
 
+class UnconfiguredUserException(Exception):
+	pass
+
 class InterruptedOperationException(Exception):
 	'''
 	An exception to signal an interrupted operation, not an actual error.

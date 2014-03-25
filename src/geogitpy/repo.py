@@ -281,6 +281,7 @@ class Repository(object):
         '''
         Creates a new commit with the changes in the specified paths.
         If no paths are passed, it will commit all staged features
+        Raises an UnconfiguredUserException if there is no user configured and it cannot commit
         '''        
         self.connector.commit(message, paths)
         self.cleancache()        
@@ -546,7 +547,8 @@ class Repository(object):
         if self.isdetached():
             raise GeoGitException("HEAD is detached. Cannot pull")
         branch = branch or self.head
-        return self.connector.pull(remote, branch, rebase)
+        self.connector.pull(remote, branch, rebase)
+        self.cleancache()
     
     def push(self, remote, branch):
         '''
