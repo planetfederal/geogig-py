@@ -10,6 +10,7 @@ from tree import Tree
 from commit import Commit
 import datetime
 from diff import Diffentry
+from connector import Connector
 from commitish import Commitish
 from geogitpy.geogitexception import GeoGitException, GeoGitConflictException, UnconfiguredUserException
 from shapely.wkt import loads
@@ -35,8 +36,9 @@ def _run(command):
         raise GeoGitException(output)
     logging.info("Executed " + commandstr + "\n" + " ".join(output[:5]))      
     return output
+
     
-class CLIConnector(object):
+class CLIConnector(Connector):
     ''' A connector that calls the CLI version of geogit and parses CLI output'''
     
     def __init__(self):
@@ -104,7 +106,7 @@ class CLIConnector(object):
             raise GeoGitException("Not a valid GeoGit repository: " + self.repo.url)
         
     
-    def children(self, ref = 'HEAD', path = None, recursive = False):
+    def children(self, ref = geogit.HEAD, path = None, recursive = False):
         children = []    
         if path is None:
             fullref = ref
@@ -120,7 +122,11 @@ class CLIConnector(object):
                 if tokens[1] == "feature":
                     children.append(Feature(self.repo, ref, tokens[3]))
                 elif tokens[1] == "tree":
-                    children.append(Tree(self.repo, ref, tokens[3]))
+                    try:
+                        size = int(tokens[5])
+                    except:
+                        size = None
+                    children.append(Tree(self.repo, ref, tokens[3], size))
         return children   
     
     def commitFromString(self, lines):                
@@ -537,7 +543,6 @@ class CLIConnector(object):
         attribs = {}
         for line in show.splitlines()[3:]:
             tokens = line.split(":")
-            print tokens
             attribs[tokens[0]] = tokens[1].strip()[1:-1]
         return attribs
     
@@ -721,6 +726,9 @@ class CLIConnector(object):
                 raise e
 
         
-    def push(self, remote, branch):
-        commands = ["push", remote, branch]        
+    def push(self, remote, branch = None, all = False):
+        if all:
+            commands = ["push", remote, "--all"]
+        else:
+            commands = ["push", remote, branch]        
         self.run(commands)

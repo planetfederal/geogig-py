@@ -1,12 +1,13 @@
-class Tree(object):
-    
+class Tree(object):   
     '''An object representing a tree path for a given commit'''
+    
     ROOT = None
 
-    def __init__(self, repo, ref, path = ROOT):        
+    def __init__(self, repo, ref, path = ROOT, size = None):        
         self.repo = repo
         self.ref = ref
         self.path = path
+        self.size = size
         
     @property        
     def trees(self):

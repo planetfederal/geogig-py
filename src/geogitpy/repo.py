@@ -1,3 +1,4 @@
+import re
 from commitish import Commitish
 import geogit
 from geogitexception import GeoGitException
@@ -5,6 +6,7 @@ from feature import Feature
 from tree import Tree
 from utils import mkdir
 from py4jconnector import Py4JCLIConnector
+from geogitserverconnector import GeoGitServerConnector
 import tempfile
 import datetime
 
@@ -30,8 +32,10 @@ class Repository(object):
     
     def __init__(self, url, connector = None, init = False, initParams = None):
         '''
-        url: The url of the repository
+        url: The url of the repository. Only filepaths are supported so far. Remote repos are not supported
+        
         connector: the connector to use to communicate with the repository
+        
         init: True if the repository should be initialized
         '''
         self.url = url        
@@ -54,7 +58,22 @@ class Repository(object):
         self.connector.checkisrepo()                    
         
         self.cleancache()
-
+        
+    @staticmethod
+    def newrepofromclone(url, path, connector = None):
+        '''
+        Clones a given repository into a local folder and returns a repository object representing it
+        
+        url: the url of the repo to clone
+        
+        path: the path to clone the repo into
+        
+        connector: the connector to use to communicate with the repository        
+        '''
+        connector = Py4JCLIConnector() if connector is None else connector
+        connector.clone(url, path)
+        return Repository(path, connector)
+         
     def cleancache(self):
         self._logcache = None
         
@@ -93,10 +112,12 @@ class Repository(object):
     
        
     def synced(self, branch = geogit.HEAD):
-        '''Returns true if the repo is synced with a remote.
+        '''
+        Returns true if the repo is synced with a remote.
         It uses the passed branch or, if not passed, the current branch
         If the repository is headless, or if not remote is define,, it will throw an exception 
-        It uses the "origin" remote if it exists, otherwise it uses the first remote available.'''    
+        It uses the "origin" remote if it exists, otherwise it uses the first remote available.
+        '''    
         
         if (branch == geogit.HEAD and self.isdetached()):
             raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
@@ -111,8 +132,11 @@ class Repository(object):
             raise GeoGitException("No remotes defined")
                 
         
-        conn = self.connector.__class__()
-        repo = Repository(remote.strip("file:/"), conn)
+        if isremoteurl(remote):            
+            repo = Repository(remote, GeoGitServerConnector())
+        else:
+            conn = self.connector.__class__()            
+            repo = Repository(remote.strip("file:/"), conn)
         
         remoteHead = repo.revparse(branch)
         localHead = self.revparse(branch)
@@ -148,7 +172,6 @@ class Repository(object):
         milisecs = int(delta.total_seconds()) * 1000        
         log = self.connector.log(geogit.HEAD, str(milisecs), n=1)
         if log:
-            self._logcache = log
             return log[0]
         else:
             raise GeoGitException("Invalid date for this repository")
@@ -544,22 +567,23 @@ class Repository(object):
         In that case, and exception will be raised
         If rebase == True, it will do a rebase instead of a merge
         '''
-        if self.isdetached():
+        if branch == None and self.isdetached():
             raise GeoGitException("HEAD is detached. Cannot pull")
         branch = branch or self.head
         self.connector.pull(remote, branch, rebase)
         self.cleancache()
     
-    def push(self, remote, branch):
+    def push(self, remote, branch = None, all = False):
         '''
         Pushes to the specified remote and specified branch. 
-        If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
-        In that case, and exception will be raised
+        If no branch is provided, it will use the name of the current branch, unless the repo is headless.        
+        In that case, and exception will be raised.
+        if all == True, it will push all branches and ignore the branch. 
         '''
-        if self.isdetached():
-            raise GeoGitException("HEAD is detached. Cannot pull")
+        if branch is None and self.isdetached():
+            raise GeoGitException("HEAD is detached. Cannot push")
         branch = branch or self.head
-        return self.connector.push(remote, branch)    
+        return self.connector.push(remote, branch, all)    
     
     def init(self, initParams = None):  
         '''
@@ -567,3 +591,15 @@ class Repository(object):
         Init params is a dict of paramName : paramValues to be supplied to the init command
         '''                      
         self.connector.init(initParams)
+
+def isremoteurl(url):
+    ##This code snippet has been taken from the Django source code                
+    regex = re.compile(
+        r'^https?://'  # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?'  # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return url is not None and regex.search(url)
+            

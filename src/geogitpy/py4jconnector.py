@@ -75,7 +75,7 @@ def shutdownServer():
             os.kill(_proc.pid, signal.SIGKILL)        
         _proc = None
         
-def _runGateway(commands, url):     
+def _runGateway(commands, url):    
     gc.collect()    
     commands.extend(["--color", "never"])
     command = " ".join(commands)
@@ -144,8 +144,8 @@ class Py4JCLIConnector(CLIConnector):
     
     @staticmethod
     def clone(url, dest):            
-        commands = ['clone', url, dest]
-        _runGateway(commands, url) 
+        commands = ['clone', url, dest]        
+        _runGateway(commands, os.path.dirname(__file__))        
     
     @staticmethod    
     def config(param, value):
