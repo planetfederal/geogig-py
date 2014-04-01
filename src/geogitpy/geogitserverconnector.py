@@ -35,4 +35,4 @@ class GeoGitServerConnector(Connector):
             id = root.iter('objectId').next().text
             return id   
         except:
-            return GeoGitException("Reference %s ot found" % rev)
+            raise GeoGitException("Reference %s ot found" % rev)
