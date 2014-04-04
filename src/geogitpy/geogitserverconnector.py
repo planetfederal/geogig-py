@@ -36,3 +36,9 @@ class GeoGitServerConnector(Connector):
             return id   
         except:
             raise GeoGitException("Reference %s ot found" % rev)
+        
+    @staticmethod
+    def createrepo(url, name):
+        r = requests.put(url, data = name)
+        r.raise_for_status()
+    

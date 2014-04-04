@@ -474,7 +474,7 @@ class CLIConnector(Connector):
         return self.parseattribs(output[2:]) 
 
     def cat(self, reference):
-        return self.run(["cat", reference])
+        return "\n".join(self.run(["cat", reference]))
         
     def parseattribs(self, lines):
         attributes = {}
@@ -656,46 +656,30 @@ class CLIConnector(Connector):
             commands.append(",".join([k + "=" + v for k,v in initParams.iteritems()]))            
         self.run(commands)
         
-    def insertfeatures(self, features):
-        trees = defaultdict(list)   
-        geomNames = {}     
-        for path, attrs in features.iteritems():
-            dest = os.path.dirname(path)
-            fid = os.path.basename(path)
-            filteredAttrs = {}
-            geom = None
-            for attrName, attrValue in attrs.iteritems():
-                if isinstance(attrValue, BaseGeometry):
-                    if geom is not None:
-                        raise GeoGitException("Cannot insert feature with more than one geometry attribute")
-                    geom = attrValue
-                    geomNames[dest] = attrName
-                else:
-                    filteredAttrs[attrName] = attrValue  
-            geommap = mapping(geom)            
-            trees[dest].append(geojson.Feature(id=fid, geometry=geommap, properties=filteredAttrs))
-        for tree, features in trees.iteritems():
-            fco = geojson.FeatureCollection(features=features)
-            json = geojson.dumps(fco)        
-            try:
-                f = tempfile.NamedTemporaryFile(delete = False)                           
-                f.write(json)              
-                f.close()
-                self.importgeojson(f.name, add = True, dest = tree, geomName = geomNames.get(tree))            
-            finally:
-                f.close() 
-                try:
-                    os.remove(f.name)
-                except:
-                    pass 
-                             
-    def removefeature(self, path):
-        self.run(["rm", path])
+    def insertfeatures(self, features):               
+        s = ""
+        for path, attrs in features.iteritems():            
+            s = path + "\n"            
+            for attrName, attrValue in attrs.iteritems():                                    
+                s += attrName + "\t" + _tostr(attrValue) + "\n"
+            s +="\n"
+        try:
+            f = tempfile.NamedTemporaryFile(delete = False)                           
+            f.write(s)              
+            f.close()
+            commands = ["insert", f.name]
+            self.run(commands)            
+        finally:
+            f.close() 
+            try:                    
+                os.remove(f.name)
+            except:
+                pass   
+                                             
+    def removefeatures(self, paths):
+        paths.insert(0, "rm")
+        self.run(paths)
         
-    def modifyfeature(self, path, attributes):
-        self.removefeature(path)
-        self.addfeature(path, attributes)
-
     def applypatch(self, patchfile):
         self.run(["apply", patchfile])   
         
@@ -724,7 +708,6 @@ class CLIConnector(Connector):
                 raise GeoGitConflictException(e.args[0])
             else:
                 raise e
-
         
     def push(self, remote, branch = None, all = False):
         if all:
@@ -732,3 +715,12 @@ class CLIConnector(Connector):
         else:
             commands = ["push", remote, branch]        
         self.run(commands)
+        
+def _tostr(v):
+    try:
+        d = float(v)
+        if d.is_integer():
+            return str(int(d))
+        return str(d)
+    except:
+        return str(v)
