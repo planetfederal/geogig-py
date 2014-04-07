@@ -80,7 +80,7 @@ def _runGateway(commands, url):
     commands.extend(["--color", "never"])
     command = " ".join(commands)
     command = command.replace("\r", "")   
-    _logger.debug("Running GeoGit command: " + command)     
+    #_logger.debug("Running GeoGit command: " + command)     
     strclass = _javaGateway().jvm.String
     array = _javaGateway().new_array(strclass,len(commands))
     for i, c in enumerate(commands):
@@ -100,7 +100,7 @@ def _runGateway(commands, url):
     output = "".join(output)
     end = time.clock()
     diff = end - start
-    _logger.debug("Output string retrieved in " + str(diff) + " millisecs")           
+    #_logger.debug("Output string retrieved in " + str(diff) + " millisecs")           
     output = output.strip("\r\n").splitlines()
     output = [s.strip("\r\n") for s in output]        
     if returncode:                             
