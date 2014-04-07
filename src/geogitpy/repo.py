@@ -136,11 +136,11 @@ class Repository(object):
             repo = Repository(remote, GeoGitServerConnector())
         else:
             conn = self.connector.__class__()            
-            repo = Repository(remote.strip("file:/"), conn)
-        
+            repo = Repository(remote[len("file:/"):], conn)
+                
         remoteHead = repo.revparse(branch)
         localHead = self.revparse(branch)
-        
+
         return remoteHead == localHead
         
         
