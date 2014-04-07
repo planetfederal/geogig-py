@@ -123,9 +123,9 @@ class CLIConnector(Connector):
                     children.append(Feature(self.repo, ref, tokens[3]))
                 elif tokens[1] == "tree":
                     try:
-                        size = int(tokens[5])
+                       size = int(tokens[5])
                     except:
-                        size = None
+                       size = None
                     children.append(Tree(self.repo, ref, tokens[3], size))
         return children   
     
@@ -499,10 +499,10 @@ class CLIConnector(Connector):
             elif valuetype in ["FLOAT","DOUBLE"]:
                 return float(value)
             elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"] 
-                    or len(tokens) == 2):                    
+                    or len(tokens) > 1):                    
                 geom = loads(value)
-                if len(tokens) == 2:                    
-                    geom.crs = tokens[1]
+                if len(tokens) > 1:                    
+                     geom.crs = " ".join(tokens[1:])
                 return geom        
             else:
                 return value
@@ -667,7 +667,7 @@ class CLIConnector(Connector):
             f = tempfile.NamedTemporaryFile(delete = False)                           
             f.write(s)              
             f.close()
-            commands = ["insert", f.name]
+            commands = ["insert", "-f", f.name]
             self.run(commands)            
         finally:
             f.close() 
