@@ -47,6 +47,9 @@ class CLIConnector(Connector):
     def setRepository(self, repo):
         self.repo = repo                     
 
+    def createdat(self):
+        return datetime.datetime.fromtimestamp(os.stat(os.path.join(self.repo.url, ".geogit")).st_ctime)
+    
     @staticmethod
     def clone(url, dest):        
         commands = ['clone', url, dest]

@@ -73,6 +73,10 @@ class Repository(object):
         connector = Py4JCLIConnector() if connector is None else connector
         connector.clone(url, path)
         return Repository(path, connector)
+    
+    def createdat(self):
+        '''Returns the creation date of this repository'''
+        return self.connector.createdat()
          
     def cleancache(self):
         self._logcache = None

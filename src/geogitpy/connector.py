@@ -3,7 +3,10 @@ class Connector(object):
     '''Base class for connector'''
     
     def setRepository(self, repo):
-        self.repo = repo                     
+        self.repo = repo 
+        
+    def createdat(self):
+        raise NotImplementedError                            
 
     @staticmethod
     def clone(url, dest):        

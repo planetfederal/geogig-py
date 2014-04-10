@@ -1,6 +1,7 @@
 from commitish import Commitish
 import datetime
 from geogit import NULL_ID
+from utils import prettydate
 
 class Commit(Commitish):
     
@@ -54,31 +55,11 @@ class Commit(Commitish):
         return self.message + self.committerdate.strftime(" (%m/%d/%y %H:%M)")
     
     def committerprettydate(self):
-        return self.prettydate(self.committerdate)
+        return prettydate(self.committerdate)
     
     def authorprettydate(self):
-        return self.prettydate(self.authordate)
-        
-    def prettydate(self, d):
-        diff = datetime.datetime.utcnow() - d
-        s = ''
-        secs = diff.seconds
-        if diff.days == 1:
-            s = "1 day ago"
-        elif diff.days > 1:
-            s = "{} days ago".format(diff.days)
-        elif secs < 120:
-            s = "1 minute ago"
-        elif secs < 3600:
-            s = "{} minutes ago".format(secs/60)
-        elif secs < 7200:
-            s = "1 hour ago"
-        else:
-            s = '{} hours ago'.format(secs/3600)
-        
-        s += d.strftime(' [%x %H:%M]')
-        return s 
-        
+        return prettydate(self.authordate)
+    
     def __str__(self):
         try:
             msg = unicode(self.message, errors = "ignore") 
