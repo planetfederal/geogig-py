@@ -187,9 +187,46 @@ class CLIConnector(Connector):
                 remotes[tokens[0]] =  tokens[1]                
         return remotes        
         
-    def log(self, tip, until = None, since = None, path = None, n = None):
-        commits = []        
-        commands = ['rev-list', tip]        
+    def synced(self,  branch = geogit.HEAD):
+        if (branch == geogit.HEAD and self.isdetached()):
+            raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
+        
+        remotes = self.remotes()        
+        if remotes:
+            if "origin" in remotes:
+                remote = remotes["origin"]
+            else:
+                remote = remotes.values()[0]
+        else:
+            raise GeoGitException("No remotes defined")
+                
+        
+        if isremoteurl(remote):            
+            repo = Repository(remote, GeoGitServerConnector())
+        else:
+            conn = self.connector.__class__()            
+            repo = Repository(remote[len("file:/"):], conn)
+                
+        remoteHead = repo.revparse(branch)
+        localHead = self.revparse(branch)
+
+        return remoteHead == localHead
+        
+        #=======================================================================
+        # if remoteHead == localHead:
+        #    return 0, 0
+        # else:
+        #    log = repo.log(branch, localhead) 
+        #    pull = len(log)
+        #    log = self.log(branch, remoteHead)
+        #    push = len(log)
+        #    return push, pull
+        #=======================================================================
+        
+    def log(self, tip, sincecommit = None, until = None, since = None, path = None, n = None):
+        commits = []             
+        param = tip if sincecommit is None else (sincecommit + ".." + tip)   
+        commands = ['rev-list', param]        
         if path is not None:
             commands.extend(["-p", path])
         if until is not None:

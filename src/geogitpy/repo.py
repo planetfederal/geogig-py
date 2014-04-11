@@ -117,35 +117,12 @@ class Repository(object):
        
     def synced(self, branch = geogit.HEAD):
         '''
-        Returns true if the repo is synced with a remote.
+        Returns a tuple with number of (ahead, behind) commits between this repo and a remote
         It uses the passed branch or, if not passed, the current branch
-        If the repository is headless, or if not remote is define,, it will throw an exception 
+        If the repository is headless, or if not remote is defined, it will throw an exception 
         It uses the "origin" remote if it exists, otherwise it uses the first remote available.
-        '''    
-        
-        if (branch == geogit.HEAD and self.isdetached()):
-            raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
-        remotes = self.remotes
-        
-        if remotes:
-            if "origin" in remotes:
-                remote = remotes["origin"]
-            else:
-                remote = remotes.values()[0]
-        else:
-            raise GeoGitException("No remotes defined")
-                
-        
-        if isremoteurl(remote):            
-            repo = Repository(remote, GeoGitServerConnector())
-        else:
-            conn = self.connector.__class__()            
-            repo = Repository(remote[len("file:/"):], conn)
-                
-        remoteHead = repo.revparse(branch)
-        localHead = self.revparse(branch)
-
-        return remoteHead == localHead
+        '''            
+        return self.connector.synced()
         
         
     def mergemessage(self):
