@@ -39,9 +39,12 @@ class Repository(object):
         init: True if the repository should be initialized
         '''
         self.url = url        
-        self.connector = Py4JCLIConnector() if connector is None else connector
+        self.connector = Py4JCLIConnector() if connector is None else connector        
         if init:                        
-            mkdir(url)
+            try:
+                mkdir(url)
+            except Exception, e:
+                raise GeoGitException("Cannot create repository folder.\nCheck that path is correct and you have permission")
                 
         self.connector.setRepository(self)         
         try:
@@ -132,18 +135,19 @@ class Repository(object):
         '''
         return self.connector.mergemessage()
             
-    def log(self, tip = None, until = None, since = None, path = None, n = None):
+    def log(self, tip = None, sincecommit = None, until = None, since = None, path = None, n = None):
         '''
-        Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref.
+        Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref,
+        and up to the sincecommit, if passed, or to first commit in the history if not.
         If a path is passed, it only returns commits in which that path was modified
-        tip is the branch from which to start listing the history. HEAD is used if no tip is specified
+        Date limits can be passes using the since and until parameters
         A maximum number of commits can be set using the n parameter
         '''     
         tip = tip or geogit.HEAD
         if path is not None or tip != geogit.HEAD or n is not None or since is not None or until is not None:
-            return self.connector.log(_resolveref(tip), _resolveref(until), _resolveref(since), path, n)
+            return self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)
         if self._logcache is None:
-            self._logcache = self.connector.log(_resolveref(tip), _resolveref(until), _resolveref(since), path, n)  
+            self._logcache = self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)  
         return self._logcache 
     
     def commitatdate(self, t):
