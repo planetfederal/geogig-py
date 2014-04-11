@@ -49,7 +49,7 @@ class Connector(object):
     def synced(self,  branch):
         raise NotImplementedError
         
-    def log(self, tip, until, since, path, n):
+    def log(self, tip, sincecommit, until, since, path, n):
         raise NotImplementedError
     
     def conflicts(self):

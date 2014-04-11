@@ -7,7 +7,7 @@ from geogitexception import GeoGitException
 class GeoGitServerConnector(Connector):
     ''' A connector that connects to a geogit repo through a geogit-server instance'''
 
-    def log(self, tip, until = None, since = None, path = None, n = None):                
+    def log(self, tip, sincecommit = None, until = None, since = None, path = None, n = None):                
         url = self.url + "/commits"
         r = requests.get(url)
         commits = r.json()['commits']
