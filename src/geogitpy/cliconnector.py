@@ -259,8 +259,13 @@ class CLIConnector(Connector):
         return commits 
     
     def conflicts(self):
-        if not os.path.exists(os.path.join(self.repo.url, ".geogit","conflicts")):
-            return {}
+        conflictsfile = os.path.join(self.repo.url, ".geogit","conflicts")        
+        try:
+            if os.path.getsize(conflictsfile) == 0:
+                return {}
+        except Exception:
+            return {} 
+        
         commands = ["conflicts", "--refspecs-only"]
         lines = self.run(commands)
         _conflicts = {}

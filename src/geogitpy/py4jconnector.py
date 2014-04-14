@@ -148,12 +148,12 @@ class Py4JCLIConnector(CLIConnector):
         _runGateway(commands, os.path.dirname(__file__))        
     
     @staticmethod    
-    def config(param, value):
+    def configglobal(param, value):
         commands = ['config', param, value, '--global']
         _runGateway(commands, os.path.dirname(__file__)) 
         
     @staticmethod    
-    def getconfig(param = None):
+    def getconfigglobal(param = None):
         if param is None:
             commands = ['config', '--list', '--global']
             output = _runGateway(commands, os.path.dirname(__file__))
