@@ -17,9 +17,10 @@ from shapely.wkt import loads
 from shapely.geometry import mapping
 from shapely.geometry.base import BaseGeometry
 
-def _run(command):         
+def _run(command, addcolor = True):         
     command = ['geogit'] + command
-    command.extend(["--color", "never"])
+    if addcolor:
+        command.extend(["--color", "never"])
     commandstr = " ".join(command)
     if os.name != 'nt':
         command = commandstr

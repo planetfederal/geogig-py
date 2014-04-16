@@ -75,9 +75,10 @@ def shutdownServer():
             os.kill(_proc.pid, signal.SIGKILL)        
         _proc = None
         
-def _runGateway(commands, url):    
+def _runGateway(commands, url, addcolor = True):    
     gc.collect()    
-    commands.extend(["--color", "never"])
+    if addcolor:
+        commands.extend(["--color", "never"])
     command = " ".join(commands)
     command = command.replace("\r", "")   
     #_logger.debug("Running GeoGit command: " + command)     
@@ -132,6 +133,18 @@ def setProgressListener(progressFunc, progressTextFunc):
     
     _javaGateway().entry_point.setProgressListener(Listener(progressFunc, progressTextFunc))
     
+def geogitVersion():
+    commands = ['--version']        
+    try:
+        out = _runGateway(commands, os.path.dirname(__file__), False)
+        version = out[0].split(":")[1]
+        sha = out[5].split(":")[1]
+        return "-".join([version, sha])
+    except Exception, e:
+        print e
+        return "Not available"
+  
+        
 class Py4JConnectionException(Exception):
     pass
     
