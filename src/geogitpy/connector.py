@@ -45,9 +45,6 @@ class Connector(object):
         
     def remotes(self):
         raise NotImplementedError
-    
-    def synced(self,  branch):
-        raise NotImplementedError
         
     def log(self, tip, sincecommit, until, since, path, n):
         raise NotImplementedError

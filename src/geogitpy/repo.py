@@ -82,7 +82,7 @@ class Repository(object):
         return self.connector.createdat()
          
     def cleancache(self):
-        self._logcache = None
+        self._logcache = None        
         
     def description(self):
         '''returns the description of this repository'''
@@ -125,7 +125,34 @@ class Repository(object):
         If the repository is headless, or if not remote is defined, it will throw an exception 
         It uses the "origin" remote if it exists, otherwise it uses the first remote available.
         '''            
-        return self.connector.synced()
+        if (branch == geogit.HEAD and self.isdetached()):
+            raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
+
+        remotes = self.remotes             
+        if remotes:
+            if "origin" in remotes:
+                remote = remotes["origin"]
+                remotename = "origin"
+            else:
+                remotename = remotes.keys()[0]
+                remote = remotes.values()[0]
+        else:
+            raise GeoGitException("No remotes defined")
+                
+        if isremoteurl(remote):            
+            repo = Repository(remote, GeoGitServerConnector())
+        else:
+            conn = self.connector.__class__()            
+            repo = Repository(remote[len("file:/"):], conn)
+                        
+        
+        trackedbranchhead = self.revparse("refs/remotes/" + remotename + "/" + branch)
+        
+        log = self.log(branch, trackedbranchhead) 
+        push = len(log)
+        log = repo.log(branch, trackedbranchhead)
+        pull = len(log)
+        return push, pull   
         
         
     def mergemessage(self):
@@ -140,11 +167,11 @@ class Repository(object):
         Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref,
         and up to the sincecommit, if passed, or to first commit in the history if not.
         If a path is passed, it only returns commits in which that path was modified
-        Date limits can be passes using the since and until parameters
+        Date limits can be passed using the since and until parameters
         A maximum number of commits can be set using the n parameter
         '''     
         tip = tip or geogit.HEAD
-        if path is not None or tip != geogit.HEAD or n is not None or since is not None or until is not None:
+        if path is not None or tip != geogit.HEAD or n is not None or since is not None or until is not None or sincecommit is not None:
             return self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)
         if self._logcache is None:
             self._logcache = self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)  
@@ -155,7 +182,7 @@ class Repository(object):
         epoch = datetime.datetime.utcfromtimestamp(0)
         delta = t - epoch
         milisecs = int(delta.total_seconds()) * 1000        
-        log = self.connector.log(geogit.HEAD, str(milisecs), n=1)
+        log = self.connector.log(geogit.HEAD, until = str(milisecs), n=1)
         if log:
             return log[0]
         else:

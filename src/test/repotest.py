@@ -61,7 +61,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(4, len(entries))
         
     def testCommitAtDate(self):        
-        now = datetime.datetime.now()                
+        now = datetime.datetime.utcnow()           
         commit = self.repo.commitatdate(now)
         log = self.repo.log()
         #self.assertEquals(log[0].message, commit.message)
@@ -551,5 +551,22 @@ class GeogitRepositoryTest(unittest.TestCase):
         ftype = repo.featuretype(geogit.HEAD, "parks")
         self.assertEqual("DOUBLE", ftype["perimeter"])
         self.assertEqual("STRING", ftype["name"])
-        self.assertEqual("MULTIPOLYGON", ftype["the_geom"])         
+        self.assertEqual("MULTIPOLYGON", ftype["the_geom"])   
+        
+    def testSynced(self):
+        repo = self.getClonedRepo()
+        path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
+        repo.importshp(path)
+        repo.add()
+        unstaged = repo.unstaged()
+        self.assertFalse(unstaged)
+        staged = repo.staged()
+        self.assertTrue(staged)
+        repo.commit("message")
+        log = repo.log()
+        self.assertEquals(1, len(log))
+        ahead, behind = self.synced()
+        self.assertEquals(1, ahead)
+        self.assertEquals(0, behind)
+                      
            
