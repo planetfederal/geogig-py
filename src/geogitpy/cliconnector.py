@@ -151,8 +151,8 @@ class CLIConnector(Connector):
                 if tokens[0] == 'tree':
                     tree = tokens[1]                    
                 if tokens[0] == 'parent':
-                    if len(tokens) == 2 and tokens[1] != "":
-                        parent = tokens[1]                    
+                    if len(tokens) >1 and tokens[-1] != "":
+                        parent = tokens[-1]                    
                 elif tokens[0] == 'author':
                     author = " ".join(tokens[1:-3])
                     authordate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1]))//1000)                
