@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAGA_METADATA>
+  <HISTORY>
+    <MODULE>Polygon Properties</MODULE>
+    <OPTION type="boolean" id="BPARTS" name="Number of Parts">FALSE</OPTION>
+    <OPTION type="boolean" id="BPOINTS" name="Number of Vertices">TRUE</OPTION>
+    <OPTION type="boolean" id="BLENGTH" name="Perimeter">FALSE</OPTION>
+    <OPTION type="boolean" id="BAREA" name="Area">FALSE</OPTION>
+    <DATA type="shapes" id="POLYGONS" name="Polygons">
+      <FILE>D:\landuse3.shp</FILE>D:\landuse3.shp</DATA>
+  </HISTORY>
+  <SOURCE>
+    <FILE>d:\landuse4.shp</FILE>
+    <DATABASE></DATABASE>
+    <PROJECTION>
+      <OGC_WKT>GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]]</OGC_WKT>
+      <PROJ4>+proj=longlat +a=6378137.000000 +b=6356752.314245 +no_defs</PROJ4>
+      <EPSG>-1</EPSG>
+    </PROJECTION>
+  </SOURCE>
+  <DESCRIPTION></DESCRIPTION>
+</SAGA_METADATA>
