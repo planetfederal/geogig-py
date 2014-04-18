@@ -38,3 +38,6 @@ MONGODB_VERSION = "mongodb.version"
 OURS = "ours"
 THEIRS = "theirs"
 
+ORIGIN = "origin"
+
+

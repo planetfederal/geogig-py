@@ -219,7 +219,7 @@ class Repository(object):
         '''Clones this repo in the specified path. Returns a reference to the cloned repo'''
         url = self.url.replace('\\', '/')
         self.connector.clone(url, path)
-        return Repository(path, self.connector, False)
+        return Repository(path, self.connector.__class__(), False)
     
     def createbranch(self, ref, name, force = False, checkout = False):
         '''Creates a new branch in the repo. Returns the commitish representing the branch'''
@@ -572,7 +572,7 @@ class Repository(object):
         '''Returns the current value for a given parameter'''
         return self.connector.getconfig(param)
     
-    def pull(self, remote, branch, rebase = False):
+    def pull(self, remote = geogit.ORIGIN, branch = None, rebase = False):
         '''
         Pulls from the specifed remote and specified branch. 
         If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
@@ -594,7 +594,7 @@ class Repository(object):
         '''
         if branch is None and self.isdetached():
             raise GeoGitException("HEAD is detached. Cannot push")
-        branch = branch or self.head
+        branch = branch or self.head.ref
         return self.connector.push(remote, branch, all)    
     
     def init(self, initParams = None):  
