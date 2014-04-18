@@ -13,7 +13,7 @@ def mkdir(newdir):
             os.mkdir(newdir)
 
 def prettydate(d):
-    diff = datetime.datetime.now() - d
+    diff = datetime.datetime.utcnow() - d
     s = ''
     secs = diff.seconds
     if diff.days == 1:
