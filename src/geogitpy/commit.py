@@ -3,7 +3,10 @@ import datetime
 from geogit import NULL_ID
 from utils import prettydate
 
+
 class Commit(Commitish):
+    
+    _commitcache = {}
     
     ''' A geogit commit'''
     
@@ -28,9 +31,11 @@ class Commit(Commitish):
         if ref == NULL_ID:
             return Commitish(repo, NULL_ID)
         else:
-            id = repo.revparse(ref)
-            log = repo.log(id, n = 1)
-            return log[0]        
+            if (repo.url, ref) not in Commit._commitcache:                                
+                id = repo.revparse(ref)
+                log = repo.log(id, n = 1)
+                Commit._commitcache[(repo.url, ref)] = log[0]   
+            return Commit._commitcache[(repo.url, ref)]     
         
     @property
     def parents(self):

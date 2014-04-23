@@ -32,7 +32,6 @@ SHA_MATCHER = re.compile(r"\b([a-f0-9]{40})\b")
 class Repository(object):
         
     _logcache = None
-    _revparsecache = {}
     
     def __init__(self, url, connector = None, init = False, initParams = None):
         '''
@@ -178,7 +177,7 @@ class Repository(object):
         Date limits can be passed using the since and until parameters
         A maximum number of commits can be set using the n parameter
         '''     
-        tip = tip or geogit.HEAD
+        tip = tip or geogit.HEAD                    
         if path is not None or tip != geogit.HEAD or n is not None or since is not None or until is not None or sincecommit is not None:
             return self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)
         if self._logcache is None:
