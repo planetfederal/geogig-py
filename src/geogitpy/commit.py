@@ -7,12 +7,12 @@ class Commit(Commitish):
     
     ''' A geogit commit'''
     
-    def __init__(self, repo, commitid, treeid, parent, message, authorname, authordate, committername, committerdate):
+    def __init__(self, repo, commitid, treeid, parents, message, authorname, authordate, committername, committerdate):
         Commitish.__init__(self, repo, commitid)        
         self.repo = repo
         self.commitid = commitid
         self.treeid = treeid
-        self._parent = parent or NULL_ID
+        self._parents = parents or [NULL_ID]
         self.message = message
         self.authorname = authorname
         self.authordate = authordate
@@ -25,16 +25,26 @@ class Commit(Commitish):
         Returns a Commit corresponding to a given id.
         ref is passed as a string.
         '''
-        id = repo.revparse(ref)
-        log = repo.log(id, n = 1)
-        return log[0]        
+        if ref == NULL_ID:
+            return Commitish(repo, NULL_ID)
+        else:
+            id = repo.revparse(ref)
+            log = repo.log(id, n = 1)
+            return log[0]        
         
     @property
+    def parents(self):
+        '''Returns a list of commits with commits representing the parents of this commit'''
+        commits =  [self.fromref(self.repo, p) for p in self._parents]
+        return commits  
+
+    @property
     def parent(self):
-        if self._parent == NULL_ID: 
-            return Commitish(self.repo, self._parent)
-        else:
-            return self.fromref(self.repo, self._parent)
+        '''
+        Returns the parent commit, assuming a linear history.
+        It's similar to the tilde(~) operator
+        '''
+        return self.parents[0]
 
     def diff(self, path = None):
         '''Returns a list of DiffEntry with all changes introduced by this commitish'''
@@ -66,7 +76,7 @@ class Commit(Commitish):
         except TypeError:
             msg = self.message        
         s = "id " + self.commitid + "\n"
-        s += "parent " + str(self.parent) + "\n"
+        s += "parents " + str(self._parents) + "\n"
         s += "tree " + self.treeid + "\n"
         s += "author " + self.authorname + " " + str(self.authordate) + "\n"
         s += "message " + msg + "\n" 

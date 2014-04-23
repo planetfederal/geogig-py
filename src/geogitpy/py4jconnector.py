@@ -86,7 +86,6 @@ def _runGateway(commands, url, addcolor = True):
     array = _javaGateway().new_array(strclass,len(commands))
     for i, c in enumerate(commands):
         array[i] = c
-    import time
     start = time.clock()
     returncode = _javaGateway().entry_point.runCommand(url, array)
     end = time.clock()

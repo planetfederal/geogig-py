@@ -136,7 +136,7 @@ class CLIConnector(Connector):
     def commitFromString(self, lines):                
         message = False
         messagetext = []
-        parent = None
+        parents = None
         commitid = None
         for line in lines:
             tokens = line.split(' ')
@@ -150,9 +150,9 @@ class CLIConnector(Connector):
                     commitid = tokens[1]
                 if tokens[0] == 'tree':
                     tree = tokens[1]                    
-                if tokens[0] == 'parent':
-                    if len(tokens) >1 and tokens[-1] != "":
-                        parent = tokens[-1]                    
+                if tokens[0] == 'parent':                    
+                    if len(tokens) > 1:
+                        parents = [t for t in tokens[1:] if t != ""]                    
                 elif tokens[0] == 'author':
                     author = " ".join(tokens[1:-3])
                     authordate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1]))//1000)                
@@ -163,7 +163,7 @@ class CLIConnector(Connector):
                     message = True                
             
         if commitid is not None:            
-            c = Commit(self.repo, commitid, tree, parent, "\n".join(messagetext), author, authordate, committer, committerdate)
+            c = Commit(self.repo, commitid, tree, parents, "\n".join(messagetext), author, authordate, committer, committerdate)
             return c
         else:
             return None
