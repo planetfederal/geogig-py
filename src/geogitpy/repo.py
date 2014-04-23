@@ -9,6 +9,7 @@ from py4jconnector import Py4JCLIConnector
 from geogitserverconnector import GeoGitServerConnector
 import tempfile
 import datetime
+import re
 
 def _resolveref(ref):
     '''
@@ -26,9 +27,12 @@ def _resolveref(ref):
     else:
         return str(ref)
     
+SHA_MATCHER = re.compile(r"\b([a-f0-9]{40})\b")
+    
 class Repository(object):
         
     _logcache = None
+    _revparsecache = {}
     
     def __init__(self, url, connector = None, init = False, initParams = None):
         '''
@@ -91,7 +95,11 @@ class Repository(object):
     
     def revparse(self, rev):
         '''returns the SHA-1 of a given element, represented as a string'''
-        return self.connector.revparse(rev)
+        if SHA_MATCHER.match(rev) is not None:
+            return rev
+        else:
+            return self.connector.revparse(rev)
+        
 
     @property
     def head(self):
