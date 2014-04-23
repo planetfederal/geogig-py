@@ -1,5 +1,6 @@
 from commitish import Commitish
 import datetime
+import time
 from geogit import NULL_ID
 from utils import prettydate
 
@@ -66,8 +67,11 @@ class Commit(Commitish):
         '''Returns a nice human-readable description of the commit'''
         headid = self.repo.revparse(self.repo.head.ref) 
         if headid == self.id:
-            return "Current last commit"        
-        return self.message + self.committerdate.strftime(" (%m/%d/%y %H:%M)")
+            return "Current last commit"   
+        epoch = time.mktime(self.committerdate.timetuple())
+        offset = datetime.datetime.fromtimestamp (epoch) - datetime.datetime.utcfromtimestamp (epoch)
+        d = self.committerdate + offset     
+        return self.message + d.strftime(" (%m/%d/%y %H:%M)")
     
     def committerprettydate(self):
         return prettydate(self.committerdate)
