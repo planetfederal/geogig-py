@@ -152,6 +152,10 @@ class Repository(object):
             conn = self.connector.__class__()            
             repo = Repository(remote[len("file:/"):], conn)
                         
+        localtip = self.revparse(branch)
+        remotetip = repo.revparse(branch)
+        if remotetip == localtip:
+            return 0,0
         
         trackedbranchhead = self.revparse("refs/remotes/" + remotename + "/" + branch)
         
