@@ -7,10 +7,11 @@ from geogitpy import geogit
 from geogitpy.feature import Feature
 from shapely.geometry import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
+from testrepo import testRepo
 
 class GeogitFeatureTest(unittest.TestCase):
         
-    repo = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
+    repo = testRepo()
 
     def getTempPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')

@@ -9,10 +9,6 @@ class GeogitLoadTest(unittest.TestCase):
 
     def getTempRepoPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
-
-    def getClonedRepo(self):
-        dst = self.getTempRepoPath()
-        return self.repo.clone(dst)  
     
     def testLargeDiff(self):
         repo = Repository(self.getTempRepoPath(), init=True)

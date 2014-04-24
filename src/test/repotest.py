@@ -10,10 +10,11 @@ from geogitpy import geogit
 from shapely.geometry import MultiPolygon
 from geogitpy.osmmapping import OSMMapping, OSMMappingRule
 import datetime
+from testrepo import testRepo
 
 class GeogitRepositoryTest(unittest.TestCase):
         
-    repo = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
+    repo = testRepo()
 
     def getTempRepoPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
@@ -435,7 +436,8 @@ class GeogitRepositoryTest(unittest.TestCase):
         log = repo.log()
         ref = log[0].ref        
         try:
-            repo.cherrypick("unconflicted")
+            repo.cherrypick("conflicted")
+            self.fail()
         except GeoGitException, e:
             self.assertTrue("conflict" in e.args[0])
         log = repo.log()

@@ -6,11 +6,10 @@ from geogitpy.repo import Repository
 import unittest
 from geogitpy import geogit
 from geogitpy.geogitexception import GeoGitConflictException
+from testrepo import testRepo
 
 
 class GeogitWorkflowTest(unittest.TestCase):
-        
-    repo = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
 
     def getTempFolderPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')

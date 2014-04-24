@@ -1,12 +1,11 @@
 import unittest
 import os
-from geogitpy.repo import Repository
 import time
-from geogitpy import geogit
+from testrepo import testRepo
 
 class GeogitDiffTest(unittest.TestCase):
         
-    repo = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
+    repo = testRepo()
 
     def getTempPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')

@@ -2,15 +2,13 @@ import os
 import sys
 from geogitpy.cliconnector import CLIConnector
 from geogitpy.py4jconnector import shutdownServer
-
+import shutil
 
 libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(libpath)        
 
-import time
-from geogitpy.repo import Repository
+from testrepo import testRepo
 import unittest
-from geogitpy import geogit
 from repotest import GeogitRepositoryTest
 from treetest import GeogitTreeTest
 from featuretest import GeogitFeatureTest
@@ -18,35 +16,7 @@ from commitishtest import GeogitCommitishTest
 from committest import GeogitCommitTest
 from difftest import GeogitDiffTest
 
-def getTempRepoPath():
-    return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
-
-def createRepo():
-    repo = Repository(getTempRepoPath(), init = True)
-    path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
-    repo.importshp(path)   
-    repo.addandcommit("message")
-    path = os.path.join(os.path.dirname(__file__), "data", "shp", "2", "parks.shp")
-    repo.importshp(path)
-    repo.addandcommit("message_2")        
-    path = os.path.join(os.path.dirname(__file__), "data", "shp", "3", "parks.shp")
-    repo.importshp(path)
-    repo.addandcommit("message_3")
-    repo.createbranch(geogit.HEAD, "conflicted")
-    repo.createbranch(geogit.HEAD, "unconflicted")
-    path = os.path.join(os.path.dirname(__file__), "data", "shp", "4", "parks.shp")
-    repo.importshp(path)
-    repo.addandcommit("message_4")
-    repo.checkout("conflicted")
-    path = os.path.join(os.path.dirname(__file__), "data", "shp", "5", "parks.shp")
-    repo.importshp(path)
-    repo.addandcommit("message_5")
-    repo.checkout("unconflicted")
-    path = os.path.join(os.path.dirname(__file__), "data", "shp", "6", "parks.shp")
-    repo.importshp(path)
-    repo.addandcommit("message_6")
-    shutdownServer()
                
         
 def suite():
@@ -60,6 +30,9 @@ def suite():
    
 
 if __name__ == '__main__': 
+    path = testRepo().url;
+    shutil.rmtree(path, False)
     runner=unittest.TextTestRunner()
     runner.run(suite())
     shutdownServer()
+    shutil.rmtree(path, True)
