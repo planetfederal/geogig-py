@@ -451,8 +451,12 @@ class Repository(object):
         self.connector.insertfeatures(features)        
 
     def removefeatures(self, paths):
-        '''Removes the passed features from the working tree and index, so they are no longer versioned'''
-        self.connector.removefeatures(paths)
+        '''Removes the passed features paths from the working tree and index, so they are no longer versioned'''
+        self.connector.removepaths(paths)
+        
+    def removetrees(self, paths):
+        '''Removes the passed tree paths from the working tree and index, so they are no longer versioned'''
+        self.connector.removepaths(paths, True)        
         
         
     def commonancestor(self, refa, refb):

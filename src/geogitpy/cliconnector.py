@@ -688,8 +688,10 @@ class CLIConnector(Connector):
             except:
                 pass   
                                              
-    def removefeatures(self, paths):
+    def removepaths(self, paths, recursive = False):
         paths.insert(0, "rm")
+        if recursive:
+            paths.append("-r")
         self.run(paths)
         
     def applypatch(self, patchfile):

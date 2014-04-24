@@ -172,7 +172,7 @@ class Connector(object):
     def insertfeatures(self, features):
         raise NotImplementedError
                              
-    def removefeature(self, path):
+    def removepaths(self, paths, recursive):
         raise NotImplementedError
         
     def modifyfeature(self, path, attributes):
