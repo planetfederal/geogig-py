@@ -33,30 +33,8 @@ def _connect():
         else:
             _gateway = JavaGateway(GatewayClient(port = _geogitPort))       
         _gateway.entry_point.isGeoGitServer()        
-    except Exception, e:        
-        _logger.debug("GeoGit gateway not started. Will try to start it")
-        _gateway = None                   
-        global _proc, _geogitPath
-        if _geogitPath is None:
-            _logger.debug("geogitPath not set, using GEOGIT_HOME env variable")            
-        geogitPath = _geogitPath or os.getenv("GEOGIT_HOME", "")
-        try:         
-            _logger.debug("Trying to start gateway at %s" % (geogitPath))   
-            if os.name == 'nt':
-                _proc = subprocess.Popen([os.path.join(geogitPath , "geogit-gateway.bat")], shell = True)
-            else:
-                _proc = subprocess.Popen(os.path.join(geogitPath, "geogit-gateway"), stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    
-            time.sleep(3) #improve this and wait until the "server started" string is printed out                            
-            if _geogitPort is None:
-                _gateway = JavaGateway()
-            else:
-                _gateway = JavaGateway(GatewayClient(port = _geogitPort))
-            _gateway.entry_point.isGeoGitServer()                   
-        except Exception, e:
-            _logger.error("Could not start gateway (%s)" % (str(e))) 
-            _gateway = None
-            raise Py4JConnectionException()               
+    except Exception, e:                
+        raise Py4JConnectionException()               
 
 def _javaGateway():    
     global _gateway
@@ -64,24 +42,13 @@ def _javaGateway():
         _connect()
     return _gateway
 
-def shutdownServer():    
-    global _gateway, _proc
-    _gateway = None
-    if _proc is not None:
-        _logger.debug("Killing gateway process")
-        if os.name == 'nt':            
-            subprocess.Popen("TASKKILL /F /PID " + str(_proc.pid) + " /T", shell = True)
-        else:
-            os.kill(_proc.pid, signal.SIGKILL)        
-        _proc = None
-        
 def _runGateway(commands, url, addcolor = True):    
     gc.collect()    
     if addcolor:
         commands.extend(["--color", "never"])
     command = " ".join(commands)
     command = command.replace("\r", "")   
-    #_logger.debug("Running GeoGit command: " + command)     
+
     strclass = _javaGateway().jvm.String
     array = _javaGateway().new_array(strclass,len(commands))
     for i, c in enumerate(commands):
@@ -91,16 +58,12 @@ def _runGateway(commands, url, addcolor = True):
     end = time.clock()
     diff = end - start
     _logger.debug("Executed " + command  + "in " + str(diff) + " millisecs")
-    output = [""]
-    start = time.clock()
+    output = [""]    
     page = _javaGateway().entry_point.nextOutputPage()
     while page is not None:
         output.append(page)
         page = _javaGateway().entry_point.nextOutputPage()
-    output = "".join(output)
-    end = time.clock()
-    diff = end - start
-    #_logger.debug("Output string retrieved in " + str(diff) + " millisecs")           
+    output = "".join(output)            
     output = output.strip("\r\n").splitlines()
     output = [s.strip("\r\n") for s in output]        
     if returncode:                             

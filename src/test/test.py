@@ -1,7 +1,6 @@
 import os
 import sys
 from geogitpy.cliconnector import CLIConnector
-from geogitpy.py4jconnector import shutdownServer
 import shutil
 
 libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +32,5 @@ if __name__ == '__main__':
     path = testRepo().url;
     shutil.rmtree(path, False)
     runner=unittest.TextTestRunner()
-    runner.run(suite())
-    shutdownServer()
+    runner.run(suite())    
     shutil.rmtree(path, True)
