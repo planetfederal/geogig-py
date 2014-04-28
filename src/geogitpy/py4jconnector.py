@@ -15,15 +15,10 @@ _geogitPort = None
 
 _logger = logging.getLogger("geogitpy")
 
-def setGeoGitPath(path):
-    global _geogitPath
-    _geogitPath = path
-    
+  
 def setGatewayPort(port):
-    global _geogitPort, __gateway
-    if _geogitPort != port:
-        _geogitPort = port
-        shutdownServer()
+    global _geogitPort
+    _geogitPort = port
 
 def _connect():    
     global _gateway
@@ -31,9 +26,9 @@ def _connect():
         if _geogitPort is None:
             _gateway = JavaGateway()
         else:
-            _gateway = JavaGateway(GatewayClient(port = _geogitPort))       
+            _gateway = JavaGateway(GatewayClient(port = int(_geogitPort)))     
         _gateway.entry_point.isGeoGitServer()        
-    except Exception, e:                
+    except Exception, e:             
         raise Py4JConnectionException()               
 
 def _javaGateway():    
@@ -154,25 +149,10 @@ class Py4JCLIConnector(CLIConnector):
     def checkIsAlive(self):
         _connect()
                     
-    def setGeoGitPath(self, path):
-        '''
-        Sets the path to GeoGit, to be used in case the gateway is not started, to try to run it
-        '''
-        setGeoGitPath(path)
     
     def setGatewayPort(self, port):
         '''
         Sets the port to use for connecting to the gateway.
-        
-        If a connection has already been made using this connector, the existing gateway client 
-        object will be deleted
-        
-        If when creating that connection it was necessary to start the geogit-gateway (that is, if
-        geogit-gateway was not started manually but automatically by this connector), the gateway server
-        will be shutdown
-        
-        If the passed port is equal to the previous port, this method will do nothing, and all the above 
-        does not apply 
         '''        
         setGatewayPort(port)
         
