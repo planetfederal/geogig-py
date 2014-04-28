@@ -234,7 +234,11 @@ class Repository(object):
     
     def createbranch(self, ref, name, force = False, checkout = False):
         '''Creates a new branch in the repo. Returns the commitish representing the branch'''
+        if checkout:
+            self.cleancache()
         return self.connector.createbranch(_resolveref(ref), name, force, checkout)
+        
+        
 
     def deletebranch(self, name):
         '''Deletes the passed branch'''
