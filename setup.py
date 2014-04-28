@@ -21,5 +21,6 @@ setup(
     keywords="geogit",
     url='https://github.com/boundlessgeo/geogit-py',
     package_dir={'': 'src'},
+    test_suite='test.suite',
     packages=['geogitpy',]
 )

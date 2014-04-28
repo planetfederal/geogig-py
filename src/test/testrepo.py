@@ -1,7 +1,6 @@
 from geogitpy.repo import Repository
 import os
 from geogitpy import geogit
-from geogitpy.py4jconnector import shutdownServer
 import time
 
 _repo = None
@@ -34,8 +33,7 @@ def createRepo():
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "6", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_6")
-    _repo = repo
-    shutdownServer()
+    _repo = repo    
     
 def testRepo():
     if _repo is None:

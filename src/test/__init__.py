@@ -1,23 +1,12 @@
-import os
-import sys
-from geogitpy.cliconnector import CLIConnector
-import shutil
-
-libpath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(libpath)        
-
-from testrepo import testRepo
 import unittest
-from repotest import GeogitRepositoryTest
 from treetest import GeogitTreeTest
+from testrepo import testRepo
+from repotest import GeogitRepositoryTest
 from featuretest import GeogitFeatureTest
 from commitishtest import GeogitCommitishTest
 from committest import GeogitCommitTest
 from difftest import GeogitDiffTest
 
-
-               
-        
 def suite():
     suite = unittest.makeSuite(GeogitTreeTest, 'test')    
     suite.addTests(unittest.makeSuite(GeogitRepositoryTest, 'test'))
@@ -26,11 +15,3 @@ def suite():
     suite.addTests(unittest.makeSuite(GeogitCommitTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogitDiffTest, 'test'))
     return suite
-   
-
-if __name__ == '__main__': 
-    path = testRepo().url;
-    shutil.rmtree(path, False)
-    runner=unittest.TextTestRunner()
-    runner.run(suite())    
-    shutil.rmtree(path, True)
