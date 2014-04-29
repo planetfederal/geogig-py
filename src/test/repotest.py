@@ -242,7 +242,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         attrs = Feature(repo, geogit.HEAD, "parks/1").attributes                
         repo.insertfeature("parks/newfeature", attrs)
         newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes        
-        self.assertEquals(attrs["area"], newattrs["area"])    
+        self.assertAlmostEqual(attrs["area"], newattrs["area"], 5)    
 
     def testRemoveFeature(self):
         repo = self.getClonedRepo()        
