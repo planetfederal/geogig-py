@@ -52,8 +52,10 @@ class CLIConnector(Connector):
         return datetime.datetime.fromtimestamp(os.stat(os.path.join(self.repo.url, ".geogit")).st_ctime)
     
     @staticmethod
-    def clone(url, dest):        
+    def clone(url, dest, username = None, password = None):        
         commands = ['clone', url, dest]
+        if username is not None and password is not None:
+            commands.extend(["--username", username, "--password", password])
         _run(commands)    
 
     def geogitversion(self):

@@ -113,8 +113,10 @@ class Py4JCLIConnector(CLIConnector):
         
     
     @staticmethod
-    def clone(url, dest):            
-        commands = ['clone', url, dest]        
+    def clone(url, dest, username = None, password = None):            
+        commands = ['clone', url, dest]  
+        if username is not None and password is not None:
+            commands.extend(["--username", username, "--password", password])      
         _runGateway(commands, os.path.dirname(__file__))        
     
     @staticmethod    
