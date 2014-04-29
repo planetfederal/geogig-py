@@ -33,6 +33,7 @@ def createRepo():
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "6", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_6")
+    repo.checkout(geogit.MASTER)
     _repo = repo    
     
 def testRepo():
