@@ -1,15 +1,27 @@
+import re
 import requests
 from connector import Connector
 from commit import Commit
 import xml.etree.ElementTree as ET
 from geogitexception import GeoGitException
+import traceback
+
+SHA_MATCHER = re.compile(r"\b([a-f0-9]{40})\b")
 
 class GeoGitServerConnector(Connector):
     ''' A connector that connects to a geogit repo through a geogit-server instance'''
 
     def log(self, tip, sincecommit = None, until = None, since = None, path = None, n = None):                
-        url = self.url + "/commits"
+        if since is not None or path is not None:
+            raise NotImplementedError()
+        if SHA_MATCHER.match(tip) is None:
+            tip = self.revparse(tip)
+        if sincecommit and SHA_MATCHER.match(sincecommit) is None:
+            tip = self.revparse(sincecommit)            
+        oldref = "?oldRefSpec=" + sincecommit if sincecommit else ""
+        url = self.repo.url + "/commits?newRefSpec=%s%s" % (tip, oldref) 
         r = requests.get(url)
+        r.raise_for_status()
         commits = r.json()['commits']
         log = []
         for c in commits:
@@ -20,8 +32,8 @@ class GeoGitServerConnector(Connector):
     
     def checkisrepo(self):
         try:
-            url = self.url + '/commits'
-            r = requests.get(self.url)
+            url = self.repo.url + '/commits'
+            r = requests.get(url)
             response = r.json()
             return 'currentBranch' in reponse
         except:            
@@ -29,13 +41,14 @@ class GeoGitServerConnector(Connector):
         
     def revparse(self, rev):
         try:
-            url = self.url + '/refparse'
-            r = requests.get(self.url, params = {'name' : rev})
+            url = self.repo.url + '/refparse'
+            r = requests.get(url, params = {'name' : rev})
             root = ET.fromstring(r.text)            
             id = root.iter('objectId').next().text
             return id   
-        except:
-            raise GeoGitException("Reference %s ot found" % rev)
+        except Exception, e:
+            print traceback.format_exc()
+            raise GeoGitException("Reference %s not found" % rev)
         
     @staticmethod
     def createrepo(url, name):
