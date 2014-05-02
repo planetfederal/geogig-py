@@ -246,7 +246,7 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testRemoveFeature(self):
         repo = self.getClonedRepo()        
-        repo.removefeature("parks/1")
+        repo.removefeatures(["parks/1"])
         f = Feature(repo, geogit.WORK_HEAD, "parks/1")
         self.assertFalse(f.exists())
         f = Feature(repo, geogit.STAGE_HEAD, "parks/1")
@@ -284,7 +284,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         conflicts = repo.conflicts()        
         self.assertEquals(0, len(conflicts))
         feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
-        self.assertEquals(feature.attributes["area"], origFeature.attributes["area"])
+        self.assertAlmostEqual(feature.attributes["area"], origFeature.attributes["area"], 5)
         
     def testSolveConflictOurs(self):
         repo = self.getClonedRepo()
@@ -502,11 +502,8 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue('message_4' in text)
         
     def testPull(self):
-        origin = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
-        dst = self.getTempRepoPath()        
-        cloned = origin.clone(dst) 
-        dst = self.getTempRepoPath()        
-        cloned2 = cloned.clone(dst) 
+        cloned = self.getClonedRepo()  
+        cloned2 = self.getClonedRepo()
         path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
         cloned.importshp(path)
         cloned.addandcommit("new_message")
@@ -515,11 +512,8 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue("new_message", log[0].message)
        
     def testPush(self):
-        origin = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
-        dst = self.getTempRepoPath()        
-        cloned = origin.clone(dst) 
-        dst = self.getTempRepoPath()        
-        cloned2 = cloned.clone(dst) 
+        cloned = self.getClonedRepo()  
+        cloned2 = self.getClonedRepo()                
         path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
         cloned2.importshp(path)
         cloned2.addandcommit("new_message")
@@ -532,20 +526,16 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(5, count)
        
     def testResetHard(self):
-        origin = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
-        dst = self.getTempRepoPath()        
-        cloned = origin.clone(dst)        
-        cloned.reset(cloned.head.parent.ref, geogit.RESET_MODE_HARD)
-        self.assertEqual("message_3", cloned.log()[0].message)
-        self.assertFalse(len(cloned.unstaged()) > 0)
+        repo = self.getClonedRepo()      
+        repo.reset(repo.head.parent.ref, geogit.RESET_MODE_HARD)
+        self.assertEqual("message_3", repo.log()[0].message)
+        self.assertFalse(len(repo.unstaged()) > 0)
        
     def testResetMixed(self):
-        origin = Repository(os.path.join(os.path.dirname(__file__), 'data/testrepo'))
-        dst = self.getTempRepoPath()        
-        cloned = origin.clone(dst)       
-        cloned.reset(cloned.head.parent.ref, geogit.RESET_MODE_MIXED)
-        self.assertEqual("message_3", cloned.log()[0].message)
-        self.assertTrue(len(cloned.unstaged()) > 0)     
+        repo = self.getClonedRepo()      
+        repo.reset(repo.head.parent.ref, geogit.RESET_MODE_MIXED)
+        self.assertEqual("message_3", repo.log()[0].message)
+        self.assertTrue(len(repo.unstaged()) > 0)     
         
         
     def testFeatureType(self):
@@ -566,8 +556,8 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue(staged)
         repo.commit("message")
         log = repo.log()
-        self.assertEquals(1, len(log))
-        ahead, behind = self.synced()
+        self.assertEquals(5, len(log))
+        ahead, behind = repo.synced()
         self.assertEquals(1, ahead)
         self.assertEquals(0, behind)
                       

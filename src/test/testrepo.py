@@ -40,3 +40,6 @@ def testRepo():
     if _repo is None:
         createRepo()
     return _repo
+
+if __name__ == '__main__':
+    createRepo()
