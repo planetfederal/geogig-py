@@ -66,7 +66,7 @@ class Repository(object):
         self.cleancache()
         
     @staticmethod
-    def newrepofromclone(url, path, connector = None):
+    def newrepofromclone(url, path, connector = None, username = None, password = None):
         '''
         Clones a given repository into a local folder and returns a repository object representing it
         
@@ -77,7 +77,7 @@ class Repository(object):
         connector: the connector to use to communicate with the repository        
         '''
         connector = Py4JCLIConnector() if connector is None else connector
-        connector.clone(url, path)
+        connector.clone(url, path, username, password)
         return Repository(path, connector)
     
     def createdat(self):
@@ -509,9 +509,9 @@ class Repository(object):
         '''Returns a dict with remote names as keys and remote urls as values'''
         return self.connector.remotes()
         
-    def addremote(self, name, url):
+    def addremote(self, name, url, username, password):
         '''Adds a new remote'''
-        self.connector.addremote(name, url)        
+        self.connector.addremote(name, url, username, password)        
         
     def removeremote(self, name):
         '''Removes a remote'''

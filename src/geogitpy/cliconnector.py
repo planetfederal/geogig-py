@@ -170,8 +170,11 @@ class CLIConnector(Connector):
         else:
             return None
 
-    def addremote(self, name, url):
-        commands = ["remote", "add", name, url]
+    def addremote(self, name, url, username, password):
+        if username and password:
+            commands = ["remote", "add", "-u", username, "-p", password, name, url]
+        else:
+            commands = ["remote", "add", name, url]
         self.run(commands)
         
     def removeremote(self, name):
