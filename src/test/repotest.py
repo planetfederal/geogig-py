@@ -416,7 +416,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo = self.getClonedRepo()
         remotes = repo.remotes
         self.assertEquals(1, len(remotes))
-        repo.addremote("myremote", "http://myremoteurl.com")
+        repo.addremote("myremote", "http://myremoteurl.com", "user", "pass")
         remotes = repo.remotes
         self.assertTrue("myremote" in remotes)
         repo.removeremote("myremote")
