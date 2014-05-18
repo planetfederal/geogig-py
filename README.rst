@@ -8,7 +8,7 @@ This library is designed to provide access to all GeoGit functionality, so it ca
 Installation
 -------------
 
-To install, use ``pip`` or ``easy_install``
+To install, use ``pip`` or ``easy_install``:
 
 ::
 	
@@ -34,7 +34,7 @@ GeoGit is not included with geogit-py, and it is assumed to be already installed
 Usage
 -----
 
-Usage is described `here <./doc/source/usage.rst>`_
+Usage is described `here <./doc/source/usage.rst>`_.
 
 Examples
 --------
@@ -50,9 +50,9 @@ To run unit tests, just run the ``test.py`` module in ``src/test``. Most of the 
 Architecture. Connectors
 -------------------------
 
-The ``repo`` object delegates most of its work to a connector, which communicates with a GeoGit instance. Currently there are two on connectors available:
+The ``repo`` object delegates most of its work to a connector, which communicates with a GeoGit instance. Currently there are two connectors available:
 
-- A CLI-based connector, which uses the console to call the GeoGit comand-line interface and parses its output. It assumes that GeoGit is installed in your system and available in your current PATH. Basically, if you open a console, type ``geogit`` and you get the GeoGit help, you are ready to use a ``geogitpy`` repository using the CLI connector. This is far from efficient, as it has to call GeoGit (and thus, start a JVM) each time an operation is performed. 
+- A CLI-based connector, which uses the console to call the GeoGit command-line interface and parses its output. It assumes that GeoGit is installed in your system and available in your current PATH. Basically, if you open a console, type ``geogit`` and you get the GeoGit help, you are ready to use a ``geogitpy`` repository using the CLI connector. This is far from efficient, as it has to call GeoGit (and thus, start a JVM) each time an operation is performed.
 
 - A Py4J-based connector, which communicates with a GeoGit gateway server. To start the server, you can run ``geogit-gateway`` on a console. If the server is not running and accepting GeoGit commands, the connector will try to start it. In this case, it will assume that, as in the case of running a CLI-based connector, GeoGit is installed and available in your current path. More specifically, the ``geogit-gateway`` script should be available.
 
