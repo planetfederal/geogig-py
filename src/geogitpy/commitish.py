@@ -21,7 +21,7 @@ class Commitish(object):
         return self._id
         
     def log(self):
-        '''Return the history up to this Commitish'''
+        '''Return the history up to this commitish'''
         return self.repo.log(self.ref)
     
     @property
@@ -41,11 +41,11 @@ class Commitish(object):
 
     @property
     def parent(self):
-        '''Returns a Commitish that represents the parent of this one'''
+        '''Returns a commitish that represents the parent of this one'''
         return Commitish(self.repo, self.ref + '~1')
     
     def humantext(self):
-        '''Returns a nice human-readable description of the committish'''
+        '''Returns a nice human-readable description of the commitish'''
         headid = self.repo.revparse(self.repo.head.ref) 
         if headid == self.id:
             return "Current branch"        

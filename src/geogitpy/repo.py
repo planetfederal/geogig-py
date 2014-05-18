@@ -35,7 +35,7 @@ class Repository(object):
     
     def __init__(self, url, connector = None, init = False, initParams = None):
         '''
-        url: The url of the repository. Only filepaths are supported so far. Remote repos are not supported
+        url: The url of the repository. Only file paths are supported so far. Remote repos are not supported
         
         connector: the connector to use to communicate with the repository
         
@@ -88,12 +88,12 @@ class Repository(object):
         self._logcache = None        
         
     def description(self):
-        '''returns the description of this repository'''
+        '''Returns the description of this repository'''
         #TODO
         return ''
     
     def revparse(self, rev):
-        '''returns the SHA-1 of a given element, represented as a string'''
+        '''Returns the SHA-1 of a given element, represented as a string'''
         if SHA_MATCHER.match(rev) is not None:
             return rev
         else:
@@ -359,7 +359,7 @@ class Repository(object):
         '''
         Returns the attributes of a given feature, as a dict with attributes 
         names as keys and tuples of (attribute_value, attribute_type_name) as values.
-        Values are converted to appropiate types when possible, otherwise they are stored 
+        Values are converted to appropriate types when possible, otherwise they are stored
         as the string representation of the attribute
         '''
         data = self.connector.featuredata(_resolveref(ref), path)
@@ -469,8 +469,8 @@ class Repository(object):
         
     def commonancestor(self, refa, refb):
         '''
-        Returns the common ancestor of the two passed references as a Commitish object
-        Returns None if no acommon ancestor exists for the passed references
+        Returns the common ancestor of the two passed references as a commitish object
+        Returns None if no common ancestor exists for the passed references
         '''
         return self.connector.commonancestor(refa, refb)
         
@@ -580,7 +580,7 @@ class Repository(object):
         self.connector.maposm(mappingfile)
 
     def show(self, ref):
-        '''Returns the description of an element, as printed by the GeoGit show comand'''
+        '''Returns the description of an element, as printed by the GeoGit show command'''
         return self.connector.show(_resolveref(ref))          
     
     def config(self, param, value, global_ = False):
@@ -593,7 +593,7 @@ class Repository(object):
     
     def pull(self, remote = geogit.ORIGIN, branch = None, rebase = False):
         '''
-        Pulls from the specifed remote and specified branch. 
+        Pulls from the specified remote and specified branch.
         If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
         In that case, and exception will be raised
         If rebase == True, it will do a rebase instead of a merge
