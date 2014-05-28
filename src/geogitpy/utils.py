@@ -34,5 +34,5 @@ def prettydate(d):
     epoch = time.mktime(d.timetuple())
     offset = datetime.datetime.fromtimestamp (epoch) - datetime.datetime.utcfromtimestamp (epoch)
     local = d + offset    
-    s += d.strftime(' [%x %H:%M]')
+    s += local.strftime(' [%x %H:%M]')
     return s 
