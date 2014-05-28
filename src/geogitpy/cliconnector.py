@@ -677,8 +677,9 @@ class CLIConnector(Connector):
         s = ""
         for path, attrs in features.iteritems():            
             s = path + "\n"            
-            for attrName, attrValue in attrs.iteritems():                                    
-                s += attrName + "\t" + _tostr(attrValue) + "\n"
+            for attrName, attrValue in attrs.iteritems():  
+                if attrValue is not None:                                   
+                    s += attrName + "\t" + _tostr(attrValue) + "\n"
             s +="\n"
         try:
             f = tempfile.NamedTemporaryFile(delete = False)                           
