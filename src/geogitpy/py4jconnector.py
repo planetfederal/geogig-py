@@ -10,7 +10,6 @@ import signal
 
 _proc = None
 _gateway = None
-_geogitPath = None
 _geogitPort = None
 
 _logger = logging.getLogger("geogitpy")
