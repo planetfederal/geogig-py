@@ -36,7 +36,8 @@ def _javaGateway():
         _connect()
     return _gateway
 
-def _runGateway(commands, url, addcolor = True):    
+def _runGateway(_commands, url, addcolor = True):    
+    commands = list(_commands)
     gc.collect()    
     if addcolor:
         commands.extend(["--color", "never"])
