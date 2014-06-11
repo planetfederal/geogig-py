@@ -393,7 +393,7 @@ class CLIConnector(Connector):
         commands = ["osm", "map", mappingfile]
         self.run(commands) 
         
-    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None):
+    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None, force=False):
         commands = ["geojson", "import", geojsonfile]
         if dest is not None:
             commands.extend(["--dest", dest])
@@ -403,9 +403,11 @@ class CLIConnector(Connector):
             commands.extend(["--geom-name", geomName])            
         if add:
             commands.append("--add")
+        if force:
+            commands.append("--force-featuretype")            
         self.run(commands)
         
-    def importshp(self, shapefile, add = False, dest = None, idAttribute = None):
+    def importshp(self, shapefile, add = False, dest = None, idAttribute = None, force=False):
         commands = ["shp", "import", shapefile]
         if dest is not None:
             commands.extend(["--dest", dest])
@@ -413,6 +415,8 @@ class CLIConnector(Connector):
             commands.extend(["--fid-attrib", idAttribute])            
         if add:
             commands.append("--add")
+        if force:
+            commands.append("--force-featuretype")            
         self.run(commands)
     
     def importpg(self, database, user = None, password = None, table = None, 

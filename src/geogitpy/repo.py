@@ -415,11 +415,11 @@ class Repository(object):
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None, overwrite = False):
         self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port, overwrite)
 
-    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None):
-        self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName)
+    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None, force=False):
+        self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName, force)
                     
-    def importshp(self, shpfile, add = False, dest = None, idAttribute = None):
-        self.connector.importshp(shpfile, add, dest, idAttribute)
+    def importshp(self, shpfile, add = False, dest = None, idAttribute = None, force=False):
+        self.connector.importshp(shpfile, add, dest, idAttribute, force)
         
     def importpg(self, database, user = None, password = None, table = None, 
                  schema = None, host = None, port = None, add = False, dest = None):
