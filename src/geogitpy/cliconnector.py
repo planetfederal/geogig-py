@@ -680,7 +680,7 @@ class CLIConnector(Connector):
     def insertfeatures(self, features):               
         s = ""
         for path, attrs in features.iteritems():            
-            s = path + "\n"            
+            s += path + "\n"            
             for attrName, attrValue in attrs.iteritems():  
                 if attrValue is not None:                                   
                     s += attrName + "\t" + _tostr(attrValue) + "\n"
