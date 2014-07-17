@@ -35,7 +35,7 @@ class GeoGitServerConnector(Connector):
             url = self.repo.url + '/commits'
             r = requests.get(url)
             response = r.json()
-            return 'currentBranch' in reponse
+            return 'currentBranch' in response
         except:            
             return False
         

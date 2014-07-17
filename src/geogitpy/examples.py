@@ -23,7 +23,7 @@ def squash_latest(repo, n, message = None):
 def squash(repo, refa, refb, message = None):
     '''
     Squashes all the commits between two given ones, 'refa' and 'refb'.
-    Commits are passed as a string with the correspoding commit id
+    Commits are passed as a string with the corresponding commit id
     If a message is passed, it uses it for the resulting commit.
     Otherwise, it uses the messages from the squashed commits
     '''

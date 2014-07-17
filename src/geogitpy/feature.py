@@ -13,9 +13,9 @@ class Feature(object):
     @property
     def attributes(self):
         '''
-        returns the attributes of the feature in a dict  with attributes 
+        Returns the attributes of the feature in a dict  with attributes
         names as keys and attribute values as values.
-        Values are converted to appropiate types when possible, otherwise they are stored 
+        Values are converted to appropriate types when possible, otherwise they are stored
         as the string representation of the attribute
         '''
         if self._attributes is None:
@@ -24,7 +24,7 @@ class Feature(object):
     
     @property
     def attributesnogeom(self):
-        '''returns a filtered set of attributes, with only those attributes that are not geometries'''
+        '''Returns a filtered set of attributes, with only those attributes that are not geometries'''
         attrs = self.attributes
         return dict((i for i in attrs.iteritems() if not isinstance(i[1], BaseGeometry) ))
 
@@ -100,7 +100,7 @@ class Feature(object):
         It returns a dict with Commit objects as keys, and feature data for the corresponding
         commit as values. Feature data is another dict with attributes 
         names as keys and tuples of (attribute_value, attribute_type_name) as values.
-        Values are converted to appropiate types when possible, otherwise they are stored 
+        Values are converted to appropriate types when possible, otherwise they are stored
         as the string representation of the attribute
         '''        
         return self.repo.versions(self.path)
