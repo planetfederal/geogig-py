@@ -331,9 +331,9 @@ class CLIConnector(Connector):
              
     def diffentryFromString(self, oldcommitref, newcommitref, line):
         tokens = line.strip().split(" ")
-        path = tokens[0]
-        oldref = tokens[1]
-        newref = tokens[2]
+        path = " ".join(tokens[0:-2])
+        oldref = tokens[-2]
+        newref = tokens[-1]
         return Diffentry(self.repo, oldcommitref, newcommitref, oldref, newref, path) 
     
     
