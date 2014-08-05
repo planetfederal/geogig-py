@@ -1,5 +1,5 @@
 from geogigexception import GeoGigException
-from shapely.geometry.base import BaseGeometry
+from geometry import Geometry
 
 class Feature(object):
 
@@ -26,7 +26,7 @@ class Feature(object):
     def attributesnogeom(self):
         '''Returns a filtered set of attributes, with only those attributes that are not geometries'''
         attrs = self.attributes
-        return dict((i for i in attrs.iteritems() if not isinstance(i[1], BaseGeometry) ))
+        return dict((i for i in attrs.iteritems() if not isinstance(i[1], Geometry) ))
 
     @property
     def geom(self):
@@ -38,7 +38,7 @@ class Feature(object):
         '''
         attrs = self.attributes 
         for v in attrs.values():
-            if isinstance(v, BaseGeometry):
+            if isinstance(v, Geometry):
                 return v
         raise GeoGigException("Feature has no geometry")
     
@@ -52,7 +52,7 @@ class Feature(object):
         '''
         attrs = self.attributes 
         for k, v in attrs.iteritems():
-            if isinstance(v, BaseGeometry):
+            if isinstance(v, Geometry):
                 return k
         raise GeoGigException("Feature has no geometry")
             

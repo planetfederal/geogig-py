@@ -13,9 +13,7 @@ from diff import Diffentry
 from connector import Connector
 from commitish import Commitish
 from geogigpy.geogigexception import GeoGigException, GeoGigConflictException, UnconfiguredUserException
-from shapely.wkt import loads
-from shapely.geometry import mapping
-from shapely.geometry.base import BaseGeometry
+from geometry import Geometry
 
 def _run(command, addcolor = True):         
     command = ['geogig'] + command
@@ -520,11 +518,9 @@ class CLIConnector(Connector):
             elif valuetype in ["FLOAT","DOUBLE"]:
                 return float(value)
             elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"] 
-                    or len(tokens) > 1):                    
-                geom = loads(value)
-                if len(tokens) > 1:                    
-                     geom.crs = " ".join(tokens[1:])
-                return geom        
+                    or len(tokens) > 1):                                    
+                crs = " ".join(tokens[1:]) if len(tokens) > 1 else None
+                return Geometry(value, crs)        
             else:
                 return value
         except:
@@ -590,10 +586,7 @@ class CLIConnector(Connector):
             if attr in data2:
                 v = data[attr][0]
                 v2 = data2[attr][0]
-                if isinstance(v, BaseGeometry):
-                    equal = v.to_wkt() == v2.to_wkt()
-                else:
-                    equal = v == v2                
+                equal = v == v2                
                 if not equal:
                     diffs[attr] =(data[attr][0], data2[attr][0])
             else:
