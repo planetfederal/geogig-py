@@ -1,6 +1,6 @@
-from geogitpy.repo import Repository
+from geogigpy.repo import Repository
 import os
-from geogitpy import geogit
+from geogigpy import geogig
 import time
 
 _repo = None
@@ -20,8 +20,8 @@ def createRepo():
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "3", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_3")
-    repo.createbranch(geogit.HEAD, "conflicted")
-    repo.createbranch(geogit.HEAD, "unconflicted")
+    repo.createbranch(geogig.HEAD, "conflicted")
+    repo.createbranch(geogig.HEAD, "unconflicted")
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "4", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_4")
@@ -33,7 +33,7 @@ def createRepo():
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "6", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_6")
-    repo.checkout(geogit.MASTER)
+    repo.checkout(geogig.MASTER)
     _repo = repo    
     
 def testRepo():

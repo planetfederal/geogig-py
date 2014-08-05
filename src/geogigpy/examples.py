@@ -1,8 +1,8 @@
-import geogit
-from geogitpy.commit import Commit
+import geogig
+from geogigpy.commit import Commit
 import os
 import time
-from geogitpy.repo import Repository
+from geogigpy.repo import Repository
 
 def squash_latest(repo, n, message = None):
     '''
@@ -16,7 +16,7 @@ def squash_latest(repo, n, message = None):
     if len(log) < n:
         raise Exception("Not enough commits in history")        
     message = message or "\n".join([commit.message for commit in log[:n]])
-    repo.reset(log[n].ref, geogit.RESET_MODE_MIXED)
+    repo.reset(log[n].ref, geogig.RESET_MODE_MIXED)
     repo.add()
     repo.commit(message)
     
@@ -46,8 +46,8 @@ def squash(repo, refa, refb, message = None):
         commitid = c.id  
                 
     #squash the selected commmits        
-    repo.reset(refb, geogit.RESET_MODE_HARD)
-    repo.reset(commita.parent.id, geogit.RESET_MODE_MIXED)
+    repo.reset(refb, geogig.RESET_MODE_HARD)
+    repo.reset(commita.parent.id, geogig.RESET_MODE_MIXED)
     
     if message is None:
         messages = []
@@ -83,7 +83,7 @@ def blame(repo):
 def export_tp_pg(repo, host, user, password, port, database, schema = "public"):
     for tree in repo.trees:
         path = tree.path
-        repo.exportpg(geogit.HEAD, path, path, database, user, password, schema, host, port)
+        repo.exportpg(geogig.HEAD, path, path, database, user, password, schema, host, port)
     
 
 def getTempPath():

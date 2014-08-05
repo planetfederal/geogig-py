@@ -3,7 +3,7 @@ import os
 import time
 from testrepo import testRepo
 
-class GeogitDiffTest(unittest.TestCase):
+class GeogigDiffTest(unittest.TestCase):
         
     repo = testRepo()
 

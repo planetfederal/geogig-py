@@ -12,7 +12,7 @@ class Connector(object):
     def clone(url, dest):        
         raise NotImplementedError  
 
-    def geogitversion(self):
+    def geogigversion(self):
         raise NotImplementedError                    
 
     def revparse(self, rev):

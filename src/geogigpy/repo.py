@@ -1,12 +1,12 @@
 import re
 from commitish import Commitish
-import geogit
-from geogitexception import GeoGitException
+import geogig
+from geogigexception import GeoGigException
 from feature import Feature
 from tree import Tree
 from utils import mkdir
 from py4jconnector import Py4JCLIConnector
-from geogitserverconnector import GeoGitServerConnector
+from geogigserverconnector import GeoGigServerConnector
 import tempfile
 import datetime
 import re
@@ -47,18 +47,18 @@ class Repository(object):
             try:
                 mkdir(url)
             except Exception, e:
-                raise GeoGitException("Cannot create repository folder.\nCheck that path is correct and you have permission")
+                raise GeoGigException("Cannot create repository folder.\nCheck that path is correct and you have permission")
                 
         self.connector.setRepository(self)         
         try:
             self.connector.checkisrepo()
             isAlreadyRepo = True
-        except GeoGitException, e:
+        except GeoGigException, e:
             isAlreadyRepo = False
 
         if init:
             if isAlreadyRepo:
-                raise GeoGitException("Cannot init, the folder is already a geogit repository")
+                raise GeoGigException("Cannot init, the folder is already a geogig repository")
             else:
                 self.init(initParams)        
         self.connector.checkisrepo()                    
@@ -108,32 +108,32 @@ class Repository(object):
     @property
     def index(self):
         '''Returns a Commitish representing the index'''
-        return Commitish(self, geogit.STAGE_HEAD)
+        return Commitish(self, geogig.STAGE_HEAD)
     
     @property
     def workingtree(self):
         '''Returns a Commitish representing workingtree'''
-        return Commitish(self, geogit.WORK_HEAD)
+        return Commitish(self, geogig.WORK_HEAD)
     
     @property
     def master(self):
         '''Returns a Commitish representing the master branch'''
-        return Commitish(self, geogit.MASTER)
+        return Commitish(self, geogig.MASTER)
     
     def isdetached(self):
         '''Returns true if the repos has a detached HEAD'''
         return  self.head.id == self.head.ref
     
        
-    def synced(self, branch = geogit.HEAD):
+    def synced(self, branch = geogig.HEAD):
         '''
         Returns a tuple with number of (ahead, behind) commits between this repo and a remote
         It uses the passed branch or, if not passed, the current branch
         If the repository is headless, or if not remote is defined, it will throw an exception 
         It uses the "origin" remote if it exists, otherwise it uses the first remote available.
         '''            
-        if (branch == geogit.HEAD and self.isdetached()):
-            raise GeoGitException("Cannot use current branch. The repository has a detached HEAD")
+        if (branch == geogig.HEAD and self.isdetached()):
+            raise GeoGigException("Cannot use current branch. The repository has a detached HEAD")
 
         remotes = self.remotes             
         if remotes:
@@ -144,10 +144,10 @@ class Repository(object):
                 remotename = remotes.keys()[0]
                 remote = remotes.values()[0]
         else:
-            raise GeoGitException("No remotes defined")
+            raise GeoGigException("No remotes defined")
                 
         if isremoteurl(remote):            
-            repo = Repository(remote, GeoGitServerConnector())
+            repo = Repository(remote, GeoGigServerConnector())
         else:
             conn = self.connector.__class__()            
             repo = Repository(remote[len("file:/"):], conn)
@@ -181,8 +181,8 @@ class Repository(object):
         Date limits can be passed using the since and until parameters
         A maximum number of commits can be set using the n parameter
         '''     
-        tip = tip or geogit.HEAD                    
-        if path is not None or tip != geogit.HEAD or n is not None or since is not None or until is not None or sincecommit is not None:
+        tip = tip or geogig.HEAD                    
+        if path is not None or tip != geogig.HEAD or n is not None or since is not None or until is not None or sincecommit is not None:
             return self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)
         if self._logcache is None:
             self._logcache = self.connector.log(_resolveref(tip), _resolveref(sincecommit), _resolveref(until), _resolveref(since), path, n)  
@@ -193,26 +193,26 @@ class Repository(object):
         epoch = datetime.datetime.utcfromtimestamp(0)
         delta = t - epoch
         milisecs = int(delta.total_seconds()) * 1000        
-        log = self.connector.log(geogit.HEAD, until = str(milisecs), n=1)
+        log = self.connector.log(geogig.HEAD, until = str(milisecs), n=1)
         if log:
             return log[0]
         else:
-            raise GeoGitException("Invalid date for this repository")
+            raise GeoGigException("Invalid date for this repository")
         
         
     @property
     def trees(self):
         return self._trees()
         
-    def _trees(self, ref = geogit.HEAD, path = None, recursive = False): 
+    def _trees(self, ref = geogig.HEAD, path = None, recursive = False): 
         '''Returns a set of Tree objects with all the trees for the passed ref and path'''       
         return [e for e in self.children(ref, path, recursive)  if isinstance(e, Tree)]
     
-    def features(self, ref = geogit.HEAD, path = None, recursive = False): 
+    def features(self, ref = geogig.HEAD, path = None, recursive = False): 
         '''Returns a set of Feature objects with all the features for the passed ref and path'''                  
         return [e for e in self.children(ref, path, recursive)  if isinstance(e, Feature)]
     
-    def children(self, ref = geogit.HEAD, path = None, recursive = False): 
+    def children(self, ref = geogig.HEAD, path = None, recursive = False): 
         '''Returns a set of Tree and Feature objects with all the children for the passed ref and path'''          
         return self.connector.children(_resolveref(ref), path, recursive)                           
         
@@ -252,27 +252,27 @@ class Repository(object):
         '''Deletes the passed tag'''
         self.connector.deletetag(name)
     
-    def diff(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD, path = None):
+    def diff(self, refa = geogig.HEAD, refb = geogig.WORK_HEAD, path = None):
         '''Returns a list of DiffEntry representing the changes between 2 commits.
         If a path is passed, it only shows changes corresponding to that path'''
         return self.connector.diff(_resolveref(refa), _resolveref(refb), path)
     
-    def difftreestats(self, refa = geogit.HEAD, refb = geogit.WORK_HEAD):
+    def difftreestats(self, refa = geogig.HEAD, refb = geogig.WORK_HEAD):
         '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
         in the form  (added, deleted, modified) corresponding to changes made to that path'''
         return self.connector.difftreestats(_resolveref(refa), _resolveref(refb))
         
     def unstaged(self):
         '''Returns a list of diffEntry with the differences between staging area and working tree'''
-        return self.diff(geogit.STAGE_HEAD, geogit.WORK_HEAD);
+        return self.diff(geogig.STAGE_HEAD, geogig.WORK_HEAD);
     
     def staged(self):
         '''Returns a list of diffEntry with the differences between HEAD and Staging area'''
-        return self.diff(geogit.HEAD, geogit.STAGE_HEAD);
+        return self.diff(geogig.HEAD, geogig.STAGE_HEAD);
     
     def notindatabase(self):
         '''Returns a list of diffEntry with the differences between HEAD and Working Tree'''
-        return self.diff(geogit.HEAD, geogit.WORK_HEAD);
+        return self.diff(geogig.HEAD, geogig.WORK_HEAD);
     
     def conflicts(self):
         '''Returns a dict of tuples. Keys are paths, values are tuples with the 3 versions 
@@ -307,14 +307,14 @@ class Repository(object):
         Attributes are passed in a dict with attribute names as keys and attribute values as values.
         This can be used only with features containing one and only one geometry attribute
         '''
-        self.reset(geogit.HEAD, path = path)
+        self.reset(geogig.HEAD, path = path)
         self.insertfeature(path, attributes)
         self.add([path])
         
-    def solveconflicts(self, paths, version = geogit.OURS):
+    def solveconflicts(self, paths, version = geogig.OURS):
         '''
         Solves the specified paths with one of the corresponding existing versions (ours or theirs)
-        Version is specified using geogit.OURS or geogit.THEIRS
+        Version is specified using geogig.OURS or geogig.THEIRS
         '''
         self.connector.solveconflicts(paths, version)
 
@@ -364,7 +364,7 @@ class Repository(object):
         '''
         data = self.connector.featuredata(_resolveref(ref), path)
         if len(data) == 0:            
-            raise GeoGitException("The specified feature does not exist")
+            raise GeoGigException("The specified feature does not exist")
         return data
     
     def featuretype(self, ref, tree):
@@ -380,7 +380,7 @@ class Repository(object):
         Values are converted to appropriate types when possible, otherwise they are stored 
         as the string representation of the attribute
         '''            
-        entries = self.log(geogit.HEAD, path = path)     
+        entries = self.log(geogig.HEAD, path = path)     
         refs = [entry.ref + ":" + path for entry in entries]
         versions = []
         if refs:
@@ -399,7 +399,7 @@ class Repository(object):
         '''
         return self.connector.featurediff(_resolveref(ref), _resolveref(ref2), path)
     
-    def reset(self, ref, mode = geogit.RESET_MODE_HARD, path = None):
+    def reset(self, ref, mode = geogig.RESET_MODE_HARD, path = None):
         '''Resets the current branch to the passed reference'''        
         self.connector.reset(ref, mode, path)
         self.cleancache()
@@ -494,7 +494,7 @@ class Repository(object):
     def continue_(self):
         '''
         Continues a rebase operation that was stopped due to conflicts
-        Raises a GeoGitException if the repo is not clean and cannot continue the operation
+        Raises a GeoGigException if the repo is not clean and cannot continue the operation
         Does nothing if the repo is not in a conflicted state caused by a rebase operation
         '''
         self.connector.continue_()
@@ -580,18 +580,18 @@ class Repository(object):
         self.connector.maposm(mappingfile)
 
     def show(self, ref):
-        '''Returns the description of an element, as printed by the GeoGit show command'''
+        '''Returns the description of an element, as printed by the GeoGig show command'''
         return self.connector.show(_resolveref(ref))          
     
     def config(self, param, value, global_ = False):
-        '''Configures a geogit parameter with a the passed value'''
+        '''Configures a geogig parameter with a the passed value'''
         return self.connector.config(param, value, global_)
     
     def getconfig(self, param):
         '''Returns the current value for a given parameter'''
         return self.connector.getconfig(param)
     
-    def pull(self, remote = geogit.ORIGIN, branch = None, rebase = False):
+    def pull(self, remote = geogig.ORIGIN, branch = None, rebase = False):
         '''
         Pulls from the specified remote and specified branch.
         If no branch is provided, it will use the name of the current branch, unless the repo is headless. 
@@ -599,7 +599,7 @@ class Repository(object):
         If rebase == True, it will do a rebase instead of a merge
         '''
         if branch == None and self.isdetached():
-            raise GeoGitException("HEAD is detached. Cannot pull")
+            raise GeoGigException("HEAD is detached. Cannot pull")
         branch = branch or self.head
         self.connector.pull(remote, branch, rebase)
         self.cleancache()
@@ -612,7 +612,7 @@ class Repository(object):
         if all == True, it will push all branches and ignore the branch. 
         '''
         if branch is None and self.isdetached():
-            raise GeoGitException("HEAD is detached. Cannot push")
+            raise GeoGigException("HEAD is detached. Cannot push")
         branch = branch or self.head.ref
         return self.connector.push(remote, branch, all)    
     

@@ -3,7 +3,7 @@ import os
 import tempfile
 import logging
 import geojson
-import geogit
+import geogig
 from collections import defaultdict
 from feature import Feature
 from tree import Tree
@@ -12,13 +12,13 @@ import datetime
 from diff import Diffentry
 from connector import Connector
 from commitish import Commitish
-from geogitpy.geogitexception import GeoGitException, GeoGitConflictException, UnconfiguredUserException
+from geogigpy.geogigexception import GeoGigException, GeoGigConflictException, UnconfiguredUserException
 from shapely.wkt import loads
 from shapely.geometry import mapping
 from shapely.geometry.base import BaseGeometry
 
 def _run(command, addcolor = True):         
-    command = ['geogit'] + command
+    command = ['geogig'] + command
     if addcolor:
         command.extend(["--color", "never"])
     commandstr = " ".join(command)
@@ -34,13 +34,13 @@ def _run(command, addcolor = True):
     returncode = proc.returncode  
     if returncode:                        
         logging.error("Error running " + commandstr + "\n" + " ".join(output))
-        raise GeoGitException(output)
+        raise GeoGigException(output)
     logging.info("Executed " + commandstr + "\n" + " ".join(output[:5]))      
     return output
 
     
 class CLIConnector(Connector):
-    ''' A connector that calls the CLI version of geogit and parses CLI output'''
+    ''' A connector that calls the CLI version of geogig and parses CLI output'''
     
     def __init__(self):
         self.commandslog = []        
@@ -49,7 +49,7 @@ class CLIConnector(Connector):
         self.repo = repo                     
 
     def createdat(self):
-        return datetime.datetime.fromtimestamp(os.stat(os.path.join(self.repo.url, ".geogit")).st_ctime)
+        return datetime.datetime.fromtimestamp(os.stat(os.path.join(self.repo.url, ".geogig")).st_ctime)
     
     @staticmethod
     def clone(url, dest, username = None, password = None):        
@@ -58,7 +58,7 @@ class CLIConnector(Connector):
             commands.extend(["--username", username, "--password", password])
         _run(commands)    
 
-    def geogitversion(self):
+    def geogigversion(self):
         output = self.run(["--version"])
         return output[0].split(":")[1].strip()    
                 
@@ -72,12 +72,12 @@ class CLIConnector(Connector):
         output = self.run(commands)
         id = output[0].strip()
         if len(id) != 40:
-            raise GeoGitException("Cannot resolve the provided reference")        
+            raise GeoGigException("Cannot resolve the provided reference")        
         return id
     
     def head(self):
         self.checkisrepo()
-        headfile = os.path.join(self.repo.url, '.geogit', 'HEAD')
+        headfile = os.path.join(self.repo.url, '.geogig', 'HEAD')
         f = open(headfile)
         line = f.readline()
         f.close()
@@ -88,18 +88,18 @@ class CLIConnector(Connector):
 
     def isrebasing(self):
         self.checkisrepo()
-        headfile = os.path.join(self.repo.url, '.geogit', 'ORIG_HEAD')
-        branchfile =  os.path.join(self.repo.url, '.geogit', 'rebase-apply', 'branch')
+        headfile = os.path.join(self.repo.url, '.geogig', 'ORIG_HEAD')
+        branchfile =  os.path.join(self.repo.url, '.geogig', 'rebase-apply', 'branch')
         return os.path.exists(headfile) and os.path.exists(branchfile) 
     
     def ismerging(self):
         self.checkisrepo()
-        headfile = os.path.join(self.repo.url, '.geogit', 'ORIG_HEAD')
-        mergeheadfile = os.path.join(self.repo.url, '.geogit', 'MERGE_HEAD')        
+        headfile = os.path.join(self.repo.url, '.geogig', 'ORIG_HEAD')
+        mergeheadfile = os.path.join(self.repo.url, '.geogig', 'MERGE_HEAD')        
         return os.path.exists(headfile) and os.path.exists(mergeheadfile)    
         
     def mergemessage(self):
-        msgfile = headfile = os.path.join(self.repo.url, '.geogit', 'MERGE_MSG')
+        msgfile = headfile = os.path.join(self.repo.url, '.geogig', 'MERGE_MSG')
         if os.path.exists(msgfile):
             with open(msgfile) as f:
                 lines = f.readlines()
@@ -108,11 +108,11 @@ class CLIConnector(Connector):
             return "" 
         
     def checkisrepo(self):
-        if not os.path.exists(os.path.join(self.repo.url, '.geogit')):
-            raise GeoGitException("Not a valid GeoGit repository: " + self.repo.url)
+        if not os.path.exists(os.path.join(self.repo.url, '.geogig')):
+            raise GeoGigException("Not a valid GeoGig repository: " + self.repo.url)
         
     
-    def children(self, ref = geogit.HEAD, path = None, recursive = False):
+    def children(self, ref = geogig.HEAD, path = None, recursive = False):
         children = []    
         if path is None:
             fullref = ref
@@ -207,7 +207,7 @@ class CLIConnector(Connector):
             commands.extend(["-n", str(n)])            
         try:
             output = self.run(commands)
-        except GeoGitException, e:
+        except GeoGigException, e:
             if "HEAD does not resolve" in e.args[0]: #empty repo
                 return []
             else:
@@ -229,7 +229,7 @@ class CLIConnector(Connector):
         return commits 
     
     def conflicts(self):
-        conflictsfile = os.path.join(self.repo.url, ".geogit","conflicts")        
+        conflictsfile = os.path.join(self.repo.url, ".geogig","conflicts")        
         try:
             if os.path.getsize(conflictsfile) == 0:
                 return {}
@@ -246,14 +246,14 @@ class CLIConnector(Connector):
             _conflicts[tokens[0]] = (tokens[1][:40], tokens[2][:40], tokens [3][:40])
         return _conflicts
             
-    def solveconflicts(self, paths, version = geogit.OURS):
+    def solveconflicts(self, paths, version = geogig.OURS):
         commands = ["checkout"]        
-        if version == geogit.OURS:
+        if version == geogig.OURS:
             commands.append("--ours")
-        elif version == geogit.THEIRS:
+        elif version == geogig.THEIRS:
             commands.append("--theirs")
         else:
-            raise GeoGitException("Unknown option:" + version)        
+            raise GeoGigException("Unknown option:" + version)        
         commands.append("-p")
         commands.extend(paths)
         self.run(commands)   
@@ -321,7 +321,7 @@ class CLIConnector(Connector):
         commands.extend(paths)
         try:
             self.run(commands)
-        except GeoGitException, e:
+        except GeoGigException, e:
             print "ERROR" + e.args[0]
             if "user.name not found" in e.args[0] or "user.email not found" in e.args[0]: 
                 raise UnconfiguredUserException()
@@ -570,11 +570,11 @@ class CLIConnector(Connector):
     def featurediff(self, ref, ref2, path):
         try:
             data = self.featuredata(ref, path)
-        except GeoGitException:
+        except GeoGigException:
             data = None
         try:
             data2 = self.featuredata(ref2, path)
-        except GeoGitException:
+        except GeoGigException:
             data2 = None         
                 
         if data is None:
@@ -620,7 +620,7 @@ class CLIConnector(Connector):
         try:
             output = self.run(commands)            
             return Commitish(self.repo, output[0].strip())
-        except GeoGitException, e:                    
+        except GeoGigException, e:                    
             if "No common ancestor" in e.args[0]:
                 return None
             else:
@@ -635,9 +635,9 @@ class CLIConnector(Connector):
             commands.apend(message)
         try:
             self.run(commands) 
-        except GeoGitException, e:            
+        except GeoGigException, e:            
             if "conflict" in e.args[0]:
-                raise GeoGitConflictException(e.args[0])
+                raise GeoGigConflictException(e.args[0])
             else:
                 raise e
 
@@ -646,9 +646,9 @@ class CLIConnector(Connector):
         commands = ["rebase", commitish]
         try:
             self.run(commands) 
-        except GeoGitException, e:
+        except GeoGigException, e:
             if "conflict" in e.args[0]:
-                raise GeoGitConflictException(e.args[0])
+                raise GeoGigConflictException(e.args[0])
             else:
                 raise e            
     
@@ -657,14 +657,14 @@ class CLIConnector(Connector):
             commands = ["rebase", "--continue"]
             self.run(commands)
             if self.isrebasing():
-                raise GeoGitException("Could not continue rebasing")
+                raise GeoGigException("Could not continue rebasing")
         
     def abort(self):
         if self.isrebasing():
             commands=["rebase", "--abort"]
             self.run(commands)            
         elif self.ismerging():
-            self.reset(geogit.HEAD)        
+            self.reset(geogig.HEAD)        
             
     def cherrypick(self, commitish):
         commands = ["cherry-pick", commitish]
@@ -727,9 +727,9 @@ class CLIConnector(Connector):
             commands.append("--rebase")
         try:
             self.run(commands)
-        except GeoGitException, e:
+        except GeoGigException, e:
             if "conflict" in e.args[0]:
-                raise GeoGitConflictException(e.args[0])
+                raise GeoGigConflictException(e.args[0])
             else:
                 raise e
         

@@ -1,10 +1,10 @@
 import unittest
 import os
 import time
-from geogitpy.commit import Commit
+from geogigpy.commit import Commit
 from testrepo import testRepo
 
-class GeogitCommitTest(unittest.TestCase):
+class GeogigCommitTest(unittest.TestCase):
         
     repo = testRepo()
 

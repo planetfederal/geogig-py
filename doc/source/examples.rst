@@ -1,11 +1,11 @@
 Examples
 *********
 
-The following are some examples about using the geogit-py library.
+The following are some examples about using the geogig-py library.
 
-Notice that some of these scripts are not optimized (using them in very large repositories might not work correctly and a ifferent approach should be implemented) and can be improved in terms of robustness. They are provided here just to illustrate some standard usage of geogit-py for scripting GeoGit tasks.
+Notice that some of these scripts are not optimized (using them in very large repositories might not work correctly and a ifferent approach should be implemented) and can be improved in terms of robustness. They are provided here just to illustrate some standard usage of geogig-py for scripting GeoGig tasks.
 
-A simple GeoGit workflow
+A simple GeoGig workflow
 --------------------------
 
 ::
@@ -14,8 +14,8 @@ A simple GeoGit workflow
 	repo = Repository('path/to/repo/folder', True)
 
 	# Configure
-	repo.config(geogit.USER_NAME, 'myuser')
-	repo.config(geogit.USER_EMAIL, 'myuser@mymail.com')
+	repo.config(geogig.USER_NAME, 'myuser')
+	repo.config(geogig.USER_EMAIL, 'myuser@mymail.com')
 
 	# Add some data and create a snapshot
 	repo.importshp('myshapefile.shp')
@@ -25,7 +25,7 @@ A simple GeoGit workflow
 	repo.createbranch(repo.head, "mybranch", checkout = True)
 	
 	# Take a feature and modify its geometry
-	feature = repo.feature(geogit.HEAD, 'parks/1')		
+	feature = repo.feature(geogig.HEAD, 'parks/1')		
 	geom = feature.geom
 	attributes = feature.attributes
 	newgeom = geom.buffer(5.0)
@@ -38,11 +38,11 @@ A simple GeoGit workflow
 	# Bring changes to master branch
 	# [...] There might be changes in the master branch as well
 
-	repo.checkout(geogit.MASTER)
+	repo.checkout(geogig.MASTER)
 	try:
 		repo.merge("mybranch")
 		print "No merge conflicts"
-	except GeoGitConflictException, e:
+	except GeoGigConflictException, e:
 		print "There are merge conflicts"
 
 Squashing the latest *n* commits
@@ -52,8 +52,8 @@ The following method squashes the latest *n* commits in the current history
 
 ::
 
-	import geogit
-	from geogitpy.commit import Commit
+	import geogig
+	from geogigpy.commit import Commit
 
 	def squash_latest(repo, n, message = None):
 	    '''
@@ -67,7 +67,7 @@ The following method squashes the latest *n* commits in the current history
 	    if len(log) < n:
 	        raise Exception("Not enough commits in history")        
 	    message = message or "\n".join([commit.message for commit in log[:n]])
-	    repo.reset(log[n].ref, geogit.RESET_MODE_MIXED)
+	    repo.reset(log[n].ref, geogig.RESET_MODE_MIXED)
 	    repo.add()
 	    repo.commit(message)
 
@@ -103,8 +103,8 @@ If instead of the n latest commits, we want to squash all commits between two gi
 	        commitid = c.id  
 	                
 	    # squash the selected commmits        
-	    repo.reset(refb, geogit.RESET_MODE_HARD)
-	    repo.reset(commita.parent.id, geogit.RESET_MODE_MIXED)
+	    repo.reset(refb, geogig.RESET_MODE_HARD)
+	    repo.reset(commita.parent.id, geogig.RESET_MODE_MIXED)
 	    
 	    if message is None:
 	        messages = []
@@ -171,7 +171,7 @@ It creates a table for each tree in the repository, using the name of the tree a
 	def export_to_pg(repo, host, user, password, port, database, schema = "public"):
 	    for tree in repo.trees:
 	        path = tree.path
-	        repo.exportpg(geogit.HEAD, path, path, database, user, password, schema, host, port)
+	        repo.exportpg(geogig.HEAD, path, path, database, user, password, schema, host, port)
     
 
 Importing all shapefiles in a folder
@@ -189,7 +189,7 @@ The following method imports all shapefiles in a folder into a repository
     	path = os.path.join(folder, f)
         repo.importshp(path)
 
-If you want to allow importing all shapefiles into a single destination tree ``dest`` instead of importing each one into a different tree (with a name assigned automatically by GeoGit based on the filename), you can improve the above function like this.
+If you want to allow importing all shapefiles into a single destination tree ``dest`` instead of importing each one into a different tree (with a name assigned automatically by GeoGig based on the filename), you can improve the above function like this.
 
 ::
 

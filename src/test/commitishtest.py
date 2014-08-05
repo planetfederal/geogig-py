@@ -1,11 +1,11 @@
 import unittest
 import os
 import time
-from geogitpy import geogit
-from geogitpy.commitish import Commitish
+from geogigpy import geogig
+from geogigpy.commitish import Commitish
 from testrepo import testRepo
 
-class GeogitCommitishTest(unittest.TestCase):
+class GeogigCommitishTest(unittest.TestCase):
         
     repo = testRepo()
 
@@ -17,13 +17,13 @@ class GeogitCommitishTest(unittest.TestCase):
         return self.repo.clone(dst)  
 
     def testLog(self):
-        commitish = Commitish(self.repo, geogit.HEAD)
+        commitish = Commitish(self.repo, geogig.HEAD)
         log = commitish.log()
         self.assertEquals(4, len(log))        
         self.assertEquals("message_4", log[0].message)                
 
     def testRootTreeListing(self):
-        commitish = Commitish(self.repo, geogit.HEAD)
+        commitish = Commitish(self.repo, geogig.HEAD)
         trees = commitish.root.trees    
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)
@@ -36,17 +36,17 @@ class GeogitCommitishTest(unittest.TestCase):
         branch = Commitish(repo, "conflicted")
         branch.checkout()
         self.assertEquals(repo.head.id, branch.id)
-        master = Commitish(repo, geogit.MASTER)
+        master = Commitish(repo, geogig.MASTER)
         master.checkout()
         self.assertEquals(repo.head.id, master.id)
 
     def testDiff(self):
-        commitish = Commitish(self.repo, geogit.HEAD)
+        commitish = Commitish(self.repo, geogig.HEAD)
         diff = commitish.diff()
         self.assertEquals(1, len(diff))
         self.assertEquals("parks/5", diff[0].path)
 
     def testDiffCaching(self):
-        commitish = Commitish(self.repo, geogit.HEAD)
+        commitish = Commitish(self.repo, geogig.HEAD)
         diff = commitish.diff()
         self.assertEquals(diff, commitish._diff)

@@ -1,7 +1,7 @@
 from commitish import Commitish
 import datetime
 import time
-from geogit import NULL_ID
+from geogig import NULL_ID
 from utils import prettydate
 
 
@@ -9,7 +9,7 @@ class Commit(Commitish):
     
     _commitcache = {}
     
-    ''' A geogit commit'''
+    ''' A geogig commit'''
     
     def __init__(self, repo, commitid, treeid, parents, message, authorname, authordate, committername, committerdate):
         Commitish.__init__(self, repo, commitid)        

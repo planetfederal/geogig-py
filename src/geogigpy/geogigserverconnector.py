@@ -3,13 +3,13 @@ import requests
 from connector import Connector
 from commit import Commit
 import xml.etree.ElementTree as ET
-from geogitexception import GeoGitException
+from geogigexception import GeoGigException
 import traceback
 
 SHA_MATCHER = re.compile(r"\b([a-f0-9]{40})\b")
 
-class GeoGitServerConnector(Connector):
-    ''' A connector that connects to a geogit repo through a geogit-server instance'''
+class GeoGigServerConnector(Connector):
+    ''' A connector that connects to a geogig repo through a geogig-server instance'''
 
     def log(self, tip, sincecommit = None, until = None, since = None, path = None, n = None):                
         if since is not None or path is not None:
@@ -48,7 +48,7 @@ class GeoGitServerConnector(Connector):
             return id   
         except Exception, e:
             print traceback.format_exc()
-            raise GeoGitException("Reference %s not found" % rev)
+            raise GeoGigException("Reference %s not found" % rev)
         
     @staticmethod
     def createrepo(url, name):

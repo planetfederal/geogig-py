@@ -2,14 +2,14 @@
 # -*- coding: UTF-8 -*-
 import os
 import time
-from geogitpy.repo import Repository
+from geogigpy.repo import Repository
 import unittest
-from geogitpy import geogit
-from geogitpy.geogitexception import GeoGitConflictException
+from geogigpy import geogig
+from geogigpy.geogigexception import GeoGigConflictException
 from testrepo import testRepo
 
 
-class GeogitWorkflowTest(unittest.TestCase):
+class GeogigWorkflowTest(unittest.TestCase):
 
     def getTempFolderPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
@@ -29,7 +29,7 @@ class GeogitWorkflowTest(unittest.TestCase):
         repo.importgeojson(geojsonfile, False, "landuse", "fid")
         repo.addandcommit("commit")
         shpfile = os.path.join(self.getTempFolderPath(), "landuse.shp")
-        repo.exportshp(geogit.HEAD, "landuse", shpfile)
+        repo.exportshp(geogig.HEAD, "landuse", shpfile)
         repo.importshp(shpfile, False, "landuse", "fid")
         unstaged = repo.unstaged()
         self.assertEquals(0, unstaged)
@@ -76,23 +76,23 @@ class GeogitWorkflowTest(unittest.TestCase):
         clonea.importshp(shpfile, False, "landuse", "fid")
         clonea.addandcommit("changed attribute value")
         clonea.push("origin")
-        feature = cloneb.feature(geogit.HEAD, "landuse/1")
+        feature = cloneb.feature(geogig.HEAD, "landuse/1")
         attribs = feature.attributes
         attribs["LANDCOVER"] = "urban_areas"
         cloneb.insertfeature("landuse/1", attribs)
         cloneb.addandcommit("fixed_typo")
-        feature = cloneb.feature(geogit.HEAD, "landuse/1")
+        feature = cloneb.feature(geogig.HEAD, "landuse/1")
         attribs = feature.attributes
         self.assertTrue("urban_areas", attribs["LANDCOVER"])              
         try:
             cloneb.pull("origin", "master")
             self.fail()
-        except GeoGitConflictException:
+        except GeoGigConflictException:
             pass
         attribs["LANDCOVER"] = "urban"
         cloneb.solveconflict("landuse/1", attribs)
         cloneb.addandcommit(cloneb.mergemessage())
-        feature = cloneb.feature(geogit.HEAD, "landuse/1")
+        feature = cloneb.feature(geogig.HEAD, "landuse/1")
         attribs = feature.attributes
         self.assertEquals(attribs["LANDCOVER"], "urban")
         

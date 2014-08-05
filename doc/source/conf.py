@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# geogit-py documentation documentation build configuration file, created by
+# geogig-py documentation documentation build configuration file, created by
 # sphinx-quickstart on Wed Jan 22 08:25:33 2014.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'geogit-py documentation'
+project = u'geogig-py documentation'
 copyright = u'2014, Boundless'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -164,7 +164,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'geogit-pydocumentationdoc'
+htmlhelp_basename = 'geogig-pydocumentationdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -183,7 +183,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'geogit-pydocumentation.tex', u'geogit-py documentation Documentation',
+  ('index', 'geogig-pydocumentation.tex', u'geogig-py documentation Documentation',
    u'Boundless', 'manual'),
 ]
 
@@ -213,7 +213,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'geogit-pydocumentation', u'geogit-py documentation Documentation',
+    ('index', 'geogig-pydocumentation', u'geogig-py documentation Documentation',
      [u'Boundless'], 1)
 ]
 
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'geogit-pydocumentation', u'geogit-py documentation Documentation',
-   u'Boundless', 'geogit-pydocumentation', 'One line description of project.',
+  ('index', 'geogig-pydocumentation', u'geogig-py documentation Documentation',
+   u'Boundless', 'geogig-pydocumentation', 'One line description of project.',
    'Miscellaneous'),
 ]
 

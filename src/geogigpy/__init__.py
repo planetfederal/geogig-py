@@ -1,4 +1,4 @@
-from geogit import *
+from geogig import *
 from repo import Repository
 from commitish import Commitish
 from feature import Feature

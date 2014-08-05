@@ -1,5 +1,5 @@
 from feature import Feature
-from geogit import NULL_ID
+from geogig import NULL_ID
 
 TYPE_MODIFIED = "Modified"
 TYPE_ADDED = "Added"

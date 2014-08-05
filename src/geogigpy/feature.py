@@ -1,4 +1,4 @@
-from geogitexception import GeoGitException
+from geogigexception import GeoGigException
 from shapely.geometry.base import BaseGeometry
 
 class Feature(object):
@@ -40,7 +40,7 @@ class Feature(object):
         for v in attrs.values():
             if isinstance(v, BaseGeometry):
                 return v
-        raise GeoGitException("Feature has no geometry")
+        raise GeoGigException("Feature has no geometry")
     
     @property
     def geomfieldname(self):
@@ -54,7 +54,7 @@ class Feature(object):
         for k, v in attrs.iteritems():
             if isinstance(v, BaseGeometry):
                 return k
-        raise GeoGitException("Feature has no geometry")
+        raise GeoGigException("Feature has no geometry")
             
     def featuretype(self):  
         '''
@@ -69,13 +69,13 @@ class Feature(object):
 
     def diff(self, feature):
         if feature.path != self.path:
-            raise GeoGitException("Cannot compare feature with different path")
+            raise GeoGigException("Cannot compare feature with different path")
         return self.repo.featurediff(self.ref, feature.ref, self.path)
     
     def query(self):                    
         data = self.repo.featuredata(self.ref, self.path)
         if len(data) == 0:
-            raise GeoGitException("Feature at the specified path does not exist")
+            raise GeoGigException("Feature at the specified path does not exist")
         self._attributes = dict(( (k, v[0]) for k,v in data.iteritems()))
         self._featuretype = dict(( (k, v[1]) for k,v in data.iteritems()))
 
@@ -83,7 +83,7 @@ class Feature(object):
         try:
             self.attributes
             return True
-        except GeoGitException, e:
+        except GeoGigException, e:
             return False
 
     def blame(self):
@@ -110,7 +110,7 @@ class Feature(object):
         if self.exists():
             self.repo.updatepathtoref(self.ref, [self.path])
         else:
-            raise GeoGitException("Feature at the specified path does not exist")
+            raise GeoGigException("Feature at the specified path does not exist")
 
     def __str__(self):
         return self.ref + ":" + self.path

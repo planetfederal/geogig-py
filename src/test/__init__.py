@@ -1,17 +1,17 @@
 import unittest
-from treetest import GeogitTreeTest
+from treetest import GeogigTreeTest
 from testrepo import testRepo
-from repotest import GeogitRepositoryTest
-from featuretest import GeogitFeatureTest
-from commitishtest import GeogitCommitishTest
-from committest import GeogitCommitTest
-from difftest import GeogitDiffTest
+from repotest import GeogigRepositoryTest
+from featuretest import GeogigFeatureTest
+from commitishtest import GeogigCommitishTest
+from committest import GeogigCommitTest
+from difftest import GeogigDiffTest
 
 def suite():
-    suite = unittest.makeSuite(GeogitTreeTest, 'test')    
-    suite.addTests(unittest.makeSuite(GeogitRepositoryTest, 'test'))
-    suite.addTests(unittest.makeSuite(GeogitFeatureTest, 'test'))
-    suite.addTests(unittest.makeSuite(GeogitCommitishTest, 'test'))
-    suite.addTests(unittest.makeSuite(GeogitCommitTest, 'test'))
-    suite.addTests(unittest.makeSuite(GeogitDiffTest, 'test'))
+    suite = unittest.makeSuite(GeogigTreeTest, 'test')    
+    suite.addTests(unittest.makeSuite(GeogigRepositoryTest, 'test'))
+    suite.addTests(unittest.makeSuite(GeogigFeatureTest, 'test'))
+    suite.addTests(unittest.makeSuite(GeogigCommitishTest, 'test'))
+    suite.addTests(unittest.makeSuite(GeogigCommitTest, 'test'))
+    suite.addTests(unittest.makeSuite(GeogigDiffTest, 'test'))
     return suite

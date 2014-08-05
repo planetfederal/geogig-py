@@ -1,15 +1,15 @@
 import unittest
 import os
-from geogitpy.repo import Repository
+from geogigpy.repo import Repository
 import time
 import shutil
-from geogitpy import geogit
-from geogitpy.feature import Feature
+from geogigpy import geogig
+from geogigpy.feature import Feature
 from shapely.geometry import Polygon
 from shapely.geometry.multipolygon import MultiPolygon
 from testrepo import testRepo
 
-class GeogitFeatureTest(unittest.TestCase):
+class GeogigFeatureTest(unittest.TestCase):
         
     repo = testRepo()
 
@@ -23,13 +23,13 @@ class GeogitFeatureTest(unittest.TestCase):
         return Repository(dst)
 
     def testExists(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/1")                    
+        feature = Feature(self.repo, geogig.HEAD, "parks/1")                    
         self.assertTrue(feature.exists())
-        feature = Feature(self.repo, geogit.HEAD, "wrong/path")                    
+        feature = Feature(self.repo, geogig.HEAD, "wrong/path")                    
         self.assertFalse(feature.exists())
 
     def testAttributes(self):    	
-        feature = Feature(self.repo, geogit.HEAD, "parks/1")    	            
+        feature = Feature(self.repo, geogig.HEAD, "parks/1")    	            
         data = feature.attributes    
         self.assertEquals(8, len(data))
         self.assertEquals("Public", data["usage"])
@@ -43,8 +43,8 @@ class GeogitFeatureTest(unittest.TestCase):
         self.assertTrue(isinstance(data["the_geom"][0], Polygon))        
         
     def testDiff(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/5")
-        featureB = Feature(self.repo, geogit.HEAD + "~1", "parks/5")
+        feature = Feature(self.repo, geogig.HEAD, "parks/5")
+        featureB = Feature(self.repo, geogig.HEAD + "~1", "parks/5")
         diffs = feature.diff(featureB)        
         self.assertTrue(2, len(diffs))
         areas = diffs["area"]
@@ -53,7 +53,7 @@ class GeogitFeatureTest(unittest.TestCase):
         self.assertTrue("the_geom" in diffs)
 
     def testBlame(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        feature = Feature(self.repo, geogig.HEAD, "parks/5")
         blame = feature.blame()        
         self.assertEquals(8, len(blame))
         attrs = feature.attributes
@@ -61,7 +61,7 @@ class GeogitFeatureTest(unittest.TestCase):
             self.assertTrue(v[0], attrs[k])
 
     def testFeatureType(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        feature = Feature(self.repo, geogig.HEAD, "parks/5")
         ftype = feature.featuretype()
         self.assertTrue("owner" in ftype)
         self.assertTrue("agency" in ftype)
@@ -73,17 +73,17 @@ class GeogitFeatureTest(unittest.TestCase):
         self.assertEquals("MULTIPOLYGON EPSG:4326", ftype['the_geom'])
         
     def testGeom(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        feature = Feature(self.repo, geogig.HEAD, "parks/5")
         geom = feature.geom
         self.assertTrue(isinstance(geom, MultiPolygon)) 
         
     def testGeomFieldName(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        feature = Feature(self.repo, geogig.HEAD, "parks/5")
         name = feature.geomfieldname
         self.assertEquals("the_geom", name)
         
     def testNoGeom(self):
-        feature = Feature(self.repo, geogit.HEAD, "parks/5")
+        feature = Feature(self.repo, geogig.HEAD, "parks/5")
         allattrs = feature.attributes
         attrs = feature.attributesnogeom
         self.assertEquals(len(allattrs), len(attrs) + 1)

@@ -2,10 +2,10 @@
 # -*- coding: UTF-8 -*-
 import os
 import time
-from geogitpy.repo import Repository
+from geogigpy.repo import Repository
 import unittest
 
-class GeogitLoadTest(unittest.TestCase):            
+class GeogigLoadTest(unittest.TestCase):            
 
     def getTempRepoPath(self):
         return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')

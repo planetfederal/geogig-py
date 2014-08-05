@@ -1,11 +1,11 @@
-Using the geogit-py library
+Using the geogig-py library
 *****************************
 
 This document describes the main ideas about using the goegit-py library
 
 Most of the functionality is available through the ``Repository`` class.
 
-Instantiate a repository passing its URL, and you will have all GeoGit commands available as methods of the ``Repository`` object
+Instantiate a repository passing its URL, and you will have all GeoGig commands available as methods of the ``Repository`` object
 
 ::
 
@@ -18,7 +18,7 @@ Instantiate a repository passing its URL, and you will have all GeoGit commands 
 	>>> #commit
 	>>> repo.commit(message = "a commit message")
 
-Apart from this, geogit-py features an object-oriented approach, which allows you to deal with the objects of the repository in a different way. Here is an example.
+Apart from this, geogig-py features an object-oriented approach, which allows you to deal with the objects of the repository in a different way. Here is an example.
 
 
 You can create a repository object to use an existing repo and get the log of the repo
@@ -107,16 +107,16 @@ This way of editing/adding features only supports features with a single geometr
 Handling references.
 ----------------------
 
-Many of the methods in the ``Repository`` class require a reference, which eventually will be resolved to a SHA-1 id by GeoGit and used to identify an element in the repository. All those methods accept strings with a valid identifier such as "13dc523ffda", "HEAD", "master~1" (those 3 for the case of refering a commit) or "branch:mytree/34" (for a feature). Also, they accept any object that contains the reference data, so you can use Commit, Commitish, Tree and Feature objects as well. In that case geogit-py will try to extract the id string before calling the corresponding GeoGit method.
+Many of the methods in the ``Repository`` class require a reference, which eventually will be resolved to a SHA-1 id by GeoGig and used to identify an element in the repository. All those methods accept strings with a valid identifier such as "13dc523ffda", "HEAD", "master~1" (those 3 for the case of refering a commit) or "branch:mytree/34" (for a feature). Also, they accept any object that contains the reference data, so you can use Commit, Commitish, Tree and Feature objects as well. In that case geogig-py will try to extract the id string before calling the corresponding GeoGig method.
 
 
 Failed operations and exceptions
 ----------------------------------
 
-When a GeoGit operation exits with a non-zero exit code, geogit-py will raise a ``GeoGitException`` exception, containing the error message output by GeoGit as exception message. This will happen, for instance, if you do something like this.
+When a GeoGig operation exits with a non-zero exit code, geogig-py will raise a ``GeoGigException`` exception, containing the error message output by GeoGig as exception message. This will happen, for instance, if you do something like this.
 
 ::
 
 	repo.show('a_reference_that_does_not_exist')
 
-However, when GeoGit exist with a non-zero exit code, and it is not caused by an error but by a problem in the operation performed (such as, for instance, a conflicted merge), geogit-py will raise a ``InterruptedOperationException`` instead. That allows to differentiate between exceptions that are actually a problem, most likely related to the input parameters, and those that arise commonly in a normal GeoGit workflow and should be treated differently.
+However, when GeoGig exist with a non-zero exit code, and it is not caused by an error but by a problem in the operation performed (such as, for instance, a conflicted merge), geogig-py will raise a ``InterruptedOperationException`` instead. That allows to differentiate between exceptions that are actually a problem, most likely related to the input parameters, and those that arise commonly in a normal GeoGig workflow and should be treated differently.

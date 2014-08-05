@@ -1,4 +1,4 @@
-class GeoGitException(Exception):
+class GeoGigException(Exception):
 	pass
 
 class UnconfiguredUserException(Exception):
@@ -12,6 +12,6 @@ class InterruptedOperationException(Exception):
 	'''
 	pass
 
-class GeoGitConflictException(InterruptedOperationException):
+class GeoGigConflictException(InterruptedOperationException):
 	pass
     

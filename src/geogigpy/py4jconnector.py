@@ -1,6 +1,6 @@
 from py4j.java_gateway import JavaGateway, GatewayClient
 import logging
-from geogitexception import GeoGitException
+from geogigexception import GeoGigException
 from cliconnector import CLIConnector
 import subprocess
 import os
@@ -10,23 +10,23 @@ import signal
 
 _proc = None
 _gateway = None
-_geogitPort = None
+_geogigPort = None
 
-_logger = logging.getLogger("geogitpy")
+_logger = logging.getLogger("geogigpy")
 
   
 def setGatewayPort(port):
-    global _geogitPort
-    _geogitPort = port
+    global _geogigPort
+    _geogigPort = port
 
 def _connect():    
     global _gateway
     try: 
-        if _geogitPort is None:
+        if _geogigPort is None:
             _gateway = JavaGateway()
         else:
-            _gateway = JavaGateway(GatewayClient(port = int(_geogitPort)))     
-        _gateway.entry_point.isGeoGitServer()        
+            _gateway = JavaGateway(GatewayClient(port = int(_geogigPort)))     
+        _gateway.entry_point.isGeoGigServer()        
     except Exception, e:             
         raise Py4JConnectionException()               
 
@@ -64,7 +64,7 @@ def _runGateway(_commands, url, addcolor = True):
     if returncode:                             
         errormsg = "\n".join(output)
         _logger.error("Error running command '%s': %s" % (command, errormsg))
-        raise GeoGitException("\n".join(output))
+        raise GeoGigException("\n".join(output))
          
     return output 
 
@@ -86,11 +86,11 @@ def setProgressListener(progressFunc, progressTextFunc):
             self.progressTextFunc(s)
 
         class Java:
-            implements = ['org.geogit.cli.GeoGitPy4JProgressListener']
+            implements = ['org.geogig.cli.GeoGigPy4JProgressListener']
     
     _javaGateway().entry_point.setProgressListener(Listener(progressFunc, progressTextFunc))
     
-def geogitVersion():
+def geogigVersion():
     commands = ['--version']        
     try:
         out = _runGateway(commands, os.path.dirname(__file__), False)
@@ -106,7 +106,7 @@ class Py4JConnectionException(Exception):
     pass
     
 class Py4JCLIConnector(CLIConnector):    
-    ''' A connector that uses a Py4J gateway server to connect to geogit'''
+    ''' A connector that uses a Py4J gateway server to connect to geogig'''
 
     def __init__(self):
         self.commandslog = []

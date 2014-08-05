@@ -1,9 +1,9 @@
-.. geogit-py documentation documentation master file, created by
+.. geogig-py documentation documentation master file, created by
    sphinx-quickstart on Wed Jan 22 08:25:33 2014.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to geogit-py documentation's documentation!
+Welcome to geogig-py documentation's documentation!
 ===================================================
 
 Contents:

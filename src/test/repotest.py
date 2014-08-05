@@ -1,18 +1,18 @@
 import os
 import time
-from geogitpy.repo import Repository
-from geogitpy.geogitexception import GeoGitException, GeoGitConflictException
-from geogitpy.commitish import Commitish
-from geogitpy.diff import TYPE_MODIFIED
-from geogitpy.feature import Feature
+from geogigpy.repo import Repository
+from geogigpy.geogigexception import GeoGigException, GeoGigConflictException
+from geogigpy.commitish import Commitish
+from geogigpy.diff import TYPE_MODIFIED
+from geogigpy.feature import Feature
 import unittest
-from geogitpy import geogit
+from geogigpy import geogig
 from shapely.geometry import MultiPolygon
-from geogitpy.osmmapping import OSMMapping, OSMMappingRule
+from geogigpy.osmmapping import OSMMapping, OSMMappingRule
 import datetime
 from testrepo import testRepo
 
-class GeogitRepositoryTest(unittest.TestCase):
+class GeogigRepositoryTest(unittest.TestCase):
         
     repo = testRepo()
 
@@ -28,7 +28,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         Repository(repoPath, init = True)    
     
     def testRevParse(self):
-        headid = self.repo.revparse(geogit.HEAD)
+        headid = self.repo.revparse(geogig.HEAD)
         entries = self.repo.log()
         self.assertEquals(entries[0].commitid, headid)
         
@@ -47,7 +47,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             self.repo.revparse("WrOnGReF")
             self.fail()
-        except GeoGitException, e:
+        except GeoGigException, e:
             pass
 
     def testLog(self):
@@ -72,7 +72,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             commit = self.repo.commitatdate(epoch)
             self.fail()
-        except GeoGitException, e:
+        except GeoGigException, e:
             self.assertTrue("Invalid date" in e.args[0])
             
     def testLogEmptyRepo(self):
@@ -85,7 +85,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         trees = self.repo.trees
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)            
-        self.assertEquals(geogit.HEAD, trees[0].ref)        
+        self.assertEquals(geogig.HEAD, trees[0].ref)        
     
     def testTreesAtCommit(self):
         head = self.repo.head
@@ -127,7 +127,7 @@ class GeogitRepositoryTest(unittest.TestCase):
 
 
     def testFeatureData(self):        
-        data = self.repo.featuredata(geogit.HEAD, "parks/1")
+        data = self.repo.featuredata(geogig.HEAD, "parks/1")
         self.assertEquals(8, len(data))
         self.assertEquals("Public", data["usage"][0])
         self.assertTrue("owner" in data)
@@ -142,9 +142,9 @@ class GeogitRepositoryTest(unittest.TestCase):
     def testFeatureDataNonExistentFeature(self):  
         return       
         try:
-            self.repo.featuredata(geogit.HEAD, "wrongpath/wrongname")
+            self.repo.featuredata(geogig.HEAD, "wrongpath/wrongname")
             self.fail()
-        except GeoGitException, e:
+        except GeoGigException, e:
             pass
 
     def testAddAndCommit(self):        
@@ -188,7 +188,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo = self.getClonedRepo()       
         branches = repo.branches
         self.assertEquals(3, len(branches))
-        repo.createbranch(geogit.HEAD, "anewbranch")
+        repo.createbranch(geogig.HEAD, "anewbranch")
         branches = repo.branches
         self.assertEquals(4, len(branches))                                
         self.assertTrue("anewbranch" in branches)
@@ -199,7 +199,7 @@ class GeogitRepositoryTest(unittest.TestCase):
 
 
     def testBlame(self):
-        feature = self.repo.feature(geogit.HEAD, "parks/5")
+        feature = self.repo.feature(geogig.HEAD, "parks/5")
         blame = self.repo.blame("parks/5")        
         self.assertEquals(8, len(blame))
         attrs = feature.attributes
@@ -212,7 +212,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertEquals(2, len(versions))
 
     def testFeatureDiff(self):
-        diff = self.repo.featurediff(geogit.HEAD, geogit.HEAD + "~1", "parks/5")
+        diff = self.repo.featurediff(geogig.HEAD, geogig.HEAD + "~1", "parks/5")
         self.assertEquals(2, len(diff))
         self.assertTrue("area" in diff)
 
@@ -231,25 +231,25 @@ class GeogitRepositoryTest(unittest.TestCase):
 
     def testModifyFeature(self):
         repo = self.getClonedRepo()
-        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes
+        attrs = Feature(repo, geogig.HEAD, "parks/1").attributes
         attrs["area"] = 1234.5
         repo.insertfeature("parks/1", attrs)
-        attrs = Feature(repo, geogit.WORK_HEAD, "parks/1").attributes
+        attrs = Feature(repo, geogig.WORK_HEAD, "parks/1").attributes
         self.assertEquals(1234.5, attrs["area"])
 
     def testAddFeature(self):
         repo = self.getClonedRepo()
-        attrs = Feature(repo, geogit.HEAD, "parks/1").attributes                
+        attrs = Feature(repo, geogig.HEAD, "parks/1").attributes                
         repo.insertfeature("parks/newfeature", attrs)
-        newattrs = Feature(repo, geogit.WORK_HEAD, "parks/newfeature").attributes        
+        newattrs = Feature(repo, geogig.WORK_HEAD, "parks/newfeature").attributes        
         self.assertAlmostEqual(attrs["area"], newattrs["area"], 5)    
 
     def testRemoveFeature(self):
         repo = self.getClonedRepo()        
         repo.removefeatures(["parks/1"])
-        f = Feature(repo, geogit.WORK_HEAD, "parks/1")
+        f = Feature(repo, geogig.WORK_HEAD, "parks/1")
         self.assertFalse(f.exists())
-        f = Feature(repo, geogit.STAGE_HEAD, "parks/1")
+        f = Feature(repo, geogig.STAGE_HEAD, "parks/1")
         self.assertFalse(f.exists()) 
 
     def testConflicts(self):
@@ -257,7 +257,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             pass
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -272,7 +272,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             pass
         conflicts = repo.conflicts()        
         self.assertEquals(1, len(conflicts))
@@ -283,7 +283,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo.solveconflict(path, origFeature.attributes)
         conflicts = repo.conflicts()        
         self.assertEquals(0, len(conflicts))
-        feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
+        feature = Feature(repo, geogig.WORK_HEAD, "parks/5")
         self.assertAlmostEqual(feature.attributes["area"], origFeature.attributes["area"], 5)
         
     def testSolveConflictOurs(self):
@@ -291,7 +291,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             pass
         conflicts = repo.conflicts()        
         self.assertEquals(1, len(conflicts))
@@ -299,10 +299,10 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue("parks/5", path)
         features = conflicts[path]
         oursFeature = features[1]
-        repo.solveconflicts([path], geogit.OURS)
+        repo.solveconflicts([path], geogig.OURS)
         conflicts = repo.conflicts()        
         self.assertEquals(0, len(conflicts))
-        feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
+        feature = Feature(repo, geogig.WORK_HEAD, "parks/5")
         self.assertEquals(feature.attributes["area"], oursFeature.attributes["area"])        
 
     def testSolveConflictTheirs(self):
@@ -310,7 +310,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             pass
         conflicts = repo.conflicts()        
         self.assertEquals(1, len(conflicts))
@@ -318,10 +318,10 @@ class GeogitRepositoryTest(unittest.TestCase):
         self.assertTrue("parks/5", path)
         features = conflicts[path]
         theirsFeature = features[2]
-        repo.solveconflicts([path], geogit.THEIRS)
+        repo.solveconflicts([path], geogig.THEIRS)
         conflicts = repo.conflicts()        
         self.assertEquals(0, len(conflicts))
-        feature = Feature(repo, geogit.WORK_HEAD, "parks/5")
+        feature = Feature(repo, geogig.WORK_HEAD, "parks/5")
         self.assertEquals(feature.attributes["area"], theirsFeature.attributes["area"])  
                       
 
@@ -330,7 +330,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             pass
         self.assertTrue(repo.ismerging())
         repo.abort()        
@@ -342,7 +342,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.rebase("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             pass
         self.assertTrue(repo.isrebasing())
         repo.abort()
@@ -353,7 +353,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.merge("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             self.assertTrue("conflict" in e.args[0])
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -366,7 +366,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.rebase("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             self.assertTrue("conflict" in e.args[0])
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
@@ -378,14 +378,14 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.rebase("conflicted")
             self.fail()
-        except GeoGitConflictException, e:
+        except GeoGigConflictException, e:
             self.assertTrue("conflict" in e.args[0])
         conflicts = repo.conflicts()
         self.assertEquals(1, len(conflicts))
         try:
             repo.continue_()
             self.fail()
-        except GeoGitException, e:
+        except GeoGigException, e:
             pass            
 
     def testRebase(self):
@@ -438,7 +438,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         try:
             repo.cherrypick("conflicted")
             self.fail()
-        except GeoGitException, e:
+        except GeoGigException, e:
             self.assertTrue("conflict" in e.args[0])
         log = repo.log()
         self.assertTrue(ref, log[0].ref)
@@ -448,7 +448,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo = Repository(repoPath, init = True)
         osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")        
         repo.importosm(osmfile)
-        feature = Feature(repo, geogit.WORK_HEAD, "way/31045880")
+        feature = Feature(repo, geogig.WORK_HEAD, "way/31045880")
         self.assertTrue(feature.exists())
         
     def testOsmImportWithMappingFile(self):
@@ -457,21 +457,21 @@ class GeogitRepositoryTest(unittest.TestCase):
         osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")
         mappingfile = os.path.join(os.path.dirname(__file__), "data", "osm", "mapping.json")
         repo.importosm(osmfile, False, mappingfile)     
-        feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
+        feature = Feature(repo, geogig.WORK_HEAD, "onewaystreets/31045880")
         self.assertTrue(feature.exists())
         
     def testOsmImportWithMapping(self):
         mapping = OSMMapping()
         rule = OSMMappingRule("onewaystreets")
         rule.addfilter("oneway", "yes")
-        rule.addfield("lit", "lit", geogit.TYPE_STRING)
-        rule.addfield("geom", "the_geom", geogit.TYPE_LINESTRING)
+        rule.addfield("lit", "lit", geogig.TYPE_STRING)
+        rule.addfield("geom", "the_geom", geogig.TYPE_LINESTRING)
         mapping.addrule(rule)
         repoPath =  self.getTempRepoPath()         
         repo = Repository(repoPath, init = True)
         osmfile = os.path.join(os.path.dirname(__file__), "data", "osm", "ways.xml")        
         repo.importosm(osmfile, False, mapping)     
-        feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
+        feature = Feature(repo, geogig.WORK_HEAD, "onewaystreets/31045880")
         self.assertTrue(feature.exists())
         
         
@@ -484,20 +484,20 @@ class GeogitRepositoryTest(unittest.TestCase):
         repo.add()
         repo.commit("message")   
         repo.maposm(mappingfile)
-        feature = Feature(repo, geogit.WORK_HEAD, "onewaystreets/31045880")
+        feature = Feature(repo, geogig.WORK_HEAD, "onewaystreets/31045880")
         self.assertTrue(feature.exists())
        
     def testConfig(self):
         repo = self.getClonedRepo()
-        repo.config(geogit.USER_NAME, "mytestusername")
-        repo.config(geogit.USER_EMAIL, "mytestuseremail@email.com") 
-        username = repo.getconfig(geogit.USER_NAME)
+        repo.config(geogig.USER_NAME, "mytestusername")
+        repo.config(geogig.USER_EMAIL, "mytestuseremail@email.com") 
+        username = repo.getconfig(geogig.USER_NAME)
         self.assertTrue("mytestusername", username)
-        email = repo.getconfig(geogit.USER_EMAIL)
+        email = repo.getconfig(geogig.USER_EMAIL)
         self.assertTrue("mytestuseremail@email.com", email)
        
     def testShow(self):
-        text = self.repo.show(geogit.HEAD)     
+        text = self.repo.show(geogig.HEAD)     
         self.assertTrue('volaya' in text)
         self.assertTrue('message_4' in text)
         
@@ -507,7 +507,7 @@ class GeogitRepositoryTest(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
         cloned.importshp(path)
         cloned.addandcommit("new_message")
-        cloned2.pull("origin", geogit.MASTER)
+        cloned2.pull("origin", geogig.MASTER)
         log = cloned2.log()
         self.assertTrue("new_message", log[0].message)
        
@@ -517,30 +517,30 @@ class GeogitRepositoryTest(unittest.TestCase):
         path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
         cloned2.importshp(path)
         cloned2.addandcommit("new_message")
-        cloned.push("origin", geogit.MASTER)
+        cloned.push("origin", geogig.MASTER)
         log = cloned.log()
         self.assertTrue("new_message", log[0].message)
         
     def testCount(self):
-        count = self.repo.count(geogit.HEAD, "parks")
+        count = self.repo.count(geogig.HEAD, "parks")
         self.assertEquals(5, count)
        
     def testResetHard(self):
         repo = self.getClonedRepo()      
-        repo.reset(repo.head.parent.ref, geogit.RESET_MODE_HARD)
+        repo.reset(repo.head.parent.ref, geogig.RESET_MODE_HARD)
         self.assertEqual("message_3", repo.log()[0].message)
         self.assertFalse(len(repo.unstaged()) > 0)
        
     def testResetMixed(self):
         repo = self.getClonedRepo()      
-        repo.reset(repo.head.parent.ref, geogit.RESET_MODE_MIXED)
+        repo.reset(repo.head.parent.ref, geogig.RESET_MODE_MIXED)
         self.assertEqual("message_3", repo.log()[0].message)
         self.assertTrue(len(repo.unstaged()) > 0)     
         
         
     def testFeatureType(self):
         repo = self.getClonedRepo()
-        ftype = repo.featuretype(geogit.HEAD, "parks")
+        ftype = repo.featuretype(geogig.HEAD, "parks")
         self.assertEqual("DOUBLE", ftype["perimeter"])
         self.assertEqual("STRING", ftype["name"])
         self.assertEqual("MULTIPOLYGON", ftype["the_geom"])   
