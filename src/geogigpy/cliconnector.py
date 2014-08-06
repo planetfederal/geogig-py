@@ -2,7 +2,6 @@ import subprocess
 import os
 import tempfile
 import logging
-import geojson
 import geogig
 from collections import defaultdict
 from feature import Feature
