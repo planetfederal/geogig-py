@@ -422,8 +422,8 @@ class Repository(object):
         self.connector.importshp(shpfile, add, dest, idAttribute, force)
         
     def importpg(self, database, user = None, password = None, table = None, 
-                 schema = None, host = None, port = None, add = False, dest = None):
-        self.connector.importpg(database, user, password, table, schema, host, port, add, dest)                     
+                 schema = None, host = None, port = None, add = False, dest = None, force = False):
+        self.connector.importpg(database, user, password, table, schema, host, port, add, dest, force)                     
 
     def importsl(self, database, table, add = False, dest = None):   
         self.connector.importpg(database, table, add, dest)
