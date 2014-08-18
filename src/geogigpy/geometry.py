@@ -1,6 +1,6 @@
 class Geometry(object):
 
-    def __init__(geom, crs):
+    def __init__(self, geom, crs):
         self.geom = geom
         self.crs = crs
 
