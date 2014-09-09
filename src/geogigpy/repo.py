@@ -262,6 +262,17 @@ class Repository(object):
         in the form  (added, deleted, modified) corresponding to changes made to that path'''
         return self.connector.difftreestats(_resolveref(refa), _resolveref(refb))
         
+    def treediff(self, path, refa = geogig.HEAD, refb = geogig.WORK_HEAD):
+        '''Returns a tuple attributes, features with a description of features changed between the specified refs
+        Attributes is a dict with attribute names as keys and the description of the attribute as value
+        Features is a list, with each element being another list representing a feature and the changes 
+        in it between the two specifed versions.
+        The length of this list is the same as the one of attributes dictionary
+        The value for an attribute is a tuple of (change_type, old value, new value) in case the change for the
+        attribute is a modification, or (change_type, value), if the change is a removal, addition or
+        unmodified'''
+        return self.connector.treediff(path, _resolveref(refa), _resolveref(refb))
+
     def unstaged(self):
         '''Returns a list of diffEntry with the differences between staging area and working tree'''
         return self.diff(geogig.STAGE_HEAD, geogig.WORK_HEAD);

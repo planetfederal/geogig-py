@@ -5,6 +5,8 @@ TYPE_MODIFIED = "Modified"
 TYPE_ADDED = "Added"
 TYPE_REMOVED = "Removed"
 
+ATTRIBUTE_DIFF_MODIFIED, ATTRIBUTE_DIFF_ADDED, ATTRIBUTE_DIFF_REMOVED, ATTRIBUTE_DIFF_UNCHANGED = ["M", "A", "R", "U"]
+
 class Diffentry(object):
     
     '''A difference between two references for a given path''' 

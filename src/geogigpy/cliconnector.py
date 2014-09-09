@@ -8,11 +8,13 @@ from feature import Feature
 from tree import Tree
 from commit import Commit
 import datetime
-from diff import Diffentry
+from diff import Diffentry, ATTRIBUTE_DIFF_MODIFIED
 from connector import Connector
 from commitish import Commitish
 from geogigpy.geogigexception import GeoGigException, GeoGigConflictException, UnconfiguredUserException
 from geometry import Geometry
+from copy import deepcopy
+from geogigexception import GeoGigException
 
 def _run(command, addcolor = True):         
     command = ['geogig'] + command
@@ -353,6 +355,73 @@ class CLIConnector(Connector):
             if len(tokens) == 4: 
                 stats[tokens[0]] = tuple(int(t) for t in tokens[1:])
         return stats
+
+    def treediff(self, path, refa, refb):
+        attribs = None
+        try:
+            ftypea = self.featuretype(refa, path)
+        except GeoGigException:
+            ftypea = {}
+        try:
+            ftypeb = self.featuretype(refb, path)
+        except GeoGigException:
+            ftypeb = {}
+        attribs = deepcopy(ftypea)
+        attribs.update(ftypeb)   # we assume that there are no repeated attrib names with different type
+        
+        commands = ['diff-tree', refa, refb, "--", path, "--describe"]
+        lines = self.run(commands) 
+        features = []
+        difflines = []
+        i = 0
+        previousLine = None
+        while i < len(lines):
+            line = lines[i]
+            if line == '':
+                if difflines:                
+                    changes = self.difffromstring(difflines, attribs)
+                    features.append(changes)
+                    difflines = []                                    
+            else: 
+                if difflines:
+                    difflines.append(line)
+                    tokens = line.split(" ")
+                    i += 1
+                    difflines.append(lines[i])
+                    if tokens[0] == ATTRIBUTE_DIFF_MODIFIED:
+                        i += 1
+                        difflines.append(lines[i])                        
+                else:
+                    difflines.append(line)
+            i += 1             
+            
+        if difflines:
+            changes = self.difffromstring(difflines, attribs)
+            features.append(changes)
+        return attribs, features
+
+    def difffromstring(self, lines, attribs):
+        i = 1
+        changes = {}
+        while i < len(lines):
+            tokens = lines[i].split(" ")
+            attribute = tokens[1]
+            changeType = tokens[0]
+            i += 1
+            if changeType == ATTRIBUTE_DIFF_MODIFIED:
+                value = self.valuefromstring(lines[i], attribs[attribute])
+                i += 1
+                value2 = self.valuefromstring(lines[i], attribs[attribute])
+                changes[attribute] = (changeType, value, value2)
+            else:
+                value = self.valuefromstring(lines[i], attribs[attribute])
+                changes[attribute] = (changeType, value)
+            i += 1                
+        orderedchanges = []
+        for attrib in attribs:
+            orderedchanges.append(changes[attrib])
+        return orderedchanges
+ 
     
     def importosm(self, osmfile, add = False, mappingfile = None):
         commands = ["osm", "import", osmfile]        
