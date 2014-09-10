@@ -6,4 +6,4 @@ from tree import Tree
 from diff import Diffentry
 from commit import Commit
 
-__version__ = "1.0-SNAPSHOT"    
+__version__ = "1.0"    

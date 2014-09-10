@@ -6,7 +6,7 @@ def read(*rnames):
 
 setup(
     name="geogig-py",
-    version="1.0-SNAPSHOT",
+    version="1.0",
     install_requires=['py4j>=0.8', 'requests>=2.2.1'],
     author="Victor Olaya",
     author_email="volaya@boundlessgeo.com",
@@ -15,7 +15,7 @@ setup(
     # Full list of classifiers can be found at:
     # http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
     ],
     license="BSD",
     keywords="geogig",
