@@ -6,7 +6,7 @@ def read(*rnames):
 
 setup(
     name="geogig-py",
-    version="1.0-SNAPSHOT",
+    version="1.1-SNAPSHOT",
     install_requires=['py4j>=0.8', 'requests>=2.2.1'],
     author="Victor Olaya",
     author_email="volaya@boundlessgeo.com",
