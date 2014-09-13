@@ -5,8 +5,7 @@ import time
 import shutil
 from geogigpy import geogig
 from geogigpy.feature import Feature
-from shapely.geometry import Polygon
-from shapely.geometry.multipolygon import MultiPolygon
+from geogigpy.geometry import Geometry
 from testrepo import testRepo
 
 class GeogigFeatureTest(unittest.TestCase):
@@ -40,7 +39,7 @@ class GeogigFeatureTest(unittest.TestCase):
         self.assertTrue("area" in data)
         self.assertTrue("perimeter" in data)  
         self.assertTrue("the_geom" in data)  
-        self.assertTrue(isinstance(data["the_geom"][0], Polygon))        
+        self.assertTrue(isinstance(data["the_geom"], Geometry))        
         
     def testDiff(self):
         feature = Feature(self.repo, geogig.HEAD, "parks/5")
@@ -75,7 +74,7 @@ class GeogigFeatureTest(unittest.TestCase):
     def testGeom(self):
         feature = Feature(self.repo, geogig.HEAD, "parks/5")
         geom = feature.geom
-        self.assertTrue(isinstance(geom, MultiPolygon)) 
+        self.assertTrue(isinstance(geom, Geometry)) 
         
     def testGeomFieldName(self):
         feature = Feature(self.repo, geogig.HEAD, "parks/5")

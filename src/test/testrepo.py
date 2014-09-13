@@ -34,6 +34,8 @@ def createRepo():
     repo.importshp(path)
     repo.addandcommit("message_6")
     repo.checkout(geogig.MASTER)
+    repo.config(geogig.USER_NAME, "user")
+    repo.config(geogig.USER_EMAIL, "user")
     _repo = repo    
     
 def testRepo():

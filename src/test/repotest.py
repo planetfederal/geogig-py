@@ -54,7 +54,7 @@ class GeogigRepositoryTest(unittest.TestCase):
         commits = self.repo.log()
         self.assertEquals(4, len(commits))        
         self.assertEquals("message_4", commits[0].message)        
-        self.assertEquals("volaya", commits[0].authorname)                
+        self.assertEquals("user", commits[0].authorname)                
         #TODO: add more 
 
     def testLogInBranch(self):
@@ -137,7 +137,7 @@ class GeogigRepositoryTest(unittest.TestCase):
         self.assertTrue("area" in data)
         self.assertTrue("perimeter" in data)
         self.assertTrue("the_geom" in data)        
-        self.assertTrue(isinstance(data["the_geom"][0], MultiPolygon))
+        self.assertTrue(isinstance(data["the_geom"][0], Geometry))
 
     def testFeatureDataNonExistentFeature(self):  
         return       
@@ -498,7 +498,7 @@ class GeogigRepositoryTest(unittest.TestCase):
        
     def testShow(self):
         text = self.repo.show(geogig.HEAD)     
-        self.assertTrue('volaya' in text)
+        self.assertTrue('user' in text)
         self.assertTrue('message_4' in text)
         
     def testPull(self):
