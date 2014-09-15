@@ -7,10 +7,10 @@ from geogigpy.diff import TYPE_MODIFIED
 from geogigpy.feature import Feature
 import unittest
 from geogigpy import geogig
-from shapely.geometry import MultiPolygon
 from geogigpy.osmmapping import OSMMapping, OSMMappingRule
 import datetime
 from testrepo import testRepo
+from geogigpy.geometry import Geometry
 
 class GeogigRepositoryTest(unittest.TestCase):
         

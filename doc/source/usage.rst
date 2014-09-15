@@ -89,8 +89,6 @@ And we can see the attributes of a feature.
 	>>> print tree[0].features[0].attributes        	
 	{'open': True, 'name': 'Central park', 'area': 23876.5, "the_geom": MULTIPOLYGON (((-122.87290 42.335, ...
 
-Geometries are Shapely objects, so you can use methods from the Shapely library to operate on them.
-
 You can even add new elements to the repository, or modify existing ones.
 
 ::
