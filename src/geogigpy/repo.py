@@ -125,12 +125,14 @@ class Repository(object):
         return  self.head.id == self.head.ref
     
        
-    def synced(self, branch = geogig.HEAD):
+    def synced(self, branch = geogig.HEAD, credentials = None):
         '''
         Returns a tuple with number of (ahead, behind) commits between this repo and a remote
         It uses the passed branch or, if not passed, the current branch
         If the repository is headless, or if not remote is defined, it will throw an exception 
         It uses the "origin" remote if it exists, otherwise it uses the first remote available.
+        If the remote requires authentication, a tuple of (username,password) must be passed
+        in the credentials parameter
         '''            
         if (branch == geogig.HEAD and self.isdetached()):
             raise GeoGigException("Cannot use current branch. The repository has a detached HEAD")
@@ -147,7 +149,7 @@ class Repository(object):
             raise GeoGigException("No remotes defined")
                 
         if isremoteurl(remote):            
-            repo = Repository(remote, GeoGigServerConnector())
+            repo = Repository(remote, GeoGigServerConnector(credentials))
         else:
             conn = self.connector.__class__()            
             repo = Repository(remote[len("file:/"):], conn)
@@ -157,7 +159,10 @@ class Repository(object):
         if remotetip == localtip:
             return 0,0
         
-        trackedbranchhead = self.revparse("refs/remotes/" + remotename + "/" + branch)
+        if remotetip == geogig.NULL_ID:
+            trackedbranchhead = remotetip
+        else:
+            trackedbranchhead = self.revparse("refs/remotes/" + remotename + "/" + branch)
         
         log = self.log(branch, trackedbranchhead) 
         push = len(log)
