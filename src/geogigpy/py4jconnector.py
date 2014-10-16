@@ -6,6 +6,7 @@ import subprocess
 import os
 import time
 import gc
+import re
 import signal
 
 _proc = None
@@ -52,7 +53,7 @@ def _runGateway(_commands, url, addcolor = True):
     returncode = _javaGateway().entry_point.runCommand(url, array)
     end = time.clock()
     diff = end - start
-    _logger.debug("Executed " + command  + "in " + str(diff) + " millisecs")
+    _logger.debug("Executed " + hidePassword(command)  + " in " + str(diff) + " millisecs")
     output = [""]    
     page = _javaGateway().entry_point.nextOutputPage()
     while page is not None:
@@ -63,11 +64,16 @@ def _runGateway(_commands, url, addcolor = True):
     output = [s.strip("\r\n") for s in output]        
     if returncode:                             
         errormsg = "\n".join(output)
-        _logger.error("Error running command '%s': %s" % (command, errormsg))
+        _logger.error("Error running command '%s': %s" % (hidePassword(command), errormsg))
         raise GeoGigException("\n".join(output))
          
     return output 
 
+def hidePassword(command):
+    p = re.compile(r"--password \S*")
+    print command
+    print p.findall(command)
+    return p.sub("--password [PASSWORD_HIDDEN] ", command) 
 
 def removeProgressListener():
     global _gateway    
@@ -86,7 +92,7 @@ def setProgressListener(progressFunc, progressTextFunc):
             self.progressTextFunc(s)
 
         class Java:
-            implements = ['org.geogig.cli.GeoGigPy4JProgressListener']
+            implements = ['org.locationtech.geogig.cli.GeoGigPy4JProgressListener']
     
     _javaGateway().entry_point.setProgressListener(Listener(progressFunc, progressTextFunc))
     
