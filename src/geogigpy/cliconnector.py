@@ -506,7 +506,7 @@ class CLIConnector(Connector):
         if host is not None:
             commands.extend(["--host", host])
         if idAttribute is not None:
-            commands.extend(["--host", host])            
+            commands.extend(["--fid-attribute", idAttribute])            
         if add:
             commands.append("--add")
         if force:
