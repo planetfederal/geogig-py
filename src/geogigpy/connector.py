@@ -112,7 +112,7 @@ class Connector(object):
     def importshp(self, shapefile, add, dest, idAttribute):
         raise NotImplementedError
     
-    def importpg(self, database, user, password, table, schema, host, port, add, dest):
+    def importpg(self, database, user, password, table, schema, host, port, add, dest, force, idAttribute):
         raise NotImplementedError
     
     def importsl(self, database, table, add, dest):         

@@ -437,12 +437,13 @@ class Repository(object):
     def importshp(self, shpfile, add = False, dest = None, idAttribute = None, force=False):
         self.connector.importshp(shpfile, add, dest, idAttribute, force)
         
-    def importpg(self, database, user = None, password = None, table = None, 
-                 schema = None, host = None, port = None, add = False, dest = None, force = False):
-        self.connector.importpg(database, user, password, table, schema, host, port, add, dest, force)                     
+    def importpg(self, database, user = None, password = None, table = None, schema = None, 
+                 host = None, port = None, add = False, dest = None, force = False, idAttribute = None):
+        self.connector.importpg(database, user, password, table,
+                                schema, host, port, add, dest, force, idAttribute)                     
 
     def importsl(self, database, table, add = False, dest = None):   
-        self.connector.importpg(database, table, add, dest)
+        self.connector.importsl(database, table, add, dest)
         
     def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
         '''Exports the differences in a given tree between to commits, creating a shapefile 

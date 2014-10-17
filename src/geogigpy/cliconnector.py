@@ -487,7 +487,7 @@ class CLIConnector(Connector):
     
     def importpg(self, database, user = None, password = None, table = None, 
                  schema = None, host = None, port = None, add = False, dest = None,
-                 force = False):
+                 force = False, idAttribute = None):
         commands = ["pg", "import", "--database",database]
         if user is not None:
             commands.extend(["--user", user])
@@ -505,6 +505,8 @@ class CLIConnector(Connector):
             commands.append("--all")
         if host is not None:
             commands.extend(["--host", host])
+        if idAttribute is not None:
+            commands.extend(["--host", host])            
         if add:
             commands.append("--add")
         if force:
