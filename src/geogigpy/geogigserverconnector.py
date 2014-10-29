@@ -51,7 +51,6 @@ class GeoGigServerConnector(Connector):
             id = root.iter('objectId').next().text
             return id   
         except Exception, e:
-            print traceback.format_exc()
             raise GeoGigException("Reference %s not found" % rev)
         
     @staticmethod

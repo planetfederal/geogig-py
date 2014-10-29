@@ -321,7 +321,6 @@ class CLIConnector(Connector):
         try:
             self.run(commands)
         except GeoGigException, e:
-            print "ERROR" + e.args[0]
             if "user.name not found" in e.args[0] or "user.email not found" in e.args[0]: 
                 raise UnconfiguredUserException()
             else:

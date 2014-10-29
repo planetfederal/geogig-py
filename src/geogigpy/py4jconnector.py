@@ -71,8 +71,6 @@ def _runGateway(_commands, url, addcolor = True):
 
 def hidePassword(command):
     p = re.compile(r"--password \S*")
-    print command
-    print p.findall(command)
     return p.sub("--password [PASSWORD_HIDDEN] ", command) 
 
 def removeProgressListener():
@@ -104,7 +102,6 @@ def geogigVersion():
         sha = out[5].split(":")[1]
         return "-".join([version, sha])
     except Exception, e:
-        print e
         return "Not available"
   
         
@@ -117,7 +114,6 @@ class Py4JCLIConnector(CLIConnector):
     def __init__(self):
         self.commandslog = []
         
-    
     @staticmethod
     def clone(url, dest, username = None, password = None):            
         commands = ['clone', url, dest]  
