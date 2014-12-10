@@ -160,14 +160,15 @@ class Repository(object):
             return 0,0
         
         if remotetip == geogig.NULL_ID:
-            trackedbranchhead = remotetip
+            log = self.log(branch) 
+            push = len(log)
+            pull = 0
         else:
-            trackedbranchhead = self.revparse("refs/remotes/" + remotename + "/" + branch)
-        
-        log = self.log(branch, trackedbranchhead) 
-        push = len(log)
-        log = repo.log(branch, trackedbranchhead)
-        pull = len(log)
+            trackedbranchhead = self.revparse("refs/remotes/" + remotename + "/" + branch)        
+            log = self.log(branch, trackedbranchhead) 
+            push = len(log)
+            log = repo.log(branch, trackedbranchhead)
+            pull = len(log)
         return push, pull   
         
         
