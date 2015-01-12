@@ -196,8 +196,12 @@ class CLIConnector(Connector):
         commits = []             
         param = tip if sincecommit is None else (sincecommit + ".." + tip)   
         commands = ['rev-list', param]        
-        if path is not None:
-            commands.extend(["-p", path])
+        if path:
+            if isinstance(path, list):
+                commands.append("-p")
+                commands.extend(path)
+            else:
+                commands.extend(["-p", path])
         if until is not None:
             commands.extend(["--until", until])
         if since is not None:
