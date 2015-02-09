@@ -621,7 +621,7 @@ class Repository(object):
         '''
         if branch == None and self.isdetached():
             raise GeoGigException("HEAD is detached. Cannot pull")
-        branch = branch or self.head
+        branch = branch or self.head.ref
         self.connector.pull(remote, branch, rebase)
         self.cleancache()
 
