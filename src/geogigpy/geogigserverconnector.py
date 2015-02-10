@@ -4,7 +4,8 @@ from connector import Connector
 from commit import Commit
 import xml.etree.ElementTree as ET
 from geogigexception import GeoGigException
-import traceback
+import geogig
+
 
 SHA_MATCHER = re.compile(r"\b([a-f0-9]{40})\b")
 
@@ -29,7 +30,7 @@ class GeoGigServerConnector(Connector):
         commits = r.json()['commits']
         log = []
         for c in commits:
-            commit = Commit(self.repo, c['sha'], None, c['parent'], c['[message]'], 
+            commit = Commit(self.repo, c['sha'], None, c.get('parent', geogig.NULL_ID), c['message'],
                             c['author']['name'], c['author']['date'], c['committer']['name'], c['committer']['date'])
             log.append(commit)
         return log
