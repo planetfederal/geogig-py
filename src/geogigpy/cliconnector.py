@@ -584,7 +584,9 @@ class CLIConnector(Connector):
             except StopIteration:
                 return attributes 
         
-    def valuefromstring(self, value, valuetype):        
+    def valuefromstring(self, value, valuetype):  
+        if value == "[NULL]":
+            return None      
         tokens = valuetype.split(" ")        
         try:
             if valuetype == "BOOLEAN":
