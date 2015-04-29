@@ -249,9 +249,9 @@ class Repository(object):
 
 
 
-    def deletebranch(self, name):
+    def deletebranch(self, name, remote=False):
         '''Deletes the passed branch'''
-        self.connector.deletebranch(name)
+        self.connector.deletebranch(name, remote)
 
     def createtag(self, ref, name, message):
         '''Creates a new tag, with the passed message'''

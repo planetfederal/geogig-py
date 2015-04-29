@@ -302,8 +302,12 @@ class CLIConnector(Connector):
             commands.append('-c')            
         self.run(commands)
 
-    def deletebranch(self, name):        
-        self.run(['branch', '-d', name])     
+    def deletebranch(self, name, remote):
+        commands = ['branch', '-d']
+        if remote:
+            commands.append('-r')
+        commands.append(name)
+        self.run(commands)
 
     def createtag(self, ref, name, message):        
         self.run(['tag', name, ref, '-m', message])
