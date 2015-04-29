@@ -703,7 +703,7 @@ class CLIConnector(Connector):
             commands.append("--no-commit")
         elif message is not None:
             commands.append("-m")
-            commands.apend(message)
+            commands.append(message)
         try:
             self.run(commands) 
         except GeoGigException, e:            
