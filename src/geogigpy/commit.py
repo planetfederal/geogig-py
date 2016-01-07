@@ -6,13 +6,13 @@ from utils import prettydate
 
 
 class Commit(Commitish):
-    
+
     _commitcache = {}
-    
+
     ''' A geogig commit'''
-    
+
     def __init__(self, repo, commitid, treeid, parents, message, authorname, authordate, committername, committerdate):
-        Commitish.__init__(self, repo, commitid)        
+        Commitish.__init__(self, repo, commitid)
         self.repo = repo
         self.commitid = commitid
         self.treeid = treeid
@@ -22,8 +22,8 @@ class Commit(Commitish):
         self.authordate = authordate
         self.committername = committername
         self.committerdate = committerdate
-        
-    @staticmethod    
+
+    @staticmethod
     def fromref(repo, ref):
         '''
         Returns a Commit corresponding to a given id.
@@ -32,17 +32,17 @@ class Commit(Commitish):
         if ref == NULL_ID:
             return Commitish(repo, NULL_ID)
         else:
-            if (repo.url, ref) not in Commit._commitcache:                                
-                id = repo.revparse(ref)
-                log = repo.log(id, n = 1)
-                Commit._commitcache[(repo.url, ref)] = log[0]   
-            return Commit._commitcache[(repo.url, ref)]     
-        
+            cid = repo.revparse(ref)
+            if (repo.url, cid) not in Commit._commitcache:
+                log = repo.log(cid, n = 1)
+                Commit._commitcache[(repo.url, cid)] = log[0]
+            return Commit._commitcache[(repo.url, cid)]
+
     @property
     def parents(self):
         '''Returns a list of commits with commits representing the parents of this commit'''
         commits =  [self.fromref(self.repo, p) for p in self._parents]
-        return commits  
+        return commits
 
     @property
     def parent(self):
@@ -57,37 +57,37 @@ class Commit(Commitish):
         if self._diff is None:
             self._diff = self.repo.diff(self.parent.ref, self.ref, path)
         return self._diff
-    
+
     def difftreestats(self):
         '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
         in the form  (added, deleted, modified) corresponding to changes made to that path'''
         return self.repo.difftreestats(self.parent.ref, self.ref)
-    
+
     def humantext(self):
         '''Returns a nice human-readable description of the commit'''
-        headid = self.repo.revparse(self.repo.head.ref) 
+        headid = self.repo.revparse(self.repo.head.ref)
         if headid == self.id:
-            return "Current last commit"   
+            return "Current last commit"
         epoch = time.mktime(self.committerdate.timetuple())
         offset = datetime.datetime.fromtimestamp (epoch) - datetime.datetime.utcfromtimestamp (epoch)
-        d = self.committerdate + offset     
+        d = self.committerdate + offset
         return self.message + d.strftime(" (%m/%d/%y %H:%M)")
-    
+
     def committerprettydate(self):
         return prettydate(self.committerdate)
-    
+
     def authorprettydate(self):
         return prettydate(self.authordate)
-    
+
     def __str__(self):
         try:
-            msg = unicode(self.message, errors = "ignore") 
+            msg = unicode(self.message, errors = "ignore")
         except TypeError:
-            msg = self.message        
+            msg = self.message
         s = "id " + self.commitid + "\n"
         s += "parents " + str(self._parents) + "\n"
         s += "tree " + self.treeid + "\n"
         s += "author " + self.authorname + " " + str(self.authordate) + "\n"
-        s += "message " + msg + "\n" 
-        
+        s += "message " + msg + "\n"
+
         return s
