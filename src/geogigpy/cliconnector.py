@@ -555,11 +555,13 @@ class CLIConnector(Connector):
         refandpath = ref + ":" + path
         self.run(["shp", "export", refandpath, shapefile, "-o", "--defaulttype"])
 
-    def exportgeopkg(self, ref, path, geopkg, interchange = True):
+    def exportgeopkg(self, ref, path, geopkg, interchange = True, overwrite = False):
         refandpath = ref + ":" + path
         commands = ["geopkg", "export", refandpath, path, "-D", geopkg]
         if interchange:
             commands.append("-i")
+        if overwrite:
+            commands.append("-o")
         self.run(commands)
 
 

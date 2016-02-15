@@ -441,8 +441,8 @@ class Repository(object):
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None, overwrite = False):
         self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port, overwrite)
 
-    def exportgeopkg(self, ref, path, geopkg, interchange = True):
-        self.connector.exportgeopkg(_resolveref(ref), path, geopkg, interchange)
+    def exportgeopkg(self, ref, path, geopkg, interchange = True, overwrite = False):
+        self.connector.exportgeopkg(_resolveref(ref), path, geopkg, interchange, overwrite)
 
     def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None, force = False):
         self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName, force)
