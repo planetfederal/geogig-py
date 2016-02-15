@@ -450,6 +450,9 @@ class Repository(object):
     def importshp(self, shpfile, add = False, dest = None, idAttribute = None, force = False):
         self.connector.importshp(shpfile, add, dest, idAttribute, force)
 
+    def importgeopkg(self, geopkg, table, dest):
+        self.connector.importgeopkg(geopkg, table, dest)
+
     def importpg(self, database, user = None, password = None, table = None, schema = None,
                  host = None, port = None, add = False, dest = None, force = False, idAttribute = None):
         self.connector.importpg(database, user, password, table,

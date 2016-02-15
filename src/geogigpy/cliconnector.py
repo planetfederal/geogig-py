@@ -529,6 +529,10 @@ class CLIConnector(Connector):
             commands.append("--add")
         self.run(commands)
 
+    def importgeopkg(self, geopkg, table, dest):
+        commands = ["geopkg", "import", "--database", geopkg, "--table", table, "--dest", dest]
+        self.run(commands)
+
     def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None,  overwrite = False):
         table = table or path
         refandpath = ref + ":" + path
