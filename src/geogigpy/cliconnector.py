@@ -477,7 +477,7 @@ class CLIConnector(Connector):
             commands.append("--force-featuretype")
         self.run(commands)
 
-    def importshp(self, shapefile, add=False, dest=None, idAttribute=None, force=False):
+    def importshp(self, shapefile, add=False, dest=None, idAttribute=None, force=False, charset=None):
         commands = ["shp", "import", shapefile]
         if dest is not None:
             commands.extend(["--dest", dest])
@@ -487,6 +487,8 @@ class CLIConnector(Connector):
             commands.append("--add")
         if force:
             commands.append("--force-featuretype")
+        if charset is not None:
+            commands.extend(["--charset", charset])
         self.run(commands)
 
     def importpg(self, database, user=None, password=None, table=None,
