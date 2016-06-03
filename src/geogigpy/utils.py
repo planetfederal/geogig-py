@@ -2,6 +2,7 @@ import os
 import datetime
 import time
 
+
 def mkdir(newdir):
     newdir = newdir.strip('\n\r ')
     if os.path.isdir(newdir):
@@ -13,8 +14,9 @@ def mkdir(newdir):
         if tail:
             os.mkdir(newdir)
 
+
 def prettydate(d):
-    '''Formats a utc date''' 
+    '''Formats a utc date'''
     diff = datetime.datetime.utcnow() - d
     s = ''
     secs = diff.seconds
@@ -25,14 +27,14 @@ def prettydate(d):
     elif secs < 120:
         s = "1 minute ago"
     elif secs < 3600:
-        s = "{} minutes ago".format(secs/60)
+        s = "{} minutes ago".format(secs / 60)
     elif secs < 7200:
         s = "1 hour ago"
     else:
-        s = '{} hours ago'.format(secs/3600)
-    
+        s = '{} hours ago'.format(secs / 3600)
+
     epoch = time.mktime(d.timetuple())
-    offset = datetime.datetime.fromtimestamp (epoch) - datetime.datetime.utcfromtimestamp (epoch)
-    local = d + offset    
+    offset = datetime.datetime.fromtimestamp(epoch) - datetime.datetime.utcfromtimestamp(epoch)
+    local = d + offset
     s += local.strftime(' [%x %H:%M]')
-    return s 
+    return s

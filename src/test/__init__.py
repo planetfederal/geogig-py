@@ -7,8 +7,9 @@ from commitishtest import GeogigCommitishTest
 from committest import GeogigCommitTest
 from difftest import GeogigDiffTest
 
+
 def suite():
-    suite = unittest.makeSuite(GeogigTreeTest, 'test')    
+    suite = unittest.makeSuite(GeogigTreeTest, 'test')
     suite.addTests(unittest.makeSuite(GeogigRepositoryTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogigFeatureTest, 'test'))
     suite.addTests(unittest.makeSuite(GeogigCommitishTest, 'test'))

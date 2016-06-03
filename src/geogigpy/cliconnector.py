@@ -16,7 +16,8 @@ from geometry import Geometry
 from copy import deepcopy
 from geogigexception import GeoGigException
 
-def _run(command, addcolor = True):
+
+def _run(command, addcolor=True):
     command = ['geogig'] + command
     if addcolor:
         command.extend(["--color", "never"])
@@ -25,7 +26,7 @@ def _run(command, addcolor = True):
         command = commandstr
     output = []
     proc = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                            stdin=subprocess.PIPE,stderr=subprocess.STDOUT, universal_newlines=True)
+                            stdin=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
     for line in iter(proc.stdout.readline, ""):
         line = line.strip("\n")
         output.append(line)
@@ -51,7 +52,7 @@ class CLIConnector(Connector):
         return datetime.datetime.fromtimestamp(os.stat(os.path.join(self.repo.url, ".geogig")).st_ctime)
 
     @staticmethod
-    def clone(url, dest, username = None, password = None):
+    def clone(url, dest, username=None, password=None):
         commands = ['clone', url, dest]
         if username is not None and password is not None:
             commands.extend(["--username", username, "--password", password])
@@ -88,7 +89,7 @@ class CLIConnector(Connector):
     def isrebasing(self):
         self.checkisrepo()
         headfile = os.path.join(self.repo.url, '.geogig', 'ORIG_HEAD')
-        branchfile =  os.path.join(self.repo.url, '.geogig', 'rebase-apply', 'branch')
+        branchfile = os.path.join(self.repo.url, '.geogig', 'rebase-apply', 'branch')
         return os.path.exists(headfile) and os.path.exists(branchfile)
 
     def ismerging(self):
@@ -110,8 +111,7 @@ class CLIConnector(Connector):
         if not os.path.exists(os.path.join(self.repo.url, '.geogig')):
             raise GeoGigException("Not a valid GeoGig repository: " + self.repo.url)
 
-
-    def children(self, ref = geogig.HEAD, path = None, recursive = False):
+    def children(self, ref=geogig.HEAD, path=None, recursive=False):
         children = []
         if path is None:
             fullref = ref
@@ -128,9 +128,9 @@ class CLIConnector(Connector):
                     children.append(Feature(self.repo, ref, tokens[3]))
                 elif tokens[1] == "tree":
                     try:
-                       size = int(tokens[5])
+                        size = int(tokens[5])
                     except:
-                       size = None
+                        size = None
                     children.append(Tree(self.repo, ref, tokens[3], size))
         return children
 
@@ -156,10 +156,10 @@ class CLIConnector(Connector):
                         parents = [t for t in tokens[1:] if t != ""]
                 elif tokens[0] == 'author':
                     author = " ".join(tokens[1:-3])
-                    authordate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1]))//1000)
+                    authordate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1])) // 1000)
                 elif tokens[0] == 'committer':
                     committer = tokens[1]
-                    committerdate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1]))//1000)
+                    committerdate = datetime.datetime.fromtimestamp((int(tokens[-2]) - int(tokens[-1])) // 1000)
                 elif tokens[0] == 'message':
                     message = True
 
@@ -189,10 +189,10 @@ class CLIConnector(Connector):
             if len(tokens) != 3:
                 continue
             if tokens[0] not in remotes:
-                remotes[tokens[0]] =  tokens[1]
+                remotes[tokens[0]] = tokens[1]
         return remotes
 
-    def log(self, tip, sincecommit = None, until = None, since = None, path = None, n = None):
+    def log(self, tip, sincecommit=None, until=None, since=None, path=None, n=None):
         commits = []
         param = tip if sincecommit is None else (sincecommit + ".." + tip)
         commands = ['rev-list', param]
@@ -211,7 +211,7 @@ class CLIConnector(Connector):
         try:
             output = self.run(commands)
         except GeoGigException, e:
-            if "HEAD does not resolve" in e.args[0]: #empty repo
+            if "HEAD does not resolve" in e.args[0]:  # empty repo
                 return []
             else:
                 raise e
@@ -232,7 +232,7 @@ class CLIConnector(Connector):
         return commits
 
     def conflicts(self):
-        conflictsfile = os.path.join(self.repo.url, ".geogig","conflicts")
+        conflictsfile = os.path.join(self.repo.url, ".geogig", "conflicts")
         try:
             if os.path.getsize(conflictsfile) == 0:
                 return {}
@@ -246,10 +246,10 @@ class CLIConnector(Connector):
             if line.startswith("No elements need merging"):
                 return {}
             tokens = line.split(" ")
-            _conflicts[tokens[0]] = (tokens[1][:40], tokens[2][:40], tokens [3][:40])
+            _conflicts[tokens[0]] = (tokens[1][:40], tokens[2][:40], tokens[3][:40])
         return _conflicts
 
-    def solveconflicts(self, paths, version = geogig.OURS):
+    def solveconflicts(self, paths, version=geogig.OURS):
         commands = ["checkout"]
         if version == geogig.OURS:
             commands.append("--ours")
@@ -262,7 +262,7 @@ class CLIConnector(Connector):
         self.run(commands)
         self.add(paths)
 
-    def checkout(self, ref, paths = None, force = False):
+    def checkout(self, ref, paths=None, force=False):
         commands = ['checkout', ref]
         if paths is not None and len(paths) > 0:
             commands.append("-p")
@@ -271,11 +271,11 @@ class CLIConnector(Connector):
             commands.append("--force")
         self.run(commands)
 
-    def reset(self, ref, mode = 'hard', path = None):
+    def reset(self, ref, mode='hard', path=None):
         if path is None:
             self.run(['reset', ref, "--" + mode])
         else:
-            command =['reset', ref, '-p']
+            command = ['reset', ref, '-p']
             command.append(path)
             self.run(command)
 
@@ -294,7 +294,7 @@ class CLIConnector(Connector):
     def tags(self):
         return self._refs("refs/tags/")
 
-    def createbranch(self, ref, name, force = False, checkout = False):
+    def createbranch(self, ref, name, force=False, checkout=False):
         commands = ['branch', name, ref]
         if force:
             commands.append('-f')
@@ -315,14 +315,14 @@ class CLIConnector(Connector):
     def deletetag(self, name):
         self.run(['tag', '-d', name])
 
-    def add(self, paths = []):
+    def add(self, paths=[]):
         if paths:
             for path in paths:
                 self.run(['add', path])
         else:
             self.run(['add'])
 
-    def commit(self, message, paths = []):
+    def commit(self, message, paths=[]):
         commands = ['commit', '-m']
         commands.append('"%s"' % message)
         commands.extend(paths)
@@ -334,7 +334,6 @@ class CLIConnector(Connector):
             else:
                 raise e
 
-
     def diffentryFromString(self, oldcommitref, newcommitref, line):
         tokens = line.strip().split(" ")
         path = " ".join(tokens[0:-2])
@@ -342,8 +341,7 @@ class CLIConnector(Connector):
         newref = tokens[-1]
         return Diffentry(self.repo, oldcommitref, newcommitref, oldref, newref, path)
 
-
-    def diff(self, refa, refb, path = None):
+    def diff(self, refa, refb, path=None):
         diffs = []
         commands = ['diff-tree', refa, refb]
         if path is not None:
@@ -429,8 +427,7 @@ class CLIConnector(Connector):
             orderedchanges.append(changes[attrib])
         return orderedchanges
 
-
-    def importosm(self, osmfile, add = False, mappingfile = None):
+    def importosm(self, osmfile, add=False, mappingfile=None):
         commands = ["osm", "import", osmfile]
         if add:
             commands.extend(["--add"])
@@ -438,15 +435,15 @@ class CLIConnector(Connector):
             commands.extend(["--mapping", mappingfile])
         self.run(commands)
 
-    def exportosm(self, osmfile, ref = None, bbox = None):
+    def exportosm(self, osmfile, ref=None, bbox=None):
         commands = ["osm", "export", osmfile]
         if ref is not None:
             commands.append(ref)
         if bbox is not None:
             commands.extend(bbox)
 
-    def exportosmchangeset(self, osmfile, changesetid = None, refa = None, refb = None):
-        commands = ["osm", "create-changeset", "-f" , osmfile]
+    def exportosmchangeset(self, osmfile, changesetid=None, refa=None, refb=None):
+        commands = ["osm", "create-changeset", "-f", osmfile]
         if refa is not None:
             commands.append(refa)
         if refb is not None:
@@ -455,7 +452,7 @@ class CLIConnector(Connector):
             commands.extend(["--id", changesetid])
         self.run(commands)
 
-    def downloadosm(self, osmurl, bbox, mappingfile = None):
+    def downloadosm(self, osmurl, bbox, mappingfile=None):
         commands = ["osm", "download", osmurl, "--bbox"]
         commands.extend([str(c) for c in bbox])
         if mappingfile is not None:
@@ -466,7 +463,7 @@ class CLIConnector(Connector):
         commands = ["osm", "map", mappingfile]
         self.run(commands)
 
-    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None, force=False):
+    def importgeojson(self, geojsonfile, add=False, dest=None, idAttribute=None, geomName=None, force=False):
         commands = ["geojson", "import", geojsonfile]
         if dest is not None:
             commands.extend(["--dest", dest])
@@ -480,7 +477,7 @@ class CLIConnector(Connector):
             commands.append("--force-featuretype")
         self.run(commands)
 
-    def importshp(self, shapefile, add = False, dest = None, idAttribute = None, force=False):
+    def importshp(self, shapefile, add=False, dest=None, idAttribute=None, force=False):
         commands = ["shp", "import", shapefile]
         if dest is not None:
             commands.extend(["--dest", dest])
@@ -492,10 +489,10 @@ class CLIConnector(Connector):
             commands.append("--force-featuretype")
         self.run(commands)
 
-    def importpg(self, database, user = None, password = None, table = None,
-                 schema = None, host = None, port = None, add = False, dest = None,
-                 force = False, idAttribute = None):
-        commands = ["pg", "import", "--database",database]
+    def importpg(self, database, user=None, password=None, table=None,
+                 schema=None, host=None, port=None, add=False, dest=None,
+                 force=False, idAttribute=None):
+        commands = ["pg", "import", "--database", database]
         if user is not None:
             commands.extend(["--user", user])
         if password is not None:
@@ -520,8 +517,8 @@ class CLIConnector(Connector):
             commands.append("--force-featuretype")
         self.run(commands)
 
-    def importsl(self, database, table, add = False, dest = None):
-        commands = ["sl", "import", "--database",database]
+    def importsl(self, database, table, add=False, dest=None):
+        commands = ["sl", "import", "--database", database]
         if dest is not None:
             commands.extend(["--dest", dest])
         commands.extend(["--table", table])
@@ -533,7 +530,7 @@ class CLIConnector(Connector):
         commands = ["geopkg", "import", "--database", geopkg, "--table", table, "--dest", dest]
         self.run(commands)
 
-    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None,  overwrite = False):
+    def exportpg(self, ref, path, table, database, user, password=None, schema=None, host=None, port=None, overwrite=False):
         table = table or path
         refandpath = ref + ":" + path
         commands = ["pg", "export", refandpath, table, "--database", database]
@@ -555,7 +552,7 @@ class CLIConnector(Connector):
         refandpath = ref + ":" + path
         self.run(["shp", "export", refandpath, shapefile, "-o", "--defaulttype"])
 
-    def exportgeopkg(self, ref, path, geopkg, interchange = True, overwrite = False):
+    def exportgeopkg(self, ref, path, geopkg, interchange=True, overwrite=False):
         refandpath = ref + ":" + path
         commands = ["geopkg", "export", refandpath, path, "-D", geopkg]
         if interchange:
@@ -564,16 +561,15 @@ class CLIConnector(Connector):
             commands.append("-o")
         self.run(commands)
 
-
-    def exportsl(self, ref, path, database, user = None, table = None):
+    def exportsl(self, ref, path, database, user=None, table=None):
         table = table or path
         refandpath = ref + ":" + path
-        commands = ["sl", "export", refandpath,  "--database", database, path]
+        commands = ["sl", "export", refandpath, "--database", database, path]
         if user is not None:
             commands.extend(["--user", user])
         self.run(commands)
 
-    def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
+    def exportdiffs(self, commit1, commit2, path, filepath, old=False, overwrite=False):
         commands = ["shp", "export-diff", commit1, commit2, path, filepath]
         if old:
             commands.append("--old")
@@ -609,11 +605,11 @@ class CLIConnector(Connector):
         try:
             if valuetype == "BOOLEAN":
                 return str(value).lower() == "true"
-            elif valuetype in ["BYTE","SHORT","INTEGER","LONG"]:
+            elif valuetype in ["BYTE", "SHORT", "INTEGER", "LONG"]:
                 return int(value)
-            elif valuetype in ["FLOAT","DOUBLE"]:
+            elif valuetype in ["FLOAT", "DOUBLE"]:
                 return float(value)
-            elif (valuetype in ["POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON"]
+            elif (valuetype in ["POINT", "LINESTRING", "POLYGON", "MULTIPOINT", "MULTILINESTRING", "MULTIPOLYGON"]
                     or len(tokens) > 1):
                 crs = " ".join(tokens[1:]) if len(tokens) > 1 else None
                 return Geometry(value, crs)
@@ -625,7 +621,7 @@ class CLIConnector(Connector):
     def featuresdata(self, refs):
         features = {}
         commands = ["show", "--raw"]
-        commands.extend(refs);
+        commands.extend(refs)
         output = self.run(commands)
         iterator = iter(output)
         lines = []
@@ -640,7 +636,7 @@ class CLIConnector(Connector):
                 else:
                     if name is None:
                         name = line
-                        iterator.next() #consume id line
+                        iterator.next()  # consume id line
                     else:
                         lines.append(line)
             except StopIteration:
@@ -673,9 +669,9 @@ class CLIConnector(Connector):
             if data2 is None:
                 return {}
             else:
-                return dict(( (k, (None, v[0])) for k,v in data2.iteritems() ))
+                return dict(((k, (None, v[0])) for k, v in data2.iteritems()))
         elif data2 is None:
-            return dict(( (k, (v[0], None)) for k,v in data.iteritems() ))
+            return dict(((k, (v[0], None)) for k, v in data.iteritems()))
 
         diffs = {}
         for attr in data:
@@ -684,7 +680,7 @@ class CLIConnector(Connector):
                 v2 = data2[attr][0]
                 equal = v == v2
                 if not equal:
-                    diffs[attr] =(data[attr][0], data2[attr][0])
+                    diffs[attr] = (data[attr][0], data2[attr][0])
             else:
                 diffs[attr] = (data[attr][0], None)
         for attr in data2:
@@ -701,7 +697,7 @@ class CLIConnector(Connector):
             value = " ".join(tokens[6:])
             commitid = tokens[1]
             authorname = tokens[2]
-            attributes[name]=(value, commitid, authorname)
+            attributes[name] = (value, commitid, authorname)
         return attributes
 
     def commonancestor(self, refa, refb):
@@ -715,7 +711,7 @@ class CLIConnector(Connector):
             else:
                 raise e
 
-    def merge (self, ref, nocommit = False, message = None):
+    def merge(self, ref, nocommit=False, message=None):
         commands = ["merge", ref]
         if nocommit:
             commands.append("--no-commit")
@@ -729,7 +725,6 @@ class CLIConnector(Connector):
                 raise GeoGigConflictException(e.args[0])
             else:
                 raise e
-
 
     def rebase(self, commitish):
         commands = ["rebase", commitish]
@@ -750,7 +745,7 @@ class CLIConnector(Connector):
 
     def abort(self):
         if self.isrebasing():
-            commands=["rebase", "--abort"]
+            commands = ["rebase", "--abort"]
             self.run(commands)
         elif self.ismerging():
             self.reset(geogig.HEAD)
@@ -759,11 +754,12 @@ class CLIConnector(Connector):
         commands = ["cherry-pick", commitish]
         self.run(commands)
 
-    def init(self, initParams = None):
-        if initParams is None: initParams = {}
+    def init(self, initParams=None):
+        if initParams is None:
+            initParams = {}
         commands = ["init"]
         if initParams is not None:
-            commands.append(",".join([k + "=" + v for k,v in initParams.iteritems()]))
+            commands.append(",".join([k + "=" + v for k, v in initParams.iteritems()]))
         self.run(commands)
 
     def insertfeatures(self, features):
@@ -773,9 +769,9 @@ class CLIConnector(Connector):
             for attrName, attrValue in attrs.iteritems():
                 if attrValue is not None:
                     s += attrName + "\t" + _tostr(attrValue) + "\n"
-            s +="\n"
+            s += "\n"
         try:
-            f = tempfile.NamedTemporaryFile(delete = False)
+            f = tempfile.NamedTemporaryFile(delete=False)
             f.write(s)
             f.close()
             commands = ["insert", "-f", f.name]
@@ -783,11 +779,11 @@ class CLIConnector(Connector):
         finally:
             f.close()
             try:
-                pass#os.remove(f.name)
+                pass  # os.remove(f.name)
             except:
                 pass
 
-    def removepaths(self, paths, recursive = False):
+    def removepaths(self, paths, recursive=False):
         paths.insert(0, "rm")
         if recursive:
             paths.append("-r")
@@ -799,18 +795,18 @@ class CLIConnector(Connector):
     def show(self, ref):
         return "\n".join(self.run(["show", ref]))
 
-    def config(self,param, value, global_ = False):
+    def config(self, param, value, global_=False):
         commands = ["config", param, value]
         if global_:
             commands.append("--global")
         self.run(commands)
 
     def getconfig(self, param):
-        value =  self.run(["config", "--get", param])
+        value = self.run(["config", "--get", param])
         value = value[0] if value else None
         return value
 
-    def pull(self, remote, branch, rebase = False):
+    def pull(self, remote, branch, rebase=False):
         commands = ["pull", remote, branch]
         if rebase:
             commands.append("--rebase")
@@ -822,12 +818,13 @@ class CLIConnector(Connector):
             else:
                 raise e
 
-    def push(self, remote, branch = None, all = False):
+    def push(self, remote, branch=None, all=False):
         if all:
             commands = ["push", remote, "--all"]
         else:
             commands = ["push", remote, branch]
         self.run(commands)
+
 
 def _tostr(v):
     try:

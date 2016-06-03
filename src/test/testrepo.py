@@ -5,18 +5,20 @@ import time
 
 _repo = None
 
+
 def getTempRepoPath():
     return os.path.join(os.path.dirname(__file__), "temp", str(time.time())).replace('\\', '/')
 
+
 def createRepo():
     global _repo
-    repo = Repository(getTempRepoPath(), init = True)
+    repo = Repository(getTempRepoPath(), init=True)
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "1", "parks.shp")
-    repo.importshp(path)   
+    repo.importshp(path)
     repo.addandcommit("message")
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "2", "parks.shp")
     repo.importshp(path)
-    repo.addandcommit("message_2")        
+    repo.addandcommit("message_2")
     path = os.path.join(os.path.dirname(__file__), "data", "shp", "3", "parks.shp")
     repo.importshp(path)
     repo.addandcommit("message_3")
@@ -36,8 +38,9 @@ def createRepo():
     repo.checkout(geogig.MASTER)
     repo.config(geogig.USER_NAME, "user")
     repo.config(geogig.USER_EMAIL, "user")
-    _repo = repo    
-    
+    _repo = repo
+
+
 def testRepo():
     if _repo is None:
         createRepo()

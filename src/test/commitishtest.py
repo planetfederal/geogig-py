@@ -5,8 +5,9 @@ from geogigpy import geogig
 from geogigpy.commitish import Commitish
 from testrepo import testRepo
 
+
 class GeogigCommitishTest(unittest.TestCase):
-        
+
     repo = testRepo()
 
     def getTempPath(self):
@@ -14,22 +15,22 @@ class GeogigCommitishTest(unittest.TestCase):
 
     def getClonedRepo(self):
         dst = self.getTempPath()
-        return self.repo.clone(dst)  
+        return self.repo.clone(dst)
 
     def testLog(self):
         commitish = Commitish(self.repo, geogig.HEAD)
         log = commitish.log()
-        self.assertEquals(4, len(log))        
-        self.assertEquals("message_4", log[0].message)                
+        self.assertEquals(4, len(log))
+        self.assertEquals("message_4", log[0].message)
 
     def testRootTreeListing(self):
         commitish = Commitish(self.repo, geogig.HEAD)
-        trees = commitish.root.trees    
+        trees = commitish.root.trees
         self.assertEquals(1, len(trees))
         self.assertEquals("parks", trees[0].path)
-        entries = self.repo.log()      
-        id = self.repo.revparse(trees[0].ref)  
-        self.assertEquals(entries[0].commitid, id)  
+        entries = self.repo.log()
+        id = self.repo.revparse(trees[0].ref)
+        self.assertEquals(entries[0].commitid, id)
 
     def testCheckout(self):
         repo = self.getClonedRepo()

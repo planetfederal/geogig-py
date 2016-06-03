@@ -3,8 +3,9 @@ import os
 import time
 from testrepo import testRepo
 
+
 class GeogigDiffTest(unittest.TestCase):
-        
+
     repo = testRepo()
 
     def getTempPath(self):
@@ -12,21 +13,20 @@ class GeogigDiffTest(unittest.TestCase):
 
     def getClonedRepo(self):
         dst = self.getTempPath()
-        return self.repo.clone(dst)  
-    
+        return self.repo.clone(dst)
+
     def testOldFeatureIsNone(self):
         diff = self.repo.log()[0].diff()[0]
         old = diff.oldobject()
-        self.assertIsNotNone(old)       
+        self.assertIsNotNone(old)
         self.assertEquals("parks/5", old.path)
-        attrs = old.attributes        
+        attrs = old.attributes
         self.assertEqual(15297.503295898438, attrs['area'])
-        
-    def testNewFeature(self): 
+
+    def testNewFeature(self):
         diff = self.repo.log()[0].diff()[0]
         new = diff.newobject()
-        self.assertIsNotNone(new)       
+        self.assertIsNotNone(new)
         self.assertEquals("parks/5", new.path)
         attrs = new.attributes
         self.assertEqual(15246.59765625, attrs['area'])
-        

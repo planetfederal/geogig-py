@@ -34,14 +34,14 @@ class Commit(Commitish):
         else:
             cid = repo.revparse(ref)
             if (repo.url, cid) not in Commit._commitcache:
-                log = repo.log(cid, n = 1)
+                log = repo.log(cid, n=1)
                 Commit._commitcache[(repo.url, cid)] = log[0]
             return Commit._commitcache[(repo.url, cid)]
 
     @property
     def parents(self):
         '''Returns a list of commits with commits representing the parents of this commit'''
-        commits =  [self.fromref(self.repo, p) for p in self._parents]
+        commits = [self.fromref(self.repo, p) for p in self._parents]
         return commits
 
     @property
@@ -52,7 +52,7 @@ class Commit(Commitish):
         '''
         return self.parents[0]
 
-    def diff(self, path = None):
+    def diff(self, path=None):
         '''Returns a list of DiffEntry with all changes introduced by this commitish'''
         if self._diff is None:
             self._diff = self.repo.diff(self.parent.ref, self.ref, path)
@@ -69,7 +69,7 @@ class Commit(Commitish):
         if headid == self.id:
             return "Current last commit"
         epoch = time.mktime(self.committerdate.timetuple())
-        offset = datetime.datetime.fromtimestamp (epoch) - datetime.datetime.utcfromtimestamp (epoch)
+        offset = datetime.datetime.fromtimestamp(epoch) - datetime.datetime.utcfromtimestamp(epoch)
         d = self.committerdate + offset
         return self.message + d.strftime(" (%m/%d/%y %H:%M)")
 
@@ -81,7 +81,7 @@ class Commit(Commitish):
 
     def __str__(self):
         try:
-            msg = unicode(self.message, errors = "ignore")
+            msg = unicode(self.message, errors="ignore")
         except TypeError:
             msg = self.message
         s = "id " + self.commitid + "\n"

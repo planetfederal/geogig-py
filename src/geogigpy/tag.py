@@ -1,5 +1,6 @@
 from commit import Commit
 
+
 class Tag(object):
     '''An object representing a tag'''
 
@@ -13,10 +14,10 @@ class Tag(object):
 
     @property
     def commit(self):
-    	if self._commit is None:
-        	lines = self.repo.connector.cat(self.tagid).split("\n")
-        	commitid = lines[3][-40:]
-        	self._commit = Commit.fromref(self.repo, commitid)
+        if self._commit is None:
+            lines = self.repo.connector.cat(self.tagid).split("\n")
+            commitid = lines[3][-40:]
+            self._commit = Commit.fromref(self.repo, commitid)
         return self._commit
 
     def __str__(self):

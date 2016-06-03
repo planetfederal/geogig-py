@@ -30,11 +30,12 @@ def _resolveref(ref):
 
 SHA_MATCHER = re.compile(r"\b([a-f0-9]{40})\b")
 
+
 class Repository(object):
 
     _logcache = None
 
-    def __init__(self, url, connector = None, init = False, initParams = None):
+    def __init__(self, url, connector=None, init=False, initParams=None):
         '''
         url: The url of the repository. Only file paths are supported so far. Remote repos are not supported
 
@@ -67,7 +68,7 @@ class Repository(object):
         self.cleancache()
 
     @staticmethod
-    def newrepofromclone(url, path, connector = None, username = None, password = None):
+    def newrepofromclone(url, path, connector=None, username=None, password=None):
         '''
         Clones a given repository into a local folder and returns a repository object representing it
 
@@ -100,7 +101,6 @@ class Repository(object):
         else:
             return self.connector.revparse(rev)
 
-
     @property
     def head(self):
         '''Returns a Commitish representing the current HEAD'''
@@ -123,10 +123,9 @@ class Repository(object):
 
     def isdetached(self):
         '''Returns true if the repos has a detached HEAD'''
-        return  self.head.id == self.head.ref
+        return self.head.id == self.head.ref
 
-
-    def synced(self, branch = geogig.HEAD, credentials = None):
+    def synced(self, branch=geogig.HEAD, credentials=None):
         '''
         Returns a tuple with number of (ahead, behind) commits between this repo and a remote
         It uses the passed branch or, if not passed, the current branch
@@ -172,7 +171,6 @@ class Repository(object):
             pull = len(log)
         return push, pull
 
-
     def mergemessage(self):
         '''
         Return the merge message if the repo is in a merge operation stopped due to conflicts.
@@ -180,7 +178,7 @@ class Repository(object):
         '''
         return self.connector.mergemessage()
 
-    def log(self, tip = None, sincecommit = None, until = None, since = None, path = None, n = None):
+    def log(self, tip=None, sincecommit=None, until=None, since=None, path=None, n=None):
         '''
         Returns a list of Commit starting from the passed tip ref, or HEAD if there is no passed ref,
         and up to the sincecommit, if passed, or to first commit in the history if not.
@@ -200,26 +198,25 @@ class Repository(object):
         epoch = datetime.datetime.utcfromtimestamp(0)
         delta = t - epoch
         milisecs = int(delta.total_seconds()) * 1000
-        log = self.connector.log(geogig.HEAD, until = str(milisecs), n = 1)
+        log = self.connector.log(geogig.HEAD, until=str(milisecs), n=1)
         if log:
             return log[0]
         else:
             raise GeoGigException("Invalid date for this repository")
 
-
     @property
     def trees(self):
         return self._trees()
 
-    def _trees(self, ref = geogig.HEAD, path = None, recursive = False):
+    def _trees(self, ref=geogig.HEAD, path=None, recursive=False):
         '''Returns a set of Tree objects with all the trees for the passed ref and path'''
-        return [e for e in self.children(ref, path, recursive)  if isinstance(e, Tree)]
+        return [e for e in self.children(ref, path, recursive) if isinstance(e, Tree)]
 
-    def features(self, ref = geogig.HEAD, path = None, recursive = False):
+    def features(self, ref=geogig.HEAD, path=None, recursive=False):
         '''Returns a set of Feature objects with all the features for the passed ref and path'''
-        return [e for e in self.children(ref, path, recursive)  if isinstance(e, Feature)]
+        return [e for e in self.children(ref, path, recursive) if isinstance(e, Feature)]
 
-    def children(self, ref = geogig.HEAD, path = None, recursive = False):
+    def children(self, ref=geogig.HEAD, path=None, recursive=False):
         '''Returns a set of Tree and Feature objects with all the children for the passed ref and path'''
         return self.connector.children(_resolveref(ref), path, recursive)
 
@@ -232,7 +229,7 @@ class Repository(object):
     def tags(self):
         '''Returns a dict with tag names as keys and tag objects as values'''
         tags = self.connector.tags()
-        tags = {k:Tag(self, v, k) for k, v in tags.iteritems()}
+        tags = {k: Tag(self, v, k) for k, v in tags.iteritems()}
         return tags
 
     def clone(self, path):
@@ -241,13 +238,11 @@ class Repository(object):
         self.connector.clone(url, path)
         return Repository(path, self.connector.__class__(), False)
 
-    def createbranch(self, ref, name, force = False, checkout = False):
+    def createbranch(self, ref, name, force=False, checkout=False):
         '''Creates a new branch in the repo. Returns the commitish representing the branch'''
         if checkout:
             self.cleancache()
         return self.connector.createbranch(_resolveref(ref), name, force, checkout)
-
-
 
     def deletebranch(self, name, remote=False):
         '''Deletes the passed branch'''
@@ -261,17 +256,17 @@ class Repository(object):
         '''Deletes the passed tag'''
         self.connector.deletetag(name)
 
-    def diff(self, refa = geogig.HEAD, refb = geogig.WORK_HEAD, path = None):
+    def diff(self, refa=geogig.HEAD, refb=geogig.WORK_HEAD, path=None):
         '''Returns a list of DiffEntry representing the changes between 2 commits.
         If a path is passed, it only shows changes corresponding to that path'''
         return self.connector.diff(_resolveref(refa), _resolveref(refb), path)
 
-    def difftreestats(self, refa = geogig.HEAD, refb = geogig.WORK_HEAD):
+    def difftreestats(self, refa=geogig.HEAD, refb=geogig.WORK_HEAD):
         '''Returns a dict with tree changes statistics for the passed refs. Keys are paths, values are tuples
         in the form  (added, deleted, modified) corresponding to changes made to that path'''
         return self.connector.difftreestats(_resolveref(refa), _resolveref(refb))
 
-    def treediff(self, path, refa = geogig.HEAD, refb = geogig.WORK_HEAD):
+    def treediff(self, path, refa=geogig.HEAD, refb=geogig.WORK_HEAD):
         '''Returns a tuple attributes, features with a description of features changed between the specified refs
         Attributes is a dict with attribute names as keys and the description of the attribute as value
         Features is a list, with each element being another list representing a feature and the changes
@@ -284,15 +279,15 @@ class Repository(object):
 
     def unstaged(self):
         '''Returns a list of diffEntry with the differences between staging area and working tree'''
-        return self.diff(geogig.STAGE_HEAD, geogig.WORK_HEAD);
+        return self.diff(geogig.STAGE_HEAD, geogig.WORK_HEAD)
 
     def staged(self):
         '''Returns a list of diffEntry with the differences between HEAD and Staging area'''
-        return self.diff(geogig.HEAD, geogig.STAGE_HEAD);
+        return self.diff(geogig.HEAD, geogig.STAGE_HEAD)
 
     def notindatabase(self):
         '''Returns a list of diffEntry with the differences between HEAD and Working Tree'''
-        return self.diff(geogig.HEAD, geogig.WORK_HEAD);
+        return self.diff(geogig.HEAD, geogig.WORK_HEAD)
 
     def conflicts(self):
         '''Returns a dict of tuples. Keys are paths, values are tuples with the 3 versions
@@ -304,7 +299,7 @@ class Repository(object):
             conflicts[path] = c
         return conflicts
 
-    def checkout(self, ref, paths = None, force = False):
+    def checkout(self, ref, paths=None, force=False):
         '''Checks out the passed ref into the working tree.
         If a path list is passed, it will just checkout those paths.
         If force is True, it will check out even if the working tree is not clean'''
@@ -318,7 +313,7 @@ class Repository(object):
         '''
         ref = _resolveref(ref)
         for path in paths:
-            self.connector.reset(ref, path = path)
+            self.connector.reset(ref, path=path)
         return self.connector.checkout(ref, paths)
 
     def solveconflict(self, path, attributes):
@@ -327,27 +322,26 @@ class Repository(object):
         Attributes are passed in a dict with attribute names as keys and attribute values as values.
         This can be used only with features containing one and only one geometry attribute
         '''
-        self.reset(geogig.HEAD, path = path)
+        self.reset(geogig.HEAD, path=path)
         self.insertfeature(path, attributes)
         self.add([path])
 
-    def solveconflicts(self, paths, version = geogig.OURS):
+    def solveconflicts(self, paths, version=geogig.OURS):
         '''
         Solves the specified paths with one of the corresponding existing versions (ours or theirs)
         Version is specified using geogig.OURS or geogig.THEIRS
         '''
         self.connector.solveconflicts(paths, version)
 
-
-    def add(self, paths = []):
+    def add(self, paths=[]):
         '''Adds the passed paths to the staging area. If no paths are passed, it will add all the unstaged ones'''
         self.connector.add(paths)
 
-    def addandcommit(self, message, paths = []):
+    def addandcommit(self, message, paths=[]):
         self.add(paths)
         return self.commit(message, paths)
 
-    def commit(self, message, paths = []):
+    def commit(self, message, paths=[]):
         '''
         Creates a new commit with the changes in the specified paths.
         If no paths are passed, it will commit all staged features
@@ -406,7 +400,7 @@ class Repository(object):
         Values are converted to appropriate types when possible, otherwise they are stored
         as the string representation of the attribute
         '''
-        entries = self.log(geogig.HEAD, path = path)
+        entries = self.log(geogig.HEAD, path=path)
         refs = [entry.ref + ":" + path for entry in entries]
         versions = []
         if refs:
@@ -425,43 +419,42 @@ class Repository(object):
         '''
         return self.connector.featurediff(_resolveref(ref), _resolveref(ref2), path)
 
-    def reset(self, ref, mode = geogig.RESET_MODE_HARD, path = None):
+    def reset(self, ref, mode=geogig.RESET_MODE_HARD, path=None):
         '''Resets the current branch to the passed reference'''
         self.connector.reset(ref, mode, path)
         self.cleancache()
 
-
     def exportshp(self, ref, path, shapefile):
         self.connector.exportshp(_resolveref(ref), path, shapefile)
 
-    def exportsl(self, ref, path, database, user = None, table = None):
+    def exportsl(self, ref, path, database, user=None, table=None):
         '''Export to a SpatiaLite database'''
         self.connector.exportsl(_resolveref(ref), path, database, user, table)
 
-    def exportpg(self, ref, path, table, database, user, password = None, schema = None, host = None, port = None, overwrite = False):
+    def exportpg(self, ref, path, table, database, user, password=None, schema=None, host=None, port=None, overwrite=False):
         self.connector.exportpg(_resolveref(ref), path, table, database, user, password, schema, host, port, overwrite)
 
-    def exportgeopkg(self, ref, path, geopkg, interchange = True, overwrite = False):
+    def exportgeopkg(self, ref, path, geopkg, interchange=True, overwrite=False):
         self.connector.exportgeopkg(_resolveref(ref), path, geopkg, interchange, overwrite)
 
-    def importgeojson(self, geojsonfile, add = False, dest = None, idAttribute = None, geomName = None, force = False):
+    def importgeojson(self, geojsonfile, add=False, dest=None, idAttribute=None, geomName=None, force=False):
         self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName, force)
 
-    def importshp(self, shpfile, add = False, dest = None, idAttribute = None, force = False):
+    def importshp(self, shpfile, add=False, dest=None, idAttribute=None, force=False):
         self.connector.importshp(shpfile, add, dest, idAttribute, force)
 
     def importgeopkg(self, geopkg, table, dest):
         self.connector.importgeopkg(geopkg, table, dest)
 
-    def importpg(self, database, user = None, password = None, table = None, schema = None,
-                 host = None, port = None, add = False, dest = None, force = False, idAttribute = None):
+    def importpg(self, database, user=None, password=None, table=None, schema=None,
+                 host=None, port=None, add=False, dest=None, force=False, idAttribute=None):
         self.connector.importpg(database, user, password, table,
                                 schema, host, port, add, dest, force, idAttribute)
 
-    def importsl(self, database, table, add = False, dest = None):
+    def importsl(self, database, table, add=False, dest=None):
         self.connector.importsl(database, table, add, dest)
 
-    def exportdiffs(self, commit1, commit2, path, filepath, old = False, overwrite = False):
+    def exportdiffs(self, commit1, commit2, path, filepath, old=False, overwrite=False):
         '''Exports the differences in a given tree between to commits, creating a shapefile
         with the changed features corresponding to the newest of them, or the oldest if old = False'''
         self.connector.exportdiffs(_resolveref(commit1), _resolveref(commit2), path, filepath, old, overwrite)
@@ -476,7 +469,7 @@ class Repository(object):
         It will overwrite any feature in the same path, so this can be used to add a new feature or to
         modify an existing one
         '''
-        self.connector.insertfeatures({path : attributes})
+        self.connector.insertfeatures({path: attributes})
 
     def insertfeatures(self, features):
         '''
@@ -499,7 +492,6 @@ class Repository(object):
         '''Removes the passed tree paths from the working tree and index, so they are no longer versioned'''
         self.connector.removepaths(paths, True)
 
-
     def commonancestor(self, refa, refb):
         '''
         Returns the common ancestor of the two passed references as a commitish object
@@ -507,7 +499,7 @@ class Repository(object):
         '''
         return self.connector.commonancestor(refa, refb)
 
-    def merge(self, ref, nocommit = False, message = None):
+    def merge(self, ref, nocommit=False, message=None):
         '''Merges the passed ref into the current branch'''
         self.connector.merge(_resolveref(ref), nocommit, message)
         self.cleancache()
@@ -558,7 +550,7 @@ class Repository(object):
         '''Returns true if the repo is in the middle of a rebase stopped due to conflicts'''
         return self.connector.isrebasing()
 
-    def downloadosm(self, osmurl, bbox, mappingorfile = None):
+    def downloadosm(self, osmurl, bbox, mappingorfile=None):
         '''Downloads from a OSM server using the overpass API.
         The bbox parameter defines the extent of features to download.
         Accepts a mapping object or a string with the path to a mapping file'''
@@ -568,20 +560,19 @@ class Repository(object):
         self.connector.downloadosm(osmurl, bbox, mappingfile)
         self.cleancache()
 
-
     def _mapping(self, mappingorfile):
         if isinstance(mappingorfile, basestring):
             return mappingorfile
         else:
             try:
-                f = tempfile.NamedTemporaryFile(delete = False)
+                f = tempfile.NamedTemporaryFile(delete=False)
                 f.write(mappingorfile.asjson())
                 f.close()
                 return f.name
             finally:
                 f.close()
 
-    def importosm(self, osmfile, add = False, mappingorfile = None):
+    def importosm(self, osmfile, add=False, mappingorfile=None):
         '''
         Imports an osm file.
         Accepts a mapping object or a string with the path to a mapping file to define an import mapping
@@ -591,7 +582,7 @@ class Repository(object):
             mappingfile = self._mapping(mappingorfile)
         self.connector.importosm(osmfile, add, mappingfile)
 
-    def exportosm(self, osmfile, ref = None, bbox = None):
+    def exportosm(self, osmfile, ref=None, bbox=None):
         '''
         Exports the OSM data in the repository to an OSM XML file
         A bounding box can be passed to be used as a filter.
@@ -599,7 +590,7 @@ class Repository(object):
         '''
         self.connector.exportosm(osmfile, _resolveref(ref), bbox)
 
-    def exportosmchangeset(self, osmfile, changesetid = None, refa = None, refb = None):
+    def exportosmchangeset(self, osmfile, changesetid=None, refa=None, refb=None):
         '''
         Exports the difference between the osm data in two commits as a osm changeset.
         An alternative changeset id can be used to replace negative ids if they exist
@@ -616,7 +607,7 @@ class Repository(object):
         '''Returns the description of an element, as printed by the GeoGig show command'''
         return self.connector.show(_resolveref(ref))
 
-    def config(self, param, value, global_ = False):
+    def config(self, param, value, global_=False):
         '''Configures a geogig parameter with a the passed value'''
         return self.connector.config(param, value, global_)
 
@@ -624,7 +615,7 @@ class Repository(object):
         '''Returns the current value for a given parameter'''
         return self.connector.getconfig(param)
 
-    def pull(self, remote = geogig.ORIGIN, branch = None, rebase = False):
+    def pull(self, remote=geogig.ORIGIN, branch=None, rebase=False):
         '''
         Pulls from the specified remote and specified branch.
         If no branch is provided, it will use the name of the current branch, unless the repo is headless.
@@ -637,7 +628,7 @@ class Repository(object):
         self.connector.pull(remote, branch, rebase)
         self.cleancache()
 
-    def push(self, remote, branch = None, all = False):
+    def push(self, remote, branch=None, all=False):
         '''
         Pushes to the specified remote and specified branch.
         If no branch is provided, it will use the name of the current branch, unless the repo is headless.
@@ -649,12 +640,13 @@ class Repository(object):
         branch = branch or self.head.ref
         return self.connector.push(remote, branch, all)
 
-    def init(self, initParams = None):
+    def init(self, initParams=None):
         '''
         Inits the repository.
         Init params is a dict of paramName : paramValues to be supplied to the init command
         '''
         self.connector.init(initParams)
+
 
 def isremoteurl(url):
     ##This code snippet has been taken from the Django source code
@@ -666,4 +658,3 @@ def isremoteurl(url):
         r'(?::\d+)?'  # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return url is not None and regex.search(url)
-
