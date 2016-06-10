@@ -24,6 +24,7 @@ __copyright__ = '(C) 2014-2016 Boundless, http://boundlessgeo.com'
 
 __revision__ = '$Format:%H$'
 
+
 class Connector(object):
     '''Base class for connector'''
 

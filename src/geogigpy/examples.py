@@ -65,7 +65,7 @@ def squash(repo, refa, refb, message=None):
         refa, refb = refb, refa
         commita, commitb = commitb, commita
 
-    #store the commits after the last one to squash
+    # store the commits after the last one to squash
     commits = []
     c = head
     commitid = c.id
@@ -74,7 +74,7 @@ def squash(repo, refa, refb, message=None):
         c = c.parent
         commitid = c.id
 
-    #squash the selected commmits
+    # squash the selected commmits
     repo.reset(refb, geogig.RESET_MODE_HARD)
     repo.reset(commita.parent.id, geogig.RESET_MODE_MIXED)
 
@@ -91,7 +91,7 @@ def squash(repo, refa, refb, message=None):
     repo.add()
     repo.commit(message)
 
-    #And now add the remaining commits that we previously stored
+    # and now add the remaining commits that we previously stored
     for c in reversed(commits):
         repo.cherrypick(c)
 
@@ -126,16 +126,6 @@ def getClonedRepo():
 
 
 if __name__ == '__main__':
-    #===========================================================================
-    # repo = getClonedRepo()
-    # log = repo.log()
-    # print len(log)
-    # squashLatest(repo, 2, "new_message")
-    # log = repo.log()
-    # print len(log)
-    # print log[0].message
-    #
-    #===========================================================================
     repo = getClonedRepo()
     log = repo.log()
     print len(log)

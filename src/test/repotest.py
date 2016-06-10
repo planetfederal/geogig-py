@@ -82,7 +82,7 @@ class GeogigRepositoryTest(unittest.TestCase):
         self.assertEquals(4, len(commits))
         self.assertEquals("message_4", commits[0].message)
         self.assertEquals("user", commits[0].authorname)
-        #TODO: add more
+        # TODO: add more
 
     def testLogInBranch(self):
         entries = self.repo.log("conflicted")
@@ -92,7 +92,7 @@ class GeogigRepositoryTest(unittest.TestCase):
         now = datetime.datetime.utcnow()
         commit = self.repo.commitatdate(now)
         log = self.repo.log()
-        #self.assertEquals(log[0].message, commit.message)
+        # self.assertEquals(log[0].message, commit.message)
 
     def testCommitAtWrongDate(self):
         epoch = datetime.datetime.utcfromtimestamp(0)
@@ -134,7 +134,7 @@ class GeogigRepositoryTest(unittest.TestCase):
     def testChildren(self):
         children = self.repo.children()
         self.assertEquals(1, len(children))
-        #TODO improve this test
+        # TODO improve this test
 
     def testDiff(self):
         repo = self.getClonedRepo()

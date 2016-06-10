@@ -376,7 +376,7 @@ class Repository(object):
         '''
         self.connector.commit(message, paths)
         self.cleancache()
-        #TODO: maybe add the commit instead of invalidating the whole cache
+        # TODO: maybe add the commit instead of invalidating the whole cache
 
     def commitfromgeopkg(self, geopkg, message):
         '''
@@ -649,7 +649,7 @@ class Repository(object):
         In that case, and exception will be raised
         If rebase == True, it will do a rebase instead of a merge
         '''
-        if branch == None and self.isdetached():
+        if branch is None and self.isdetached():
             raise GeoGigException("HEAD is detached. Cannot pull")
         branch = branch or self.head.ref
         self.connector.pull(remote, branch, rebase)
@@ -676,12 +676,12 @@ class Repository(object):
 
 
 def isremoteurl(url):
-    ##This code snippet has been taken from the Django source code
+    # This code snippet has been taken from the Django source code
     regex = re.compile(
         r'^https?://'  # http:// or https://
         r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
         r'localhost|'  # localhost...
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-        r'(?::\d+)?'  # optional port
+        r'(?::\d+)?'   # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return url is not None and regex.search(url)

@@ -24,23 +24,25 @@ __copyright__ = '(C) 2013-2016 Boundless, http://boundlessgeo.com'
 
 __revision__ = '$Format:%H$'
 
-import subprocess
 import os
-import tempfile
+import datetime
 import logging
-import geogig
+import subprocess
+import tempfile
+from copy import deepcopy
 from collections import defaultdict
+
+import geogig
 from feature import Feature
 from tree import Tree
 from commit import Commit
-import datetime
 from diff import Diffentry, ATTRIBUTE_DIFF_MODIFIED
 from connector import Connector
 from commitish import Commitish
-from geogigpy.geogigexception import GeoGigException, GeoGigConflictException, UnconfiguredUserException
 from geometry import Geometry
-from copy import deepcopy
-from geogigexception import GeoGigException
+from geogigexception import (GeoGigException,
+                             GeoGigConflictException,
+                             UnconfiguredUserException)
 
 
 def _run(command, addcolor=True):

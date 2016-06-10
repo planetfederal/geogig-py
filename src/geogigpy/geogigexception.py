@@ -25,7 +25,6 @@ __copyright__ = '(C) 2013-2016 Boundless, http://boundlessgeo.com'
 __revision__ = '$Format:%H$'
 
 
-
 class GeoGigException(Exception):
     pass
 
