@@ -1,3 +1,30 @@
+# -*- coding: utf-8 -*-
+
+"""
+***************************************************************************
+    feature.py
+    ---------------------
+    Date                 : November 2013
+    Copyright            : (C) 2013-2016 Boundless, http://boundlessgeo.com
+***************************************************************************
+*                                                                         *
+*   This program is free software; you can redistribute it and/or modify  *
+*   it under the terms of the GNU General Public License as published by  *
+*   the Free Software Foundation; either version 2 of the License, or     *
+*   (at your option) any later version.                                   *
+*                                                                         *
+***************************************************************************
+"""
+
+__author__ = 'Victor Olaya'
+__date__ = 'November 2013'
+__copyright__ = '(C) 2013-2016 Boundless, http://boundlessgeo.com'
+
+# This will get replaced with a git SHA1 when you do a git archive
+
+__revision__ = '$Format:%H$'
+
+
 from geogigexception import GeoGigException
 from geometry import Geometry
 
@@ -59,9 +86,9 @@ class Feature(object):
 
     def featuretype(self):
         '''
-        returns the feature type definition of the feature in a dict  with attributes 
+        returns the feature type definition of the feature in a dict  with attributes
         names as keys and attribute type names as values.
-        Values are converted to appropriate types when possible, otherwise they are stored 
+        Values are converted to appropriate types when possible, otherwise they are stored
         as the string representation of the attribute
         '''
         if self._featuretype is None:
@@ -90,7 +117,7 @@ class Feature(object):
     def blame(self):
         '''
         Returns authorship information for this feature
-        It is returned as a dict, with attribute names as keys.        
+        It is returned as a dict, with attribute names as keys.
         Values are tuples of (value, commitid, authorname)
         '''
         return self.repo.blame(self.path)
@@ -99,7 +126,7 @@ class Feature(object):
         '''
         Returns all versions of this feature.
         It returns a dict with Commit objects as keys, and feature data for the corresponding
-        commit as values. Feature data is another dict with attributes 
+        commit as values. Feature data is another dict with attributes
         names as keys and tuples of (attribute_value, attribute_type_name) as values.
         Values are converted to appropriate types when possible, otherwise they are stored
         as the string representation of the attribute
