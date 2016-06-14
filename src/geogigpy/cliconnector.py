@@ -578,9 +578,13 @@ class CLIConnector(Connector):
             commands.append("-o")
         self.run(commands)
 
-    def exportshp(self, ref, path, shapefile):
+    def exportshp(self, ref, path, shapefile, charset=None):
         refandpath = ref + ":" + path
-        self.run(["shp", "export", refandpath, shapefile, "-o", "--defaulttype"])
+        commands = ["shp", "export", refandpath, shapefile, "-o", "--defaulttype"]
+        if charset is not None:
+            commands.extend(["--charset", charset])
+
+        self.run(commands)
 
     def exportgeopkg(self, ref, path, geopkg, interchange=True, overwrite=False):
         refandpath = ref + ":" + path
@@ -599,12 +603,15 @@ class CLIConnector(Connector):
             commands.extend(["--user", user])
         self.run(commands)
 
-    def exportdiffs(self, commit1, commit2, path, filepath, old=False, overwrite=False):
+    def exportdiffs(self, commit1, commit2, path, filepath, old=False, overwrite=False, charset=None):
         commands = ["shp", "export-diff", commit1, commit2, path, filepath]
         if old:
             commands.append("--old")
         if overwrite:
             commands.append("-o")
+        if charset is not None:
+            commands.extend(["--charset", charset])
+
         self.run(commands)
 
     def featuredata(self, ref, path):

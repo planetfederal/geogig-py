@@ -451,8 +451,8 @@ class Repository(object):
         self.connector.reset(ref, mode, path)
         self.cleancache()
 
-    def exportshp(self, ref, path, shapefile):
-        self.connector.exportshp(_resolveref(ref), path, shapefile)
+    def exportshp(self, ref, path, shapefile, charset=None):
+        self.connector.exportshp(_resolveref(ref), path, shapefile, charset)
 
     def exportsl(self, ref, path, database, user=None, table=None):
         '''Export to a SpatiaLite database'''
@@ -467,8 +467,8 @@ class Repository(object):
     def importgeojson(self, geojsonfile, add=False, dest=None, idAttribute=None, geomName=None, force=False):
         self.connector.importgeojson(geojsonfile, add, dest, idAttribute, geomName, force)
 
-    def importshp(self, shpfile, add=False, dest=None, idAttribute=None, force=False):
-        self.connector.importshp(shpfile, add, dest, idAttribute, force)
+    def importshp(self, shpfile, add=False, dest=None, idAttribute=None, force=False, charset=None):
+        self.connector.importshp(shpfile, add, dest, idAttribute, force, charset)
 
     def importgeopkg(self, geopkg, table, dest):
         self.connector.importgeopkg(geopkg, table, dest)
@@ -481,10 +481,10 @@ class Repository(object):
     def importsl(self, database, table, add=False, dest=None):
         self.connector.importsl(database, table, add, dest)
 
-    def exportdiffs(self, commit1, commit2, path, filepath, old=False, overwrite=False):
+    def exportdiffs(self, commit1, commit2, path, filepath, old=False, overwrite=False, charset=None):
         '''Exports the differences in a given tree between to commits, creating a shapefile
         with the changed features corresponding to the newest of them, or the oldest if old = False'''
-        self.connector.exportdiffs(_resolveref(commit1), _resolveref(commit2), path, filepath, old, overwrite)
+        self.connector.exportdiffs(_resolveref(commit1), _resolveref(commit2), path, filepath, old, overwrite, charset)
 
     def insertfeature(self, path, attributes):
         '''

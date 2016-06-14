@@ -134,7 +134,7 @@ class Connector(object):
     def importgeojson(self, geojsonfile, add, dest, idAttribute, geomName):
         raise NotImplementedError
 
-    def importshp(self, shapefile, add, dest, idAttribute):
+    def importshp(self, shapefile, add, dest, idAttribute, charset):
         raise NotImplementedError
 
     def importpg(self, database, user, password, table, schema, host, port, add, dest, force, idAttribute):
@@ -146,13 +146,13 @@ class Connector(object):
     def exportpg(self, ref, path, table, database, user, password, schema, host, port, overwrite):
         raise NotImplementedError
 
-    def exportshp(self, ref, path, shapefile):
+    def exportshp(self, ref, path, shapefile, charset):
         raise NotImplementedError
 
     def exportsl(self, ref, path, database, user, table):
         raise NotImplementedError
 
-    def exportdiffs(self, commit1, commit2, path, filepath, old, overwrite):
+    def exportdiffs(self, commit1, commit2, path, filepath, old, overwrite, charset):
         raise NotImplementedError
 
     def featuredata(self, ref, path):
