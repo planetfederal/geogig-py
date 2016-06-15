@@ -25,6 +25,7 @@ __copyright__ = '(C) 2013-2016 Boundless, http://boundlessgeo.com'
 __revision__ = '$Format:%H$'
 
 import os
+import codecs
 import datetime
 import logging
 import subprocess
@@ -106,9 +107,8 @@ class CLIConnector(Connector):
     def head(self):
         self.checkisrepo()
         headfile = os.path.join(self.repo.url, '.geogig', 'HEAD')
-        f = open(headfile)
-        line = f.readline()
-        f.close()
+        with codecs.open(headfile, 'r', 'utf-8') as f:
+            line = f.readline()
         ref = line.strip().split()[-1]
         if ref.startswith("refs/heads/"):
             ref = ref[len("refs/heads/"):]
@@ -129,11 +129,11 @@ class CLIConnector(Connector):
     def mergemessage(self):
         msgfile = headfile = os.path.join(self.repo.url, '.geogig', 'MERGE_MSG')
         if os.path.exists(msgfile):
-            with open(msgfile) as f:
+            with codecs.open(msgfile, 'r', 'utf-8') as f:
                 lines = f.readlines()
-            return "".join(lines)
+            return ''.join(lines)
         else:
-            return ""
+            return ''
 
     def checkisrepo(self):
         if not os.path.exists(os.path.join(self.repo.url, '.geogig')):
@@ -807,18 +807,14 @@ class CLIConnector(Connector):
                 if attrValue is not None:
                     s += attrName + "\t" + _tostr(attrValue) + "\n"
             s += "\n"
-        try:
-            f = tempfile.NamedTemporaryFile(delete=False)
+
+        tmp = tempfile.NamedTemporaryFile(delete=False)
+        fileName = tmp.name
+        tmp.close()
+        with codecs.open(fileName, 'w', 'utf-8') as f:
             f.write(s)
-            f.close()
-            commands = ["insert", "-f", f.name]
-            self.run(commands)
-        finally:
-            f.close()
-            try:
-                pass  # os.remove(f.name)
-            except:
-                pass
+        commands = ["insert", "-f", fileName]
+        self.run(commands)
 
     def removepaths(self, paths, recursive=False):
         paths.insert(0, "rm")
@@ -867,7 +863,7 @@ def _tostr(v):
     try:
         d = float(v)
         if d.is_integer():
-            return str(int(d))
-        return str(d)
+            return unicode(int(d))
+        return unicode(d)
     except:
-        return str(v)
+        return unicode(v)
